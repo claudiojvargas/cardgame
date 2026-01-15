@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* === Node + ES Modules === */
+    "target": "ES2021",
+    "module": "CommonJS",
+    //"moduleResolution": "NodeNext",
+
+    /* === Estrutura do projeto === */
+    "rootDir": "./game",
+    "outDir": "./dist",
+
+    /* === Qualidade e segurança === */
+    "strict": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    /* === Interoperabilidade === */
+    "esModuleInterop": true,
+
+    /* === Debug === */
+    "sourceMap": true
+  },
+
+  "include": ["game/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

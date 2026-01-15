@@ -1,0 +1,29 @@
+{
+  "name": "card-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "simulate": "ts-node game/simulate.ts",
+    "build": "tsc",
+    "start": "node dist/simulate.ts",
+    "simulate-pve": "ts-node game/simulatePvE.ts",
+    "simulate-tower": "ts-node game/simulateTower.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^25.0.6",
+    "@vitejs/plugin-react": "^5.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  }
+}
