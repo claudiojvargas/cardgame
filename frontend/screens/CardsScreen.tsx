@@ -18,35 +18,20 @@ export function CardsScreen() {
   const [deck, setDeck] = useState<Card[]>(() =>
     CARDS.filter(card => ownedIds.has(card.id)).slice(0, MAX_DECK_SIZE)
   );
-  const [pendingCardId, setPendingCardId] = useState<string | null>(
-    null
-  );
-
-  const pendingCard = pendingCardId
-    ? CARDS.find(card => card.id === pendingCardId) ?? null
-    : null;
 
   function handleCardClick(card: Card) {
     if (!ownedIds.has(card.id)) return;
     if (deck.some(deckCard => deckCard.id === card.id)) return;
 
-    if (deck.length < MAX_DECK_SIZE) {
-      setDeck(current => [...current, card]);
+    if (deck.length >= MAX_DECK_SIZE) {
       return;
     }
 
-    setPendingCardId(card.id);
+    setDeck(current => [...current, card]);
   }
 
-  function handleDeckCardClick(card: Card, index: number) {
-    if (!pendingCard) return;
-
-    setDeck(current =>
-      current.map((deckCard, deckIndex) =>
-        deckIndex === index ? pendingCard : deckCard
-      )
-    );
-    setPendingCardId(null);
+  function handleDeckCardClick(card: Card) {
+    setDeck(current => current.filter(deckCard => deckCard.id !== card.id));
   }
 
   const deckSlots = Array.from({ length: MAX_DECK_SIZE }, (_, index) => {
@@ -57,7 +42,7 @@ export function CardsScreen() {
           <CardTile
             card={card}
             obtained
-            onClick={() => handleDeckCardClick(card, index)}
+            onClick={() => handleDeckCardClick(card)}
           />
         ) : (
           <div
@@ -86,9 +71,9 @@ export function CardsScreen() {
       <section>
         <h1>🃏 Meu Deck</h1>
         <p>
-          {pendingCard
-            ? `Deck cheio! Selecione uma carta para substituir por ${pendingCard.name}.`
-            : "Clique em uma carta obtida para adicioná-la ao deck."}
+          {deck.length >= MAX_DECK_SIZE
+            ? "Deck cheio! Remova uma carta para adicionar outra."
+            : "Clique em uma carta obtida para adicioná-la ao deck. Clique no deck para remover."}
         </p>
         <div style={{ display: "flex", flexWrap: "wrap" }}>{deckSlots}</div>
       </section>
@@ -96,7 +81,7 @@ export function CardsScreen() {
       <section>
         <h2>📚 Todas as cartas</h2>
         <div style={{ display: "flex", flexWrap: "wrap" }}>
-          {CARDS.map(card => (
+          {CARDS.filter(card => !deck.some(deckCard => deckCard.id === card.id)).map(card => (
             <CardTile
               key={card.id}
               card={card}
