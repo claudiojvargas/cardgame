@@ -21,7 +21,7 @@ export class TowerEnemyFactory {
         basePower,
         cardClass: Object.values(CardClass)[i % 6],
         rarity,
-        developments: Math.floor(floor / 5),
+        awakening: 0,
       });
 
     return new Deck([

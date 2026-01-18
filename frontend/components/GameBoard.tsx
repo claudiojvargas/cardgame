@@ -14,18 +14,23 @@ export function GameBoard({ state, onAttack }: Props) {
 
   const player = state.players.find(p => p.id === "Player")!;
   const enemy = state.players.find(p => p.id === "AI")!;
+  const isPlayerTurn = state.currentPlayer.id === "Player";
 
   return (
     <div>
+      <p>
+        Turno {state.turn} ·{" "}
+        {isPlayerTurn ? "Sua vez!" : "Vez do inimigo..."}
+      </p>
       <h2>Enemy</h2>
       <div style={{ display: "flex" }}>
         {enemy.field.map(card => (
           <CardView
             key={card.id}
             card={card}
-            selectable={!!selectedAttacker}
+            selectable={!!selectedAttacker && isPlayerTurn}
             onClick={() => {
-              if (selectedAttacker) {
+              if (selectedAttacker && isPlayerTurn) {
                 onAttack(selectedAttacker, card.id);
                 setSelectedAttacker(null);
               }
@@ -42,8 +47,11 @@ export function GameBoard({ state, onAttack }: Props) {
           <CardView
             key={card.id}
             card={card}
-            selectable={true}
-            onClick={() => setSelectedAttacker(card.id)}
+            selectable={isPlayerTurn}
+            onClick={() => {
+              if (!isPlayerTurn) return;
+              setSelectedAttacker(card.id);
+            }}
           />
         ))}
       </div>
