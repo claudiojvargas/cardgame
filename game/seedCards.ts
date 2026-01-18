@@ -41,6 +41,14 @@ function parsePlanArg(): SeedPlan {
   }
 }
 
+function isRarity(value: string): value is Rarity {
+  return Object.values(Rarity).includes(value as Rarity);
+}
+
+function isCardClass(value: string): value is CardClass {
+  return Object.values(CardClass).includes(value as CardClass);
+}
+
 function getNextIndex(existingIds: Set<string>, rarity: Rarity, cardClass: CardClass): number {
   const prefix = `${rarity}_${cardClass}_`;
   let maxIndex = 0;
@@ -69,11 +77,19 @@ function generateCards(plan: SeedPlan, existingCards: Card[]): Card[] {
   const newCards: Card[] = [];
 
   Object.entries(plan).forEach(([rarityKey, classes]) => {
-    const rarity = rarityKey as Rarity;
+    if (!isRarity(rarityKey)) {
+      return;
+    }
+
+    const rarity = rarityKey;
     const { minPower, maxPower } = getRarityConfig(rarity);
 
     Object.entries(classes ?? {}).forEach(([classKey, targetCount]) => {
-      const cardClass = classKey as CardClass;
+      if (!isCardClass(classKey)) {
+        return;
+      }
+
+      const cardClass = classKey;
       const key = `${rarity}:${cardClass}`;
       const existingCount = counts[key] ?? 0;
       const missing = Math.max(0, (targetCount ?? 0) - existingCount);
