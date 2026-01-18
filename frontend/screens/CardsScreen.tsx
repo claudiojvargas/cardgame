@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "../../game/entities/Card";
 import { CARDS } from "../../game/data/cards.catalog";
 import { CardTile } from "../components/CardTile";
 
 const MAX_DECK_SIZE = 6;
+const DECK_STORAGE_KEY = "player-deck";
 
 function getInitialOwnedIds() {
   return new Set<string>([
@@ -15,9 +16,24 @@ function getInitialOwnedIds() {
 
 export function CardsScreen() {
   const ownedIds = useMemo(() => getInitialOwnedIds(), []);
-  const [deck, setDeck] = useState<Card[]>(() =>
-    CARDS.filter(card => ownedIds.has(card.id)).slice(0, MAX_DECK_SIZE)
-  );
+  const [deck, setDeck] = useState<Card[]>(() => {
+    const storedDeck = loadDeckFromStorage()
+      .map(id => CARDS.find(card => card.id === id))
+      .filter((card): card is Card => Boolean(card))
+      .filter(card => ownedIds.has(card.id))
+      .slice(0, MAX_DECK_SIZE);
+
+    if (storedDeck.length > 0) {
+      return storedDeck;
+    }
+
+    return CARDS.filter(card => ownedIds.has(card.id)).slice(0, MAX_DECK_SIZE);
+  });
+
+  useEffect(() => {
+    const deckIds = deck.map(card => card.id);
+    window.localStorage.setItem(DECK_STORAGE_KEY, JSON.stringify(deckIds));
+  }, [deck]);
 
   function handleCardClick(card: Card) {
     if (!ownedIds.has(card.id)) return;
@@ -93,4 +109,20 @@ export function CardsScreen() {
       </section>
     </div>
   );
+}
+
+function loadDeckFromStorage(): string[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DECK_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === "string");
+  } catch {
+    return [];
+  }
 }
