@@ -1,36 +1,36 @@
 import { Deck } from "../entities/Deck";
-import { Card } from "../entities/Card";
-import { CardClass, Rarity } from "../types/enums";
+import { Rarity } from "../types/enums";
+import { CARDS } from "../data/cards.catalog";
+
+function shuffle<T>(items: T[]): T[] {
+  return [...items].sort(() => Math.random() - 0.5);
+}
 
 export class TowerEnemyFactory {
   static createEnemy(floor: number): Deck {
-    const rarity =
-      floor <= 5 ? Rarity.COMMON :
-      floor <= 10 ? Rarity.UNCOMMON :
-      floor <= 15 ? Rarity.RARE :
-      floor <= 20 ? Rarity.EPIC :
-      floor <= 25 ? Rarity.LEGENDARY :
-      Rarity.MYTHIC;
+    const allowedRarities = new Set<Rarity>([Rarity.COMMON, Rarity.UNCOMMON]);
 
-    const basePower = 3 + Math.floor(floor / 3);
+    if (floor > 5) {
+      allowedRarities.add(Rarity.RARE);
+    }
 
-    const card = (i: number) =>
-      new Card({
-        id: `T${floor}-${i}`,
-        name: `Tower ${i}`,
-        basePower,
-        cardClass: Object.values(CardClass)[i % 6],
-        rarity,
-        developments: Math.floor(floor / 5),
-      });
+    if (floor > 12) {
+      allowedRarities.add(Rarity.EPIC);
+    }
 
-    return new Deck([
-      card(1),
-      card(2),
-      card(3),
-      card(4),
-      card(5),
-      card(6),
-    ]);
+    if (floor > 20) {
+      allowedRarities.add(Rarity.LEGENDARY);
+    }
+
+    if (floor > 25) {
+      allowedRarities.add(Rarity.MYTHIC);
+      allowedRarities.add(Rarity.DIAMOND);
+    }
+
+    const pool = CARDS.filter(card => allowedRarities.has(card.rarity));
+    const picks = shuffle(pool).slice(0, 6).map(card => card.clone());
+
+    const fallback = shuffle(CARDS).slice(0, 6).map(card => card.clone());
+    return new Deck(picks.length === 6 ? picks : fallback);
   }
 }
