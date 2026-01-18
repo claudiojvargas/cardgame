@@ -1,22 +1,26 @@
+import type { CSSProperties } from "react";
 import { Card } from "../../game/entities/Card";
 
 interface Props {
   card: Card;
   onClick?: () => void;
   selectable?: boolean;
+  style?: CSSProperties;
 }
 
-export function CardView({ card, onClick, selectable }: Props) {
+export function CardView({ card, onClick, selectable, style }: Props) {
   return (
     <div
       onClick={onClick}
       style={{
         border: "1px solid #555",
-        padding: 8,
-        margin: 4,
-        width: 90,
+        padding: 12,
+        margin: 6,
+        width: 140,
+        height: 200,
         cursor: selectable ? "pointer" : "default",
-        background: selectable ? "#222" : "#111",
+        background: "#111",
+        ...style,
       }}
     >
       <strong>{card.name}</strong>
