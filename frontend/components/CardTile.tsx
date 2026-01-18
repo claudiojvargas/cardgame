@@ -20,7 +20,7 @@ export function CardTile({ card, obtained, onClick }: Props) {
         border: "1px solid #666",
         textAlign: "left",
         background: obtained ? "#cfeecf" : "#d9d9d9",
-        color: obtained ? "#999" : "#111",
+        color: "#000",
         cursor: obtained ? "pointer" : "not-allowed",
         opacity: obtained ? 1 : 0.7,
       }}

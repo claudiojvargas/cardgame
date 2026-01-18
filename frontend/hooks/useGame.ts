@@ -7,11 +7,16 @@ import { AIDifficulty } from "../../game/ai/AIDifficulty";
 
 export function useGame(initialState: GameState) {
   const [state, setState] = useState<GameState>(initialState);
+  const [lastAiAction, setLastAiAction] = useState<{
+    attackerId: string;
+    defenderId: string;
+  } | null>(null);
 
   const ai = useMemo(() => new SimpleAIAgent(AIDifficulty.NORMAL), []);
 
   useEffect(() => {
     setState(initialState);
+    setLastAiAction(null);
   }, [initialState]);
 
   useEffect(() => {
@@ -24,6 +29,7 @@ export function useGame(initialState: GameState) {
       decision.attackerId,
       decision.defenderId
     );
+    setLastAiAction(decision);
     setState(newState);
   }, [ai, state]);
 
@@ -37,11 +43,13 @@ export function useGame(initialState: GameState) {
       defenderId
     );
 
+    setLastAiAction(null);
     setState(newState);
   }
 
   return {
     state,
     playerAttack,
+    lastAiAction,
   };
 }

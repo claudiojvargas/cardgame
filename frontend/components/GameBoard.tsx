@@ -5,9 +5,10 @@ import { CardView } from "./CardView";
 interface Props {
   state: GameState;
   onAttack: (attackerId: string, defenderId: string) => void;
+  lastAiDefenderId?: string | null;
 }
 
-export function GameBoard({ state, onAttack }: Props) {
+export function GameBoard({ state, onAttack, lastAiDefenderId }: Props) {
   const [selectedAttacker, setSelectedAttacker] = useState<string | null>(
     null
   );
@@ -15,8 +16,6 @@ export function GameBoard({ state, onAttack }: Props) {
   const player = state.players.find(p => p.id === "Player")!;
   const enemy = state.players.find(p => p.id === "AI")!;
   const isPlayerTurn = state.currentPlayer.id === "Player";
-  const shouldDimEnemyCards = isPlayerTurn;
-  const shouldDimPlayerCards = !isPlayerTurn;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -29,7 +28,8 @@ export function GameBoard({ state, onAttack }: Props) {
         <div style={{ display: "flex", flexWrap: "wrap" }}>
           {enemy.field.map(card => {
             const selectable = !!selectedAttacker && isPlayerTurn;
-            const opacity = shouldDimEnemyCards && !selectable ? 0.4 : 1;
+            const opacity =
+              isPlayerTurn && selectedAttacker && !selectable ? 0.4 : 1;
 
             return (
               <CardView
@@ -44,7 +44,7 @@ export function GameBoard({ state, onAttack }: Props) {
                 }}
                 style={{
                   background: "#f7c6c6",
-                  color: "#999",
+                  color: "#000",
                   opacity,
                 }}
               />
@@ -58,7 +58,14 @@ export function GameBoard({ state, onAttack }: Props) {
         <div style={{ display: "flex", flexWrap: "wrap" }}>
           {player.field.map(card => {
             const selectable = isPlayerTurn;
-            const opacity = shouldDimPlayerCards ? 0.4 : 1;
+            const opacity =
+              !isPlayerTurn && lastAiDefenderId
+                ? card.id === lastAiDefenderId
+                  ? 1
+                  : 0.4
+                : !isPlayerTurn
+                  ? 0.4
+                  : 1;
 
             return (
               <CardView
@@ -71,7 +78,7 @@ export function GameBoard({ state, onAttack }: Props) {
                 }}
                 style={{
                   background: "#cfe4ff",
-                  color: "#999",
+                  color: "#000",
                   opacity,
                 }}
               />

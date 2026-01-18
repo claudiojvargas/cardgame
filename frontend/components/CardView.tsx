@@ -20,6 +20,7 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         height: 200,
         cursor: selectable ? "pointer" : "default",
         background: "#111",
+        color: "#000",
         ...style,
       }}
     >
