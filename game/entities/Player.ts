@@ -2,6 +2,7 @@ import { Card } from "./Card";
 import { Deck } from "./Deck";
 
 export class Player {
+  private static readonly MAX_FIELD_SIZE = 3;
   readonly id: string;
   readonly deck: Deck;
   field: Card[];
@@ -38,6 +39,10 @@ export class Player {
 
   private drawToField(count: number) {
     for (let i = 0; i < count; i += 1) {
+      if (this.field.length >= Player.MAX_FIELD_SIZE) {
+        break;
+      }
+
       const card = this.drawPile.shift();
       if (!card) break;
       this.field.push(card);
