@@ -17,7 +17,7 @@ const card = (
     basePower: power,
     cardClass: cls,
     rarity,
-    developments: 0,
+    awakening: 0,
   });
 
 // 🔹 Deck base do jogador (fixo na run)
