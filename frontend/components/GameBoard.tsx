@@ -15,45 +15,69 @@ export function GameBoard({ state, onAttack }: Props) {
   const player = state.players.find(p => p.id === "Player")!;
   const enemy = state.players.find(p => p.id === "AI")!;
   const isPlayerTurn = state.currentPlayer.id === "Player";
+  const shouldDimEnemyCards = isPlayerTurn;
+  const shouldDimPlayerCards = !isPlayerTurn;
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <p>
         Turno {state.turn} ·{" "}
         {isPlayerTurn ? "Sua vez!" : "Vez do inimigo..."}
       </p>
-      <h2>Enemy</h2>
-      <div style={{ display: "flex" }}>
-        {enemy.field.map(card => (
-          <CardView
-            key={card.id}
-            card={card}
-            selectable={!!selectedAttacker && isPlayerTurn}
-            onClick={() => {
-              if (selectedAttacker && isPlayerTurn) {
-                onAttack(selectedAttacker, card.id);
-                setSelectedAttacker(null);
-              }
-            }}
-          />
-        ))}
+      <div>
+        <h2>🤖 Cartas do Inimigo</h2>
+        <div style={{ display: "flex", flexWrap: "wrap" }}>
+          {enemy.field.map(card => {
+            const selectable = !!selectedAttacker && isPlayerTurn;
+            const opacity = shouldDimEnemyCards && !selectable ? 0.4 : 1;
+
+            return (
+              <CardView
+                key={card.id}
+                card={card}
+                selectable={selectable}
+                onClick={() => {
+                  if (selectedAttacker && isPlayerTurn) {
+                    onAttack(selectedAttacker, card.id);
+                    setSelectedAttacker(null);
+                  }
+                }}
+                style={{
+                  background: "#f7c6c6",
+                  color: "#999",
+                  opacity,
+                }}
+              />
+            );
+          })}
+        </div>
       </div>
 
-      <hr />
+      <div>
+        <h2>🧑‍🎮 Suas Cartas</h2>
+        <div style={{ display: "flex", flexWrap: "wrap" }}>
+          {player.field.map(card => {
+            const selectable = isPlayerTurn;
+            const opacity = shouldDimPlayerCards ? 0.4 : 1;
 
-      <h2>Your Cards</h2>
-      <div style={{ display: "flex" }}>
-        {player.field.map(card => (
-          <CardView
-            key={card.id}
-            card={card}
-            selectable={isPlayerTurn}
-            onClick={() => {
-              if (!isPlayerTurn) return;
-              setSelectedAttacker(card.id);
-            }}
-          />
-        ))}
+            return (
+              <CardView
+                key={card.id}
+                card={card}
+                selectable={selectable}
+                onClick={() => {
+                  if (!isPlayerTurn) return;
+                  setSelectedAttacker(card.id);
+                }}
+                style={{
+                  background: "#cfe4ff",
+                  color: "#999",
+                  opacity,
+                }}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
