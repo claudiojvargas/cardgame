@@ -11,6 +11,7 @@ import {
 
 const REQUIRED_CARDS = 4;
 const GUARANTEE_THRESHOLD = 15;
+const DIAMOND_GUARANTEE_THRESHOLD = 100;
 const UPGRADE_CHANCE = 0.02;
 
 const RARITY_ORDER: Rarity[] = [
@@ -24,11 +25,18 @@ const RARITY_ORDER: Rarity[] = [
 ];
 
 const INCENSE_RARITIES = new Set<Rarity>([
+  Rarity.RARE,
   Rarity.EPIC,
   Rarity.LEGENDARY,
   Rarity.MYTHIC,
   Rarity.DIAMOND,
 ]);
+
+function getGuaranteeThreshold(rarity: Rarity) {
+  return rarity === Rarity.DIAMOND
+    ? DIAMOND_GUARANTEE_THRESHOLD
+    : GUARANTEE_THRESHOLD;
+}
 
 function getUpgradeTarget(rarity: Rarity): Rarity | null {
   if (rarity === Rarity.COMMON) {
@@ -182,13 +190,18 @@ export function CombiningScreen() {
 
     const upgradeTarget = getUpgradeTarget(rarity);
     const incenseCount = inventory.incense[rarity] ?? 0;
+    const guaranteeThreshold = getGuaranteeThreshold(rarity);
     const hasGuarantee =
-      INCENSE_RARITIES.has(rarity) && incenseCount >= GUARANTEE_THRESHOLD - 1;
+      INCENSE_RARITIES.has(rarity) && incenseCount >= guaranteeThreshold - 1;
 
     let resultRarity = rarity;
+    let upgradedByRng = false;
     if (upgradeTarget) {
-      if (hasGuarantee || Math.random() < UPGRADE_CHANCE) {
+      if (hasGuarantee) {
         resultRarity = upgradeTarget;
+      } else if (Math.random() < UPGRADE_CHANCE) {
+        resultRarity = upgradeTarget;
+        upgradedByRng = true;
       }
     }
 
@@ -207,7 +220,7 @@ export function CombiningScreen() {
     if (INCENSE_RARITIES.has(rarity)) {
       if (hasGuarantee && upgradeTarget) {
         nextIncense[rarity] = 0;
-      } else {
+      } else if (!upgradedByRng) {
         nextIncense[rarity] = (nextIncense[rarity] ?? 0) + 1;
       }
     }
@@ -365,7 +378,7 @@ export function CombiningScreen() {
         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
           {incenseList.map(item => (
             <div key={item.rarity}>
-              {item.rarity}: {item.value}/{GUARANTEE_THRESHOLD}
+              {item.rarity}: {item.value}/{getGuaranteeThreshold(item.rarity)}
             </div>
           ))}
         </div>
