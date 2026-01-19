@@ -90,11 +90,7 @@ export function GameBoard({ state, onAttack, lastAiDefenderId }: Props) {
                     setSelectedAttacker(null);
                   }
                 }}
-                style={{
-                  background: "#f7c6c6",
-                  color: "#000",
-                  opacity,
-                }}
+                style={{ opacity }}
               />
             );
           })}
@@ -144,11 +140,7 @@ export function GameBoard({ state, onAttack, lastAiDefenderId }: Props) {
                   if (!isPlayerTurn) return;
                   setSelectedAttacker(card.id);
                 }}
-                style={{
-                  background: "#cfe4ff",
-                  color: "#000",
-                  opacity,
-                }}
+                style={{ opacity }}
               />
             );
           })}

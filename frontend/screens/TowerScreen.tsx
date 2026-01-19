@@ -10,7 +10,8 @@ import { GameStatus } from "../../game/types/enums";
 import { TowerEnemyFactory } from "../../game/tower/TowerEnemyFactory";
 
 export function TowerScreen() {
-  const [floor, setFloor] = useState(1);
+  const [floor, setFloor] = useState(() => loadStoredFloor());
+  const [battleActive, setBattleActive] = useState(false);
   const [floorClears, setFloorClears] = useState<Record<number, number>>(
     {}
   );
@@ -36,20 +37,21 @@ export function TowerScreen() {
 
   // Estado inicial da batalha atual
   const [initialState, setInitialState] = useState<GameState>(() =>
-    createGameState(floor)
+    createIdleState(floor)
   );
 
   const { state, playerAttack, lastAiAction } = useGame(initialState);
 
-  function nextFloor() {
-    const next = floor + 1;
-    setFloor(next);
-    setInitialState(createGameState(next));
+  function startBattle(currentFloor: number) {
+    setInitialState(createGameState(currentFloor));
+    setBattleActive(true);
   }
 
-  function handleDefeat() {
-    setFloor(1);
-    setInitialState(createGameState(1));
+  function handleExit(nextFloor: number) {
+    setFloor(nextFloor);
+    saveStoredFloor(nextFloor);
+    setInitialState(createIdleState(nextFloor));
+    setBattleActive(false);
   }
 
   function grantChest(currentFloor: number) {
@@ -69,6 +71,8 @@ export function TowerScreen() {
     });
   }
 
+  const startLabel = floor > 1 ? "Continuar" : "Iniciar";
+
   return (
     <div
       style={{
@@ -85,65 +89,96 @@ export function TowerScreen() {
         <h2 style={{ margin: 0, fontSize: 18 }}>Andar {floor} / 30</h2>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) 260px",
-          gap: 16,
-          flex: 1,
-          minHeight: 0,
-        }}
-      >
-        <GameBoard
-          state={state}
-          onAttack={playerAttack}
-          lastAiDefenderId={lastAiAction?.defenderId ?? null}
-        />
-
-        <aside
+      {!battleActive ? (
+        <div
           style={{
-            background: "#ffffff",
-            border: "1px solid #e0e0e0",
-            borderRadius: 12,
-            padding: 16,
+            flex: 1,
             display: "flex",
-            flexDirection: "column",
-            gap: 16,
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <div>
-            <h3 style={{ marginTop: 0 }}>🧠 Última jogada</h3>
-            {lastAiAction ? (
-              <p style={{ margin: 0, color: "#333" }}>
-                🤖 {lastAiAction.attackerId} atacou{" "}
-                {lastAiAction.defenderId}
-              </p>
-            ) : (
-              <p style={{ margin: 0, color: "#666" }}>
-                Aguardando ação do bot.
-              </p>
-            )}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e0e0e0",
+              borderRadius: 16,
+              padding: 24,
+              minWidth: 280,
+              textAlign: "center",
+              boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
+            }}
+          >
+            <h2 style={{ marginTop: 0 }}>Andar {floor} / 30</h2>
+            <p style={{ color: "#666" }}>
+              Prepare seu deck antes de encarar o próximo andar.
+            </p>
+            <button type="button" onClick={() => startBattle(floor)}>
+              {startLabel} luta
+            </button>
           </div>
-          <div>
-            <h3 style={{ marginTop: 0 }}>🎁 Baús</h3>
-            {chests.length === 0 ? (
-              <p style={{ margin: 0, color: "#666" }}>
-                Nenhum baú ainda.
-              </p>
-            ) : (
-              <ul style={{ margin: 0, paddingLeft: 16 }}>
-                {chests.slice(-5).map(chest => (
-                  <li key={chest.id}>
-                    Andar {chest.floor}: {chest.type}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </aside>
-      </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) 260px",
+            gap: 16,
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          <GameBoard
+            state={state}
+            onAttack={playerAttack}
+            lastAiDefenderId={lastAiAction?.defenderId ?? null}
+          />
 
-      {state.status === GameStatus.FINISHED && (
+          <aside
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e0e0e0",
+              borderRadius: 12,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            <div>
+              <h3 style={{ marginTop: 0 }}>🧠 Última jogada</h3>
+              {lastAiAction ? (
+                <p style={{ margin: 0, color: "#333" }}>
+                  🤖 {lastAiAction.attackerId} atacou{" "}
+                  {lastAiAction.defenderId}
+                </p>
+              ) : (
+                <p style={{ margin: 0, color: "#666" }}>
+                  Aguardando ação do bot.
+                </p>
+              )}
+            </div>
+            <div>
+              <h3 style={{ marginTop: 0 }}>🎁 Baús</h3>
+              {chests.length === 0 ? (
+                <p style={{ margin: 0, color: "#666" }}>
+                  Nenhum baú ainda.
+                </p>
+              ) : (
+                <ul style={{ margin: 0, paddingLeft: 16 }}>
+                  {chests.slice(-5).map(chest => (
+                    <li key={chest.id}>
+                      Andar {chest.floor}: {chest.type}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {battleActive && state.status === GameStatus.FINISHED && (
         <div
           style={{
             position: "fixed",
@@ -169,30 +204,76 @@ export function TowerScreen() {
             {state.winnerId === "Player" ? (
               <>
                 <h2>✅ Vitória!</h2>
-                <button
-                  onClick={() => {
-                    grantChest(floor);
-                    nextFloor();
-                  }}
-                >
-                  Próximo andar
-                </button>
+                <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextFloor = floor + 1;
+                      grantChest(floor);
+                      setFloor(nextFloor);
+                      startBattle(nextFloor);
+                    }}
+                  >
+                    Continuar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextFloor = floor + 1;
+                      grantChest(floor);
+                      handleExit(nextFloor);
+                    }}
+                  >
+                    Sair
+                  </button>
+                </div>
               </>
             ) : (
               <>
                 <h2>❌ Derrota</h2>
-                <button
-                  onClick={() => {
-                    handleDefeat();
-                  }}
-                >
-                  Voltar ao início
-                </button>
+                <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                  <button type="button" onClick={() => startBattle(floor)}>
+                    Continuar
+                  </button>
+                  <button type="button" onClick={() => handleExit(floor)}>
+                    Sair
+                  </button>
+                </div>
               </>
             )}
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+function loadStoredFloor() {
+  if (typeof window === "undefined") {
+    return 1;
+  }
+  try {
+    const stored = window.localStorage.getItem("tower-floor");
+    const parsed = Number(stored);
+    return Number.isNaN(parsed) || parsed < 1 ? 1 : parsed;
+  } catch {
+    return 1;
+  }
+}
+
+function saveStoredFloor(floor: number) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem("tower-floor", String(floor));
+}
+
+function createIdleState(currentFloor: number) {
+  const player = createPlayer();
+  const enemyDeck = TowerEnemyFactory.createEnemy(currentFloor);
+  const enemy = new Player("AI", enemyDeck);
+  return new GameState(
+    [player, enemy],
+    0,
+    0,
+    GameStatus.FINISHED
   );
 }
