@@ -32,6 +32,7 @@ interface Props {
   isNew?: boolean;
   duplicateCount?: number;
   awakeningValue?: number;
+  selectable?: boolean;
   onClick?: () => void;
 }
 
@@ -41,13 +42,16 @@ export function CardTile({
   isNew = false,
   duplicateCount = 0,
   awakeningValue,
+  selectable,
   onClick,
 }: Props) {
   const awakeningDisplay = awakeningValue ?? card.awakening;
+  const isSelectable = selectable ?? obtained;
+  const cursor = !obtained ? "not-allowed" : isSelectable ? "pointer" : "default";
   return (
     <button
       type="button"
-      onClick={obtained ? onClick : undefined}
+      onClick={obtained && isSelectable ? onClick : undefined}
       style={{
         position: "relative",
         height: 200,
@@ -59,7 +63,7 @@ export function CardTile({
         textAlign: "left",
         background: obtained ? getCardGradient(card) : "#d9d9d9",
         color: "#000",
-        cursor: obtained ? "pointer" : "not-allowed",
+        cursor,
         opacity: obtained ? 1 : 0.7,
       }}
     >

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { GameState } from "../../game/core/GameState";
-import { CardView } from "./CardView";
+import { CardTile } from "./CardTile";
 
 interface Props {
   state: GameState;
@@ -79,19 +79,20 @@ export function GameBoard({ state, onAttack, lastAiDefenderId }: Props) {
                 : 1;
 
             return (
-              <CardView
-                key={card.id}
-                card={card}
-                selectable={selectable}
-                onClick={() => {
-                  if (selectedAttacker && isPlayerTurn) {
-                    setSelectedDefender(card.id);
-                    onAttack(selectedAttacker, card.id);
-                    setSelectedAttacker(null);
-                  }
-                }}
-                style={{ opacity }}
-              />
+              <div key={card.id} style={{ opacity }}>
+                <CardTile
+                  card={card}
+                  obtained
+                  selectable={selectable}
+                  onClick={() => {
+                    if (selectedAttacker && isPlayerTurn) {
+                      setSelectedDefender(card.id);
+                      onAttack(selectedAttacker, card.id);
+                      setSelectedAttacker(null);
+                    }
+                  }}
+                />
+              </div>
             );
           })}
         </div>
@@ -132,16 +133,17 @@ export function GameBoard({ state, onAttack, lastAiDefenderId }: Props) {
                   : 1;
 
             return (
-              <CardView
-                key={card.id}
-                card={card}
-                selectable={selectable}
-                onClick={() => {
-                  if (!isPlayerTurn) return;
-                  setSelectedAttacker(card.id);
-                }}
-                style={{ opacity }}
-              />
+              <div key={card.id} style={{ opacity }}>
+                <CardTile
+                  card={card}
+                  obtained
+                  selectable={selectable}
+                  onClick={() => {
+                    if (!isPlayerTurn) return;
+                    setSelectedAttacker(card.id);
+                  }}
+                />
+              </div>
             );
           })}
         </div>
