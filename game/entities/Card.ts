@@ -1,5 +1,5 @@
 import { CardClass, Rarity } from "../types/enums";
-import { PowerSystem } from "../systems/PowerSystem";
+import { calculateCardPower } from "../systems/powerCalculator";
 
 export interface CardProps {
   id: string;
@@ -7,7 +7,7 @@ export interface CardProps {
   cardClass: CardClass;
   rarity: Rarity;
   basePower: number;
-  developments: number; // quantos devs ativos
+  awakening: number;
 }
 
 export class Card {
@@ -16,7 +16,7 @@ export class Card {
   readonly cardClass: CardClass;
   readonly rarity: Rarity;
   readonly basePower: number;
-  readonly developments: number;
+  awakening: number;
   power: number;
 
   constructor(props: CardProps) {
@@ -25,12 +25,12 @@ export class Card {
     this.cardClass = props.cardClass;
     this.rarity = props.rarity;
     this.basePower = props.basePower;
-    this.developments = props.developments;
+    this.awakening = props.awakening;
     this.power = this.calculateInitialPower();
   }
 
   private calculateInitialPower(): number {
-    return PowerSystem.calculateInitialPower(this);
+    return calculateCardPower(this);
   }
 
   clone(): Card {
@@ -40,7 +40,7 @@ export class Card {
       cardClass: this.cardClass,
       rarity: this.rarity,
       basePower: this.basePower,
-      developments: this.developments,
+      awakening: this.awakening,
     });
   }
 }
