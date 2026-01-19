@@ -7,6 +7,7 @@ export interface PlayerInventory {
   counts: Record<string, number>;
   newCards: string[];
   awakenings: Record<string, number>;
+  incense: Record<string, number>;
 }
 
 export interface PlayerWallet {
@@ -32,6 +33,7 @@ export function loadInventory(defaultCards: Card[]): PlayerInventory {
       counts: parsed.counts ?? {},
       newCards: Array.isArray(parsed.newCards) ? parsed.newCards : [],
       awakenings: parsed.awakenings ?? {},
+      incense: parsed.incense ?? {},
     };
   } catch {
     return buildInventory(defaultCards);
@@ -72,6 +74,7 @@ function buildInventory(cards: Card[]): PlayerInventory {
   const counts: Record<string, number> = {};
   const newCards: string[] = [];
   const awakenings: Record<string, number> = {};
+  const incense: Record<string, number> = {};
 
   cards.forEach(card => {
     counts[card.id] = (counts[card.id] ?? 0) + 1;
@@ -81,5 +84,5 @@ function buildInventory(cards: Card[]): PlayerInventory {
     }
   });
 
-  return { counts, newCards, awakenings };
+  return { counts, newCards, awakenings, incense };
 }

@@ -3,8 +3,15 @@ import { TowerScreen } from "./screens/TowerScreen";
 import { CardsScreen } from "./screens/CardsScreen";
 import { ChestsScreen } from "./screens/ChestsScreen";
 import { AwakeningScreen } from "./screens/AwakeningScreen";
+import { CombiningScreen } from "./screens/CombiningScreen";
 
-type Screen = "MENU" | "TOWER" | "CARDS" | "CHESTS" | "AWAKENING";
+type Screen =
+  | "MENU"
+  | "TOWER"
+  | "CARDS"
+  | "CHESTS"
+  | "AWAKENING"
+  | "COMBINING";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("MENU");
@@ -30,6 +37,10 @@ function App() {
 
   if (screen === "AWAKENING") {
     content = <AwakeningScreen />;
+  }
+
+  if (screen === "COMBINING") {
+    content = <CombiningScreen />;
   }
 
   return (
@@ -86,6 +97,15 @@ function App() {
           }}
         >
           ✨ Despertar
+        </button>
+        <button
+          onClick={() => setScreen("COMBINING")}
+          style={{
+            padding: "8px 16px",
+            fontWeight: screen === "COMBINING" ? "bold" : "normal",
+          }}
+        >
+          🔮 Combinar
         </button>
       </nav>
     </div>
