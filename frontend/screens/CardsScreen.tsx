@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "../../game/entities/Card";
 import { CARDS } from "../../game/data/cards.catalog";
 import { CardTile } from "../components/CardTile";
+import {
+  loadInventory,
+  saveInventory,
+  type PlayerInventory,
+} from "../utils/inventory";
 
 const MAX_DECK_SIZE = 6;
 const DECK_STORAGE_KEY = "player-deck";
@@ -16,18 +21,24 @@ function getInitialOwnedIds() {
 
 export function CardsScreen() {
   const ownedIds = useMemo(() => getInitialOwnedIds(), []);
+  const [inventory, setInventory] = useState<PlayerInventory>(() =>
+    loadInventory(CARDS.filter(card => ownedIds.has(card.id)))
+  );
   const [deck, setDeck] = useState<Card[]>(() => {
     const storedDeck = loadDeckFromStorage()
       .map(id => CARDS.find(card => card.id === id))
       .filter((card): card is Card => Boolean(card))
-      .filter(card => ownedIds.has(card.id))
+      .filter(card => (inventory.counts[card.id] ?? 0) > 0)
       .slice(0, MAX_DECK_SIZE);
 
     if (storedDeck.length > 0) {
       return storedDeck;
     }
 
-    return CARDS.filter(card => ownedIds.has(card.id)).slice(0, MAX_DECK_SIZE);
+    return CARDS.filter(card => (inventory.counts[card.id] ?? 0) > 0).slice(
+      0,
+      MAX_DECK_SIZE
+    );
   });
 
   useEffect(() => {
@@ -35,8 +46,12 @@ export function CardsScreen() {
     window.localStorage.setItem(DECK_STORAGE_KEY, JSON.stringify(deckIds));
   }, [deck]);
 
+  useEffect(() => {
+    saveInventory(inventory);
+  }, [inventory]);
+
   function handleCardClick(card: Card) {
-    if (!ownedIds.has(card.id)) return;
+    if ((inventory.counts[card.id] ?? 0) === 0) return;
     if (deck.some(deckCard => deckCard.id === card.id)) return;
 
     if (deck.length >= MAX_DECK_SIZE) {
@@ -58,6 +73,8 @@ export function CardsScreen() {
           <CardTile
             card={card}
             obtained
+            isNew={inventory.newCards.includes(card.id)}
+            duplicateCount={Math.max(0, (inventory.counts[card.id] ?? 0) - 1)}
             onClick={() => handleDeckCardClick(card)}
           />
         ) : (
@@ -101,7 +118,9 @@ export function CardsScreen() {
             <CardTile
               key={card.id}
               card={card}
-              obtained={ownedIds.has(card.id)}
+              obtained={(inventory.counts[card.id] ?? 0) > 0}
+              isNew={inventory.newCards.includes(card.id)}
+              duplicateCount={Math.max(0, (inventory.counts[card.id] ?? 0) - 1)}
               onClick={() => handleCardClick(card)}
             />
           ))}
