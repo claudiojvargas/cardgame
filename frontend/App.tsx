@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { TowerScreen } from "./screens/TowerScreen";
 import { CardsScreen } from "./screens/CardsScreen";
+import { ChestsScreen } from "./screens/ChestsScreen";
 
-type Screen = "MENU" | "TOWER" | "CARDS";
+type Screen = "MENU" | "TOWER" | "CARDS" | "CHESTS";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("MENU");
@@ -20,6 +21,10 @@ function App() {
 
   if (screen === "CARDS") {
     content = <CardsScreen />;
+  }
+
+  if (screen === "CHESTS") {
+    content = <ChestsScreen />;
   }
 
   return (
@@ -58,6 +63,15 @@ function App() {
           }}
         >
           📚 Ver Cartas
+        </button>
+        <button
+          onClick={() => setScreen("CHESTS")}
+          style={{
+            padding: "8px 16px",
+            fontWeight: screen === "CHESTS" ? "bold" : "normal",
+          }}
+        >
+          🎁 Baús
         </button>
       </nav>
     </div>
