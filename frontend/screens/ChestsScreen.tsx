@@ -34,18 +34,38 @@ export function ChestsScreen() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  function drawCards(rarities: Card["rarity"][], amount: number): Card[] {
-    const pool = CARDS.filter(card => rarities.includes(card.rarity));
-    if (pool.length === 0) return [];
+  function rollRarity(chestType: (typeof CHESTS)[number]) {
+    const totalWeight = chestType.rarityRates.reduce(
+      (sum, entry) => sum + entry.weight,
+      0
+    );
+    if (totalWeight <= 0) {
+      return chestType.cardRarities[0];
+    }
+    let roll = Math.random() * totalWeight;
+    for (const entry of chestType.rarityRates) {
+      roll -= entry.weight;
+      if (roll <= 0) {
+        return entry.rarity;
+      }
+    }
+    return chestType.rarityRates[chestType.rarityRates.length - 1].rarity;
+  }
+
+  function drawCards(chestType: (typeof CHESTS)[number], amount: number): Card[] {
     return Array.from({ length: amount }, () => {
+      const rarity = rollRarity(chestType);
+      const pool = CARDS.filter(card => card.rarity === rarity);
+      if (pool.length === 0) return null;
       const card = pool[Math.floor(Math.random() * pool.length)];
       return card.clone();
-    });
+    }).filter((card): card is Card => Boolean(card));
   }
 
   function handleOpenChest(chestType: (typeof CHESTS)[number]) {
+    if (wallet.gold < chestType.priceGold) return;
     const goldReward = randomBetween(chestType.goldRange[0], chestType.goldRange[1]);
-    const cards = drawCards(chestType.cardRarities, 4);
+    const cards = drawCards(chestType, 4);
 
     const updatedCounts = { ...inventory.counts };
     const updatedNew = new Set(inventory.newCards);
@@ -66,11 +86,12 @@ export function ChestsScreen() {
       counts: updatedCounts,
       newCards: Array.from(updatedNew),
       awakenings: updatedAwakenings,
+      incense: inventory.incense,
     };
 
     const nextWallet: PlayerWallet = {
       ...wallet,
-      gold: wallet.gold + goldReward,
+      gold: wallet.gold - chestType.priceGold + goldReward,
     };
 
     setInventory(nextInventory);
