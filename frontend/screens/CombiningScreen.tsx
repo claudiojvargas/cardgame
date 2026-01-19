@@ -56,6 +56,9 @@ export function CombiningScreen() {
   const [rows, setRows] = useState<Array<Rarity | null>>(
     Array.from({ length: COMBINATION_ROWS }, () => null)
   );
+  const [rowSelectionCounts, setRowSelectionCounts] = useState<
+    Record<number, number>
+  >({});
   const [lastResult, setLastResult] = useState<{
     base: Rarity;
     result: Rarity;
@@ -145,6 +148,7 @@ export function CombiningScreen() {
       newCards: Array.from(nextNewCards),
       incense: nextIncense,
     }));
+    setRowSelectionCounts(current => ({ ...current, [rowIndex]: 0 }));
     setLastResult({
       base: rarity,
       result: resultRarity,
@@ -157,106 +161,193 @@ export function CombiningScreen() {
     : null;
   const incenseValue = uniformRarity ? inventory.incense[uniformRarity] ?? 0 : 0;
 
-  return (
-    <div style={{ padding: 20 }}>
-      <h1>🔮 Combinação</h1>
-      <p>Combine 4 cartas da mesma raridade para tentar evoluir.</p>
+  const duplicateCards = CARDS.filter(card => (inventory.counts[card.id] ?? 0) > 1);
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {rows.map((rarity, index) => {
-          const available = rarity ? getAvailableCount(rarity) : 0;
-          const disabled = !rarity || available < REQUIRED_CARDS;
-          return (
+  function addCardToRow(card: Card) {
+    const rarity = card.rarity;
+    let targetIndex = rows.findIndex(row => row === rarity);
+    if (targetIndex === -1) {
+      targetIndex = rows.findIndex(row => row === null);
+    }
+    if (targetIndex === -1) {
+      return;
+    }
+
+    setRows(current =>
+      current.map((value, idx) => (idx === targetIndex ? rarity : value))
+    );
+    setRowSelectionCounts(current => {
+      const currentCount = current[targetIndex] ?? 0;
+      const nextCount = Math.min(REQUIRED_CARDS, currentCount + 1);
+      return { ...current, [targetIndex]: nextCount };
+    });
+  }
+
+  function clearRow(index: number) {
+    setRows(current => current.map((value, idx) => (idx === index ? null : value)));
+    setRowSelectionCounts(current => ({ ...current, [index]: 0 }));
+  }
+
+  return (
+    <div style={{ padding: 20, display: "flex", gap: 16 }}>
+      <aside style={{ width: "25%", minWidth: 220 }}>
+        <h2>📦 Repetidas</h2>
+        <p style={{ color: "#666" }}>
+          Clique para enviar para a linha correta.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {duplicateCards.length === 0 && (
             <div
-              key={index}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                background: "#ffffff",
-                border: "1px solid #e0e0e0",
+                border: "1px dashed #bbb",
                 borderRadius: 12,
                 padding: 12,
+                background: "#f7f7f7",
+                color: "#777",
               }}
             >
-              <div style={{ display: "flex", gap: 8 }}>
-                {Array.from({ length: REQUIRED_CARDS }).map((_, slotIndex) => (
-                  <div
-                    key={slotIndex}
-                    style={{
-                      width: 50,
-                      height: 70,
-                      borderRadius: 8,
-                      border: "1px dashed #bbb",
-                      background: "#f7f7f7",
-                    }}
-                  />
-                ))}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ marginBottom: 8 }}>
-                  {rarity ? (
-                    <strong>Raridade: {rarity}</strong>
-                  ) : (
-                    <strong>Selecione uma raridade</strong>
-                  )}
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {RARITY_ORDER.map(option => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() =>
-                        setRows(current =>
-                          current.map((value, idx) =>
-                            idx === index ? option : value
-                          )
-                        )
-                      }
+              Sem cartas repetidas.
+            </div>
+          )}
+          {duplicateCards.map(card => (
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => addCardToRow(card)}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid #e0e0e0",
+                background: "#ffffff",
+              }}
+            >
+              <span>{card.name}</span>
+              <span style={{ color: "#666" }}>
+                x{(inventory.counts[card.id] ?? 0) - 1}
+              </span>
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <div style={{ flex: 1 }}>
+        <h1>🔮 Combinação</h1>
+        <p>Combine 4 cartas da mesma raridade para tentar evoluir.</p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {rows.map((rarity, index) => {
+            const available = rarity ? getAvailableCount(rarity) : 0;
+            const disabled = !rarity || available < REQUIRED_CARDS;
+            const selectedCount = rowSelectionCounts[index] ?? 0;
+            return (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  background: "#ffffff",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div style={{ display: "flex", gap: 8 }}>
+                  {Array.from({ length: REQUIRED_CARDS }).map((_, slotIndex) => (
+                    <div
+                      key={slotIndex}
                       style={{
-                        padding: "4px 10px",
+                        width: 50,
+                        height: 70,
                         borderRadius: 8,
-                        border: "1px solid #ccc",
-                        background: rarity === option ? "#cfe4ff" : "#f5f5f5",
-                        fontWeight: rarity === option ? "bold" : "normal",
+                        border: "1px dashed #bbb",
+                        background:
+                          slotIndex < selectedCount ? "#cfe4ff" : "#f7f7f7",
                       }}
-                    >
-                      {option}
-                    </button>
+                    />
                   ))}
                 </div>
-                {rarity && (
-                  <div style={{ marginTop: 8, color: "#666" }}>
-                    Disponíveis: {available}
+                <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: 8 }}>
+                    {rarity ? (
+                      <strong>Raridade: {rarity}</strong>
+                    ) : (
+                      <strong>Selecione uma raridade</strong>
+                    )}
                   </div>
-                )}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {RARITY_ORDER.map(option => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() =>
+                          setRows(current =>
+                            current.map((value, idx) =>
+                              idx === index ? option : value
+                            )
+                          )
+                        }
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: 8,
+                          border: "1px solid #ccc",
+                          background: rarity === option ? "#cfe4ff" : "#f5f5f5",
+                          fontWeight: rarity === option ? "bold" : "normal",
+                        }}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                  {rarity && (
+                    <div style={{ marginTop: 8, color: "#666" }}>
+                      Disponíveis: {available}
+                    </div>
+                  )}
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => handleCombine(index)}
+                  >
+                    Combinar
+                  </button>
+                  {rarity && (
+                    <button type="button" onClick={() => clearRow(index)}>
+                      Limpar
+                    </button>
+                  )}
+                </div>
               </div>
-              <button type="button" disabled={disabled} onClick={() => handleCombine(index)}>
-                Combinar
-              </button>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {uniformRarity && INCENSE_RARITIES.has(uniformRarity) && (
+          <div style={{ marginTop: 20 }}>
+            <h3>🧪 Incenso ({uniformRarity})</h3>
+            <p>
+              Combinações: {incenseValue} / {GUARANTEE_THRESHOLD}
+            </p>
+          </div>
+        )}
+
+        {lastResult && (
+          <div style={{ marginTop: 20 }}>
+            <h3>Resultado</h3>
+            <p>
+              {lastResult.base} → {lastResult.result}
+            </p>
+            {lastResult.card && <p>Carta recebida: {lastResult.card.name}</p>}
+          </div>
+        )}
       </div>
-
-      {uniformRarity && INCENSE_RARITIES.has(uniformRarity) && (
-        <div style={{ marginTop: 20 }}>
-          <h3>🧪 Incenso ({uniformRarity})</h3>
-          <p>
-            Combinações: {incenseValue} / {GUARANTEE_THRESHOLD}
-          </p>
-        </div>
-      )}
-
-      {lastResult && (
-        <div style={{ marginTop: 20 }}>
-          <h3>Resultado</h3>
-          <p>
-            {lastResult.base} → {lastResult.result}
-          </p>
-          {lastResult.card && <p>Carta recebida: {lastResult.card.name}</p>}
-        </div>
-      )}
     </div>
   );
 }
