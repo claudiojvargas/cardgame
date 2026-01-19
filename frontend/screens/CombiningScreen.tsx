@@ -9,7 +9,6 @@ import {
   type PlayerInventory,
 } from "../utils/inventory";
 
-const COMBINATION_ROWS = 5;
 const REQUIRED_CARDS = 4;
 const GUARANTEE_THRESHOLD = 15;
 const UPGRADE_CHANCE = 0.02;
@@ -49,14 +48,27 @@ function buildRarityMap(cards: Card[]) {
   }, {});
 }
 
+function buildCardMap(cards: Card[]) {
+  return cards.reduce<Record<string, Card>>((acc, card) => {
+    acc[card.id] = card;
+    return acc;
+  }, {});
+}
+
 export function CombiningScreen() {
   const rarityMap = useMemo(() => buildRarityMap(CARDS), []);
+  const cardMap = useMemo(() => buildCardMap(CARDS), []);
   const [inventory, setInventory] = useState<PlayerInventory>(() =>
     loadInventory([])
   );
-  const [lastResults, setLastResults] = useState<
-    Record<number, { base: Rarity; result: Rarity; card: Card | null }>
-  >({});
+  const [selectedSlots, setSelectedSlots] = useState<Array<string | null>>(
+    Array.from({ length: REQUIRED_CARDS }, () => null)
+  );
+  const [lastResult, setLastResult] = useState<{
+    base: Rarity;
+    result: Rarity;
+    card: Card | null;
+  } | null>(null);
 
   useEffect(() => {
     saveInventory(inventory);
@@ -98,7 +110,55 @@ export function CombiningScreen() {
     return card.clone();
   }
 
-  function handleCombine(rowIndex: number, rarity: Rarity) {
+  function handleSelectCard(card: Card) {
+    const slotIndex = selectedSlots.findIndex(slot => slot === null);
+    if (slotIndex === -1) return;
+    setSelectedSlots(current =>
+      current.map((slot, idx) => (idx === slotIndex ? card.id : slot))
+    );
+  }
+
+  function handleRemoveSlot(index: number) {
+    setSelectedSlots(current =>
+      current.map((slot, idx) => (idx === index ? null : slot))
+    );
+  }
+
+  function handleAutoSelect() {
+    const rarity = RARITY_ORDER.find(r => getAvailableDuplicates(r) >= REQUIRED_CARDS);
+    if (!rarity) return;
+
+    const pool = CARDS.filter(card => card.rarity === rarity);
+    const nextSlots: Array<string | null> = [];
+    let remaining = REQUIRED_CARDS;
+    const counts = { ...inventory.counts };
+
+    pool.forEach(card => {
+      if (remaining <= 0) return;
+      const available = counts[card.id] ?? 0;
+      const duplicates = Math.max(0, available - 1);
+      if (duplicates <= 0) return;
+      const used = Math.min(duplicates, remaining);
+      for (let i = 0; i < used; i += 1) {
+        nextSlots.push(card.id);
+      }
+      remaining -= used;
+    });
+
+    setSelectedSlots(
+      Array.from({ length: REQUIRED_CARDS }, (_, idx) => nextSlots[idx] ?? null)
+    );
+  }
+
+  function handleCombine() {
+    const selectedCards = selectedSlots
+      .map(id => (id ? cardMap[id] : null))
+      .filter((card): card is Card => Boolean(card));
+    if (selectedCards.length !== REQUIRED_CARDS) return;
+
+    const rarity = selectedCards[0].rarity;
+    if (!selectedCards.every(card => card.rarity === rarity)) return;
+
     if (getAvailableDuplicates(rarity) < REQUIRED_CARDS) return;
 
     const upgradeTarget = getUpgradeTarget(rarity);
@@ -139,53 +199,39 @@ export function CombiningScreen() {
       newCards: Array.from(nextNewCards),
       incense: nextIncense,
     }));
-    setLastResults(current => ({
-      ...current,
-      [rowIndex]: {
-        base: rarity,
-        result: resultRarity,
-        card: rewardCard,
-      },
-    }));
+    setSelectedSlots(Array.from({ length: REQUIRED_CARDS }, () => null));
+    setLastResult({
+      base: rarity,
+      result: resultRarity,
+      card: rewardCard,
+    });
   }
-
-  const availableRarities = RARITY_ORDER.filter(
-    rarity => getAvailableDuplicates(rarity) >= REQUIRED_CARDS
-  );
-  const rows = Array.from({ length: COMBINATION_ROWS }, (_, index) =>
-    availableRarities[index] ?? null
-  );
-  const activeRarities = rows.filter((row): row is Rarity => Boolean(row));
-  const uniformRarity =
-    activeRarities.length > 0 &&
-    activeRarities.every(rarity => rarity === activeRarities[0])
-      ? activeRarities[0]
-      : null;
-  const incenseValue = uniformRarity ? inventory.incense[uniformRarity] ?? 0 : 0;
 
   const duplicateCards = CARDS.filter(
     card => (inventory.counts[card.id] ?? 0) > 1
   );
 
-  function handleCombineAll() {
-    rows.forEach((rarity, index) => {
-      if (!rarity) return;
-      handleCombine(index, rarity);
-    });
-  }
+  const incenseList = Array.from(INCENSE_RARITIES).map(rarity => ({
+    rarity,
+    value: inventory.incense[rarity] ?? 0,
+  }));
 
-  function handleCombineByRarity(rarity: Rarity) {
-    const rowIndex = rows.findIndex(row => row === rarity);
-    if (rowIndex === -1) return;
-    handleCombine(rowIndex, rarity);
-  }
+  const canCombine =
+    selectedSlots.every(Boolean) &&
+    (() => {
+      const rarity = selectedSlots[0] ? rarityMap[selectedSlots[0]] : null;
+      return (
+        rarity &&
+        selectedSlots.every(slot => slot && rarityMap[slot] === rarity)
+      );
+    })();
 
   return (
-    <div style={{ padding: 20, display: "flex", gap: 16 }}>
+    <div style={{ padding: 20, display: "flex", gap: 16, position: "relative" }}>
       <aside style={{ width: "25%", minWidth: 220 }}>
         <h2>📦 Repetidas</h2>
         <p style={{ color: "#666" }}>
-          Disponíveis para combinação automática.
+          Clique para enviar para um slot.
         </p>
         <div
           style={{
@@ -219,7 +265,7 @@ export function CombiningScreen() {
                   0,
                   (inventory.counts[card.id] ?? 0) - 1
                 )}
-                onClick={() => handleCombineByRarity(card.rarity)}
+                onClick={() => handleSelectCard(card)}
               />
             </div>
           ))}
@@ -229,100 +275,78 @@ export function CombiningScreen() {
       <div style={{ flex: 1 }}>
         <h1>🔮 Combinação</h1>
         <p>Combine 4 cartas da mesma raridade para tentar evoluir.</p>
-        <button
-          type="button"
-          onClick={handleCombineAll}
-          style={{ marginBottom: 12 }}
-          disabled={rows.every(row => !row)}
-        >
-          Combinar tudo
-        </button>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {rows.map((rarity, index) => {
-            const available = rarity ? getAvailableDuplicates(rarity) : 0;
-            const disabled = !rarity || available < REQUIRED_CARDS;
-            return (
-              <div
-                key={index}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  background: "#ffffff",
-                  border: "1px solid #e0e0e0",
-                  borderRadius: 12,
-                  padding: 12,
-                }}
-              >
-                <div style={{ display: "flex", gap: 8 }}>
-                  {Array.from({ length: REQUIRED_CARDS }).map((_, slotIndex) => (
-                    <div
-                      key={slotIndex}
-                      style={{
-                        width: 50,
-                        height: 70,
-                        borderRadius: 8,
-                        border: "1px dashed #bbb",
-                        background: "#f7f7f7",
-                      }}
-                    />
-                  ))}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ marginBottom: 8 }}>
-                    {rarity ? (
-                      <strong>Raridade: {rarity}</strong>
-                    ) : (
-                      <strong>Sem combinações disponíveis</strong>
-                    )}
-                  </div>
-                  {rarity && (
-                    <div style={{ marginTop: 8, color: "#666" }}>
-                      Duplicadas disponíveis: {available}
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <button
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => handleCombine(index, rarity ?? Rarity.COMMON)}
-                  >
-                    Combinar
-                  </button>
-                </div>
-                <div style={{ width: 160 }}>
-                  {lastResults[index]?.card && (
-                    <CardTile
-                      card={lastResults[index].card as Card}
-                      obtained
-                      duplicateCount={Math.max(
-                        0,
-                        (inventory.counts[lastResults[index].card!.id] ?? 0) - 1
-                      )}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+          <button type="button" onClick={handleAutoSelect}>
+            Selecionar automático
+          </button>
+          <button type="button" onClick={handleCombine} disabled={!canCombine}>
+            Combinar
+          </button>
         </div>
 
-        {uniformRarity && INCENSE_RARITIES.has(uniformRarity) && (
-          <div style={{ marginTop: 20 }}>
-            <h3>🧪 Incenso ({uniformRarity})</h3>
-            <p>
-              Combinações: {incenseValue} / {GUARANTEE_THRESHOLD}
-            </p>
-          </div>
-        )}
+        <div style={{ display: "flex", gap: 12 }}>
+          {selectedSlots.map((slot, index) => (
+            <div key={index}>
+              {slot ? (
+                <CardTile
+                  card={cardMap[slot]}
+                  obtained
+                  onClick={() => handleRemoveSlot(index)}
+                />
+              ) : (
+                <div
+                  style={{
+                    height: 200,
+                    width: 140,
+                    borderRadius: 8,
+                    border: "1px dashed #bbb",
+                    background: "#f7f7f7",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#777",
+                  }}
+                >
+                  Slot vazio
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
-        {rows.every(row => !row) && (
-          <div style={{ marginTop: 20, color: "#666" }}>
-            Você não possui duplicadas suficientes para combinar.
+        {lastResult && (
+          <div style={{ marginTop: 20 }}>
+            <h3>Resultado</h3>
+            <p>
+              {lastResult.base} → {lastResult.result}
+            </p>
+            {lastResult.card && (
+              <CardTile card={lastResult.card} obtained />
+            )}
           </div>
         )}
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: 20,
+          background: "#ffffff",
+          border: "1px solid #e0e0e0",
+          borderRadius: 12,
+          padding: 12,
+          minWidth: 180,
+        }}
+      >
+        <strong>🧪 Incenso</strong>
+        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+          {incenseList.map(item => (
+            <div key={item.rarity}>
+              {item.rarity}: {item.value}/{GUARANTEE_THRESHOLD}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
