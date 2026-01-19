@@ -5,6 +5,7 @@ interface Props {
   obtained: boolean;
   isNew?: boolean;
   duplicateCount?: number;
+  awakeningValue?: number;
   onClick?: () => void;
 }
 
@@ -13,8 +14,10 @@ export function CardTile({
   obtained,
   isNew = false,
   duplicateCount = 0,
+  awakeningValue,
   onClick,
 }: Props) {
+  const awakeningDisplay = awakeningValue ?? card.awakening;
   return (
     <button
       type="button"
@@ -63,13 +66,26 @@ export function CardTile({
           x{duplicateCount}
         </span>
       )}
+      <span
+        style={{
+          position: "absolute",
+          bottom: 8,
+          right: 8,
+          padding: "2px 6px",
+          borderRadius: 10,
+          background: "#e0e0e0",
+          color: "#000",
+          fontSize: 12,
+        }}
+      >
+        Desp {awakeningDisplay}
+      </span>
       <strong style={{ display: "block", marginBottom: 8 }}>
         {card.name}
       </strong>
       <div>Poder: {card.power}</div>
       <div>Raridade: {card.rarity}</div>
       <div>Classe: {card.cardClass}</div>
-      <div>Despertar: {card.awakening}</div>
     </button>
   );
 }

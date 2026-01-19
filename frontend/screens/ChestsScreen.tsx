@@ -49,6 +49,7 @@ export function ChestsScreen() {
 
     const updatedCounts = { ...inventory.counts };
     const updatedNew = new Set(inventory.newCards);
+    const updatedAwakenings = { ...inventory.awakenings };
 
     cards.forEach(card => {
       const current = updatedCounts[card.id] ?? 0;
@@ -56,11 +57,15 @@ export function ChestsScreen() {
       if (current === 0) {
         updatedNew.add(card.id);
       }
+      if (updatedAwakenings[card.id] === undefined) {
+        updatedAwakenings[card.id] = 0;
+      }
     });
 
     const nextInventory: PlayerInventory = {
       counts: updatedCounts,
       newCards: Array.from(updatedNew),
+      awakenings: updatedAwakenings,
     };
 
     const nextWallet: PlayerWallet = {

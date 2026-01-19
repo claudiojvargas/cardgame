@@ -50,6 +50,10 @@ export function CardsScreen() {
     saveInventory(inventory);
   }, [inventory]);
 
+  function getAwakeningValue(cardId: string) {
+    return inventory.awakenings[cardId] ?? 0;
+  }
+
   function handleCardClick(card: Card) {
     if ((inventory.counts[card.id] ?? 0) === 0) return;
     if (deck.some(deckCard => deckCard.id === card.id)) return;
@@ -75,6 +79,7 @@ export function CardsScreen() {
             obtained
             isNew={inventory.newCards.includes(card.id)}
             duplicateCount={Math.max(0, (inventory.counts[card.id] ?? 0) - 1)}
+            awakeningValue={getAwakeningValue(card.id)}
             onClick={() => handleDeckCardClick(card)}
           />
         ) : (
@@ -121,6 +126,7 @@ export function CardsScreen() {
               obtained={(inventory.counts[card.id] ?? 0) > 0}
               isNew={inventory.newCards.includes(card.id)}
               duplicateCount={Math.max(0, (inventory.counts[card.id] ?? 0) - 1)}
+              awakeningValue={getAwakeningValue(card.id)}
               onClick={() => handleCardClick(card)}
             />
           ))}
