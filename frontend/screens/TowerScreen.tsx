@@ -77,11 +77,9 @@ export function TowerScreen() {
     <div
       style={{
         padding: 20,
-        height: "calc(100vh - 72px)",
         display: "flex",
         flexDirection: "column",
         gap: 12,
-        overflow: "hidden",
       }}
     >
       <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
@@ -92,10 +90,10 @@ export function TowerScreen() {
       {!battleActive ? (
         <div
           style={{
-            flex: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            minHeight: "60vh",
           }}
         >
           <div
@@ -124,7 +122,6 @@ export function TowerScreen() {
             display: "grid",
             gridTemplateColumns: "minmax(0, 1fr) 260px",
             gap: 16,
-            flex: 1,
             minHeight: 0,
           }}
         >
@@ -231,14 +228,9 @@ export function TowerScreen() {
             ) : (
               <>
                 <h2>❌ Derrota</h2>
-                <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                  <button type="button" onClick={() => startBattle(floor)}>
-                    Continuar
-                  </button>
-                  <button type="button" onClick={() => handleExit(floor)}>
-                    Sair
-                  </button>
-                </div>
+                <button type="button" onClick={() => handleExit(floor)}>
+                  Sair
+                </button>
               </>
             )}
           </div>
