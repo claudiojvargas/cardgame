@@ -83,6 +83,10 @@ export function CombiningScreen() {
     }, 0);
   }
 
+  function getAvailableCardDuplicates(cardId: string) {
+    return Math.max(0, (inventory.counts[cardId] ?? 0) - 1);
+  }
+
   function consumeDuplicatesByRarity(rarity: Rarity, amount: number) {
     const nextCounts = { ...inventory.counts };
     let remaining = amount;
@@ -110,18 +114,33 @@ export function CombiningScreen() {
     return card.clone();
   }
 
+  const targetRarity = selectedSlots[0]
+    ? rarityMap[selectedSlots[0]]
+    : null;
+
   function handleSelectCard(card: Card) {
     const slotIndex = selectedSlots.findIndex(slot => slot === null);
     if (slotIndex === -1) return;
+    if (targetRarity && card.rarity !== targetRarity) return;
+    const selectedCount = selectedSlots.filter(slot => slot === card.id).length;
+    if (selectedCount >= getAvailableCardDuplicates(card.id)) return;
     setSelectedSlots(current =>
       current.map((slot, idx) => (idx === slotIndex ? card.id : slot))
     );
   }
 
   function handleRemoveSlot(index: number) {
+    if (index === 0) {
+      setSelectedSlots(Array.from({ length: REQUIRED_CARDS }, () => null));
+      return;
+    }
     setSelectedSlots(current =>
       current.map((slot, idx) => (idx === index ? null : slot))
     );
+  }
+
+  function handleClearSlots() {
+    setSelectedSlots(Array.from({ length: REQUIRED_CARDS }, () => null));
   }
 
   function handleAutoSelect() {
@@ -279,6 +298,9 @@ export function CombiningScreen() {
           <button type="button" onClick={handleAutoSelect}>
             Selecionar automático
           </button>
+          <button type="button" onClick={handleClearSlots}>
+            Limpar
+          </button>
           <button type="button" onClick={handleCombine} disabled={!canCombine}>
             Combinar
           </button>
@@ -307,7 +329,7 @@ export function CombiningScreen() {
                     color: "#777",
                   }}
                 >
-                  Slot vazio
+                  {index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
                 </div>
               )}
             </div>
