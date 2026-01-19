@@ -174,6 +174,12 @@ export function CombiningScreen() {
     });
   }
 
+  function handleCombineByRarity(rarity: Rarity) {
+    const rowIndex = rows.findIndex(row => row === rarity);
+    if (rowIndex === -1) return;
+    handleCombine(rowIndex, rarity);
+  }
+
   return (
     <div style={{ padding: 20, display: "flex", gap: 16 }}>
       <aside style={{ width: "25%", minWidth: 220 }}>
@@ -181,7 +187,16 @@ export function CombiningScreen() {
         <p style={{ color: "#666" }}>
           Disponíveis para combinação automática.
         </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            maxHeight: "70vh",
+            overflowY: "auto",
+            paddingRight: 4,
+          }}
+        >
           {duplicateCards.length === 0 && (
             <div
               style={{
@@ -204,6 +219,7 @@ export function CombiningScreen() {
                   0,
                   (inventory.counts[card.id] ?? 0) - 1
                 )}
+                onClick={() => handleCombineByRarity(card.rarity)}
               />
             </div>
           ))}
