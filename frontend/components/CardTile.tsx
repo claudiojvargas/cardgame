@@ -1,4 +1,30 @@
 import { Card } from "../../game/entities/Card";
+import { CardClass, Rarity } from "../../game/types/enums";
+
+const RARITY_COLORS: Record<Rarity, string> = {
+  [Rarity.COMMON]: "#9e9e9e",
+  [Rarity.UNCOMMON]: "#43a047",
+  [Rarity.RARE]: "#1e88e5",
+  [Rarity.EPIC]: "#8e24aa",
+  [Rarity.LEGENDARY]: "#f9a825",
+  [Rarity.MYTHIC]: "#d32f2f",
+  [Rarity.DIAMOND]: "#26c6da",
+};
+
+const CLASS_COLORS: Record<CardClass, string> = {
+  [CardClass.ATTACK]: "#ef5350",
+  [CardClass.DEFENSE]: "#42a5f5",
+  [CardClass.SUPPORT]: "#66bb6a",
+  [CardClass.CONTROL]: "#7e57c2",
+  [CardClass.CONTINUOUS]: "#26a69a",
+  [CardClass.STRATEGY]: "#ffca28",
+};
+
+function getCardGradient(card: Card) {
+  const rarityColor = RARITY_COLORS[card.rarity];
+  const classColor = CLASS_COLORS[card.cardClass];
+  return `linear-gradient(135deg, ${rarityColor}, ${classColor})`;
+}
 
 interface Props {
   card: Card;
@@ -31,7 +57,7 @@ export function CardTile({
         borderRadius: 8,
         border: "1px solid #666",
         textAlign: "left",
-        background: obtained ? "#cfeecf" : "#d9d9d9",
+        background: obtained ? getCardGradient(card) : "#d9d9d9",
         color: "#000",
         cursor: obtained ? "pointer" : "not-allowed",
         opacity: obtained ? 1 : 0.7,

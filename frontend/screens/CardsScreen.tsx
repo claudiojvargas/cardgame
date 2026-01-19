@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card } from "../../game/entities/Card";
 import { CARDS } from "../../game/data/cards.catalog";
+import { Rarity } from "../../game/types/enums";
 import { CardTile } from "../components/CardTile";
 import {
   loadInventory,
@@ -10,6 +11,15 @@ import {
 
 const MAX_DECK_SIZE = 6;
 const DECK_STORAGE_KEY = "player-deck";
+const RARITY_ORDER: Rarity[] = [
+  Rarity.DIAMOND,
+  Rarity.MYTHIC,
+  Rarity.LEGENDARY,
+  Rarity.EPIC,
+  Rarity.RARE,
+  Rarity.UNCOMMON,
+  Rarity.COMMON,
+];
 
 function getInitialOwnedIds() {
   return new Set<string>([
@@ -104,6 +114,18 @@ export function CardsScreen() {
     );
   });
 
+  const availableCards = useMemo(
+    () =>
+      CARDS
+        .filter(card => !deck.some(deckCard => deckCard.id === card.id))
+        .sort(
+          (left, right) =>
+            RARITY_ORDER.indexOf(left.rarity) -
+            RARITY_ORDER.indexOf(right.rarity)
+        ),
+    [deck]
+  );
+
   return (
     <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 24 }}>
       <section>
@@ -118,8 +140,16 @@ export function CardsScreen() {
 
       <section>
         <h2>📚 Todas as cartas</h2>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
-          {CARDS.filter(card => !deck.some(deckCard => deckCard.id === card.id)).map(card => (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            maxHeight: "60vh",
+            overflowY: "auto",
+            paddingRight: 6,
+          }}
+        >
+          {availableCards.map(card => (
             <CardTile
               key={card.id}
               card={card}
