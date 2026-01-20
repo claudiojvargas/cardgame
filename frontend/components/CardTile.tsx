@@ -29,9 +29,12 @@ function getCardGradient(card: Card) {
   return `linear-gradient(135deg, ${rarityColor}, ${classColor})`;
 }
 
-function formatPowerDisplay(card: Card) {
+function formatPowerDisplay(card: Card, awakeningLevel?: number) {
   const buffPct = card.buffPowerPctTotal ?? 0;
-  const basePower = calculateCardPower(card);
+  const basePower = calculateCardPower({
+    ...card,
+    awakening: awakeningLevel ?? card.awakening,
+  });
   const effectivePower = Math.round(basePower * (1 + buffPct));
   if (buffPct > 0) {
     return `${effectivePower} (+${Math.round(buffPct * 100)}%)`;
@@ -170,7 +173,7 @@ export function CardTile({
       <strong style={{ display: "block", marginBottom: 8 }}>
         {card.name}
       </strong>
-      <div>Poder: {formatPowerDisplay(card)}</div>
+      <div>Poder: {formatPowerDisplay(card, awakeningDisplay)}</div>
       <div>Raridade: {card.rarity}</div>
       <div>Classe: {card.cardClass}</div>
     </button>
