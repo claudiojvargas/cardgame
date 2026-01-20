@@ -14,6 +14,8 @@ export class SynergySystem {
       [CardClass.SUPPORT]: 0,
       [CardClass.CONTROL]: 0,
       [CardClass.CONTINUOUS]: 0,
+      [CardClass.EVADE]: 0,
+      [CardClass.CHAIN]: 0,
       [CardClass.STRATEGY]: 0,
     };
 

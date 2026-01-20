@@ -1,6 +1,5 @@
 import { IAgent, AIDecision } from "./IAgent";
 import { GameState } from "../core/GameState";
-import { SynergySystem } from "../systems/SynergySystem";
 import { AIDifficulty } from "./AIDifficulty";
 
 interface MoveScore extends AIDecision {
@@ -14,20 +13,13 @@ export class SimpleAIAgent implements IAgent {
     const ai = state.currentPlayer;
     const enemy = state.opponentPlayer;
 
-    const aiSynergy = SynergySystem.calculate(ai);
-    const enemySynergy = SynergySystem.calculate(enemy);
-
     const moves: MoveScore[] = [];
 
     for (const attacker of ai.field) {
-      const attackerBonus =
-        aiSynergy.get(attacker.cardClass)?.attackModifier ?? 0;
-      const attackerPower = attacker.power + attackerBonus;
+      const attackerPower = attacker.power * (1 + attacker.buffPowerPctTotal);
 
       for (const defender of enemy.field) {
-        const defenderBonus =
-          enemySynergy.get(defender.cardClass)?.attackModifier ?? 0;
-        const defenderPower = defender.power + defenderBonus;
+        const defenderPower = defender.power * (1 + defender.buffPowerPctTotal);
 
         let score = 0;
 
