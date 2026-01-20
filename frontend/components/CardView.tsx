@@ -38,6 +38,23 @@ function formatPowerDisplay(card: Card) {
   return `${effectivePower}`;
 }
 
+function getStatusBadges(card: Card) {
+  const badges: Array<{ label: string; emoji: string }> = [];
+  if (card.buffPowerPctTotal > 0) {
+    badges.push({ label: "Buff de poder", emoji: "⚡" });
+  }
+  if (card.shield) {
+    badges.push({ label: "Escudo ativo", emoji: "🛡️" });
+  }
+  if (card.statusFrozenRounds > 0) {
+    badges.push({ label: "Congelado", emoji: "❄️" });
+  }
+  if (card.dotList.length > 0) {
+    badges.push({ label: "DOT ativo", emoji: "☠️" });
+  }
+  return badges;
+}
+
 interface Props {
   card: Card;
   onClick?: () => void;
@@ -46,6 +63,7 @@ interface Props {
 }
 
 export function CardView({ card, onClick, selectable, style }: Props) {
+  const badges = getStatusBadges(card);
   return (
     <div
       onClick={onClick}
@@ -62,6 +80,30 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         ...style,
       }}
     >
+      {badges.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            marginBottom: 6,
+          }}
+        >
+          {badges.map(badge => (
+            <span
+              key={badge.label}
+              title={badge.label}
+              style={{
+                background: "rgba(255,255,255,0.85)",
+                borderRadius: 6,
+                padding: "2px 4px",
+                fontSize: 12,
+              }}
+            >
+              {badge.emoji}
+            </span>
+          ))}
+        </div>
+      )}
       <strong>{card.name}</strong>
       <div>Power: {formatPowerDisplay(card)}</div>
       <div>{card.cardClass}</div>

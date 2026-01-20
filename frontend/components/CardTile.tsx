@@ -37,6 +37,23 @@ function formatPowerDisplay(card: Card) {
   return `${effectivePower}`;
 }
 
+function getStatusBadges(card: Card) {
+  const badges: Array<{ label: string; emoji: string }> = [];
+  if (card.buffPowerPctTotal > 0) {
+    badges.push({ label: "Buff de poder", emoji: "⚡" });
+  }
+  if (card.shield) {
+    badges.push({ label: "Escudo ativo", emoji: "🛡️" });
+  }
+  if (card.statusFrozenRounds > 0) {
+    badges.push({ label: "Congelado", emoji: "❄️" });
+  }
+  if (card.dotList.length > 0) {
+    badges.push({ label: "DOT ativo", emoji: "☠️" });
+  }
+  return badges;
+}
+
 interface Props {
   card: Card;
   obtained: boolean;
@@ -59,6 +76,7 @@ export function CardTile({
   const awakeningDisplay = awakeningValue ?? card.awakening;
   const isSelectable = selectable ?? obtained;
   const cursor = !obtained ? "not-allowed" : isSelectable ? "pointer" : "default";
+  const badges = getStatusBadges(card);
   return (
     <button
       type="button"
@@ -78,6 +96,32 @@ export function CardTile({
         opacity: obtained ? 1 : 0.7,
       }}
     >
+      {badges.length > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            top: 6,
+            left: 6,
+            display: "flex",
+            gap: 4,
+          }}
+        >
+          {badges.map(badge => (
+            <span
+              key={badge.label}
+              title={badge.label}
+              style={{
+                background: "rgba(255,255,255,0.85)",
+                borderRadius: 6,
+                padding: "2px 4px",
+                fontSize: 12,
+              }}
+            >
+              {badge.emoji}
+            </span>
+          ))}
+        </div>
+      )}
       {isNew && (
         <span
           style={{
