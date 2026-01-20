@@ -28,6 +28,15 @@ function getCardGradient(card: Card) {
   return `linear-gradient(135deg, ${rarityColor}, ${classColor})`;
 }
 
+function formatPowerDisplay(card: Card) {
+  const buffPct = card.buffPowerPctTotal ?? 0;
+  const effectivePower = Math.round(card.power * (1 + buffPct));
+  if (buffPct > 0) {
+    return `${effectivePower} (+${Math.round(buffPct * 100)}%)`;
+  }
+  return `${effectivePower}`;
+}
+
 interface Props {
   card: Card;
   obtained: boolean;
@@ -115,7 +124,7 @@ export function CardTile({
       <strong style={{ display: "block", marginBottom: 8 }}>
         {card.name}
       </strong>
-      <div>Poder: {card.power}</div>
+      <div>Poder: {formatPowerDisplay(card)}</div>
       <div>Raridade: {card.rarity}</div>
       <div>Classe: {card.cardClass}</div>
     </button>

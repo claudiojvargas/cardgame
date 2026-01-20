@@ -29,6 +29,15 @@ function getCardGradient(card: Card) {
   return `linear-gradient(135deg, ${rarityColor}, ${classColor})`;
 }
 
+function formatPowerDisplay(card: Card) {
+  const buffPct = card.buffPowerPctTotal ?? 0;
+  const effectivePower = Math.round(card.power * (1 + buffPct));
+  if (buffPct > 0) {
+    return `${effectivePower} (+${Math.round(buffPct * 100)}%)`;
+  }
+  return `${effectivePower}`;
+}
+
 interface Props {
   card: Card;
   onClick?: () => void;
@@ -54,7 +63,7 @@ export function CardView({ card, onClick, selectable, style }: Props) {
       }}
     >
       <strong>{card.name}</strong>
-      <div>Power: {card.power}</div>
+      <div>Power: {formatPowerDisplay(card)}</div>
       <div>{card.cardClass}</div>
       <div>{card.rarity}</div>
     </div>
