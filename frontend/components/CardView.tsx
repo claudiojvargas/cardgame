@@ -18,6 +18,8 @@ const CLASS_COLORS: Record<CardClass, string> = {
   [CardClass.SUPPORT]: "#66bb6a",
   [CardClass.CONTROL]: "#7e57c2",
   [CardClass.CONTINUOUS]: "#26a69a",
+  [CardClass.EVADE]: "#26c6da",
+  [CardClass.CHAIN]: "#ff7043",
   [CardClass.STRATEGY]: "#ffca28",
 };
 

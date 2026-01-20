@@ -4,6 +4,8 @@ export enum CardClass {
   SUPPORT = "support",
   CONTROL = "control",
   CONTINUOUS = "continuous",
+  EVADE = "evade",
+  CHAIN = "chain",
   STRATEGY = "strategy",
 }
 

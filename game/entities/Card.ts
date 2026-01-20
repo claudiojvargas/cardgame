@@ -10,6 +10,22 @@ export interface CardProps {
   awakening: number;
 }
 
+export type ShieldType = "REFLECT_50" | "TOTAL_REFLECT_100";
+
+export interface Shield {
+  type: ShieldType;
+  usesLeft: number;
+  consumedOnAttack: boolean;
+  consumedOnDamaged: boolean;
+}
+
+export interface DotEffect {
+  roundsLeft: number;
+  tickDamage: number;
+  sourceId: string;
+  type: "DOT";
+}
+
 export class Card {
   readonly id: string;
   readonly name: string;
@@ -18,6 +34,11 @@ export class Card {
   readonly basePower: number;
   awakening: number;
   power: number;
+  buffPowerPctTotal: number;
+  hp: number;
+  statusFrozenRounds: number;
+  dotList: DotEffect[];
+  shield: Shield | null;
 
   constructor(props: CardProps) {
     this.id = props.id;
@@ -27,6 +48,11 @@ export class Card {
     this.basePower = props.basePower;
     this.awakening = props.awakening;
     this.power = this.calculateInitialPower();
+    this.buffPowerPctTotal = 0;
+    this.hp = this.power;
+    this.statusFrozenRounds = 0;
+    this.dotList = [];
+    this.shield = null;
   }
 
   private calculateInitialPower(): number {
