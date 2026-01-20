@@ -1,5 +1,5 @@
 import { CardClass, Rarity } from "../types/enums";
-import { PowerSystem } from "../systems/PowerSystem";
+import { calculateCardPower } from "../systems/powerCalculator";
 
 export interface CardProps {
   id: string;
@@ -7,7 +7,23 @@ export interface CardProps {
   cardClass: CardClass;
   rarity: Rarity;
   basePower: number;
-  developments: number; // quantos devs ativos
+  awakening: number;
+}
+
+export type ShieldType = "REFLECT_50" | "TOTAL_REFLECT_100";
+
+export interface Shield {
+  type: ShieldType;
+  usesLeft: number;
+  consumedOnAttack: boolean;
+  consumedOnDamaged: boolean;
+}
+
+export interface DotEffect {
+  roundsLeft: number;
+  tickDamage: number;
+  sourceId: string;
+  type: "DOT";
 }
 
 export class Card {
@@ -16,8 +32,13 @@ export class Card {
   readonly cardClass: CardClass;
   readonly rarity: Rarity;
   readonly basePower: number;
-  readonly developments: number;
+  awakening: number;
   power: number;
+  buffPowerPctTotal: number;
+  hp: number;
+  statusFrozenRounds: number;
+  dotList: DotEffect[];
+  shield: Shield | null;
 
   constructor(props: CardProps) {
     this.id = props.id;
@@ -25,12 +46,17 @@ export class Card {
     this.cardClass = props.cardClass;
     this.rarity = props.rarity;
     this.basePower = props.basePower;
-    this.developments = props.developments;
+    this.awakening = props.awakening;
     this.power = this.calculateInitialPower();
+    this.buffPowerPctTotal = 0;
+    this.hp = this.power;
+    this.statusFrozenRounds = 0;
+    this.dotList = [];
+    this.shield = null;
   }
 
   private calculateInitialPower(): number {
-    return PowerSystem.calculateInitialPower(this);
+    return calculateCardPower(this);
   }
 
   clone(): Card {
@@ -40,7 +66,7 @@ export class Card {
       cardClass: this.cardClass,
       rarity: this.rarity,
       basePower: this.basePower,
-      developments: this.developments,
+      awakening: this.awakening,
     });
   }
 }
