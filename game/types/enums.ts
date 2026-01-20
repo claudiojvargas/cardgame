@@ -4,6 +4,8 @@ export enum CardClass {
   SUPPORT = "support",
   CONTROL = "control",
   CONTINUOUS = "continuous",
+  EVADE = "evade",
+  CHAIN = "chain",
   STRATEGY = "strategy",
 }
 
@@ -20,4 +22,13 @@ export enum Rarity {
 export enum GameStatus {
   IN_PROGRESS = "in_progress",
   FINISHED = "finished",
+}
+
+export enum ChestType {
+  BASIC = "basic",
+  ADVANCED = "advanced",
+  EPIC = "epic",
+  LEGENDARY = "legendary",
+  SUPREME = "supreme",
+  ANCIENT = "ancient",
 }

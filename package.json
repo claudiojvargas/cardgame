@@ -8,6 +8,7 @@
     "simulate": "ts-node game/simulate.ts",
     "build": "tsc",
     "start": "node dist/simulate.ts",
+    "seed-cards": "ts-node game/seedCards.ts",
     "simulate-pve": "ts-node game/simulatePvE.ts",
     "simulate-tower": "ts-node game/simulateTower.ts"
   },
