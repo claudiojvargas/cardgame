@@ -1,4 +1,5 @@
 import { Card } from "../../game/entities/Card";
+import { calculateCardPower } from "../../game/systems/powerCalculator";
 import { CardClass, Rarity } from "../../game/types/enums";
 
 const RARITY_COLORS: Record<Rarity, string> = {
@@ -30,11 +31,12 @@ function getCardGradient(card: Card) {
 
 function formatPowerDisplay(card: Card) {
   const buffPct = card.buffPowerPctTotal ?? 0;
-  const effectivePower = Math.round(card.power * (1 + buffPct));
+  const basePower = calculateCardPower(card);
+  const effectivePower = Math.round(basePower * (1 + buffPct));
   if (buffPct > 0) {
     return `${effectivePower} (+${Math.round(buffPct * 100)}%)`;
   }
-  return `${effectivePower}`;
+  return `${basePower}`;
 }
 
 function getStatusBadges(card: Card) {
