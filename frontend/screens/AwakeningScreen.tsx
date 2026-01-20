@@ -76,9 +76,17 @@ export function AwakeningScreen() {
     });
   }
 
-  const ownedList = ownedCards.filter(
-    card => (inventory.counts[card.id] ?? 0) > 0
-  );
+  const ownedList = ownedCards.filter(card => {
+    const ownedCount = inventory.counts[card.id] ?? 0;
+    if (ownedCount <= 1) return false;
+    const currentAwakening = inventory.awakenings[card.id] ?? 0;
+    if (currentAwakening >= getRarityConfig(card.rarity).maxAwakening) {
+      return false;
+    }
+    const duplicatesAvailable = Math.max(0, ownedCount - 1);
+    const cost = getAwakeningCost({ ...card, awakening: currentAwakening });
+    return duplicatesAvailable >= cost;
+  });
 
   return (
     <div style={{ padding: 20 }}>
