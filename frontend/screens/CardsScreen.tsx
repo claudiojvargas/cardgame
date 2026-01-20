@@ -60,6 +60,11 @@ export function CardsScreen() {
     saveInventory(inventory);
   }, [inventory]);
 
+  useEffect(() => () => {
+    if (inventory.newCards.length === 0) return;
+    saveInventory({ ...inventory, newCards: [] });
+  }, [inventory]);
+
   function getAwakeningValue(cardId: string) {
     return inventory.awakenings[cardId] ?? 0;
   }
@@ -114,17 +119,19 @@ export function CardsScreen() {
     );
   });
 
-  const availableCards = useMemo(
-    () =>
-      CARDS
-        .filter(card => !deck.some(deckCard => deckCard.id === card.id))
-        .sort(
-          (left, right) =>
-            RARITY_ORDER.indexOf(left.rarity) -
-            RARITY_ORDER.indexOf(right.rarity)
-        ),
-    [deck]
-  );
+  const availableCards = useMemo(() => {
+    const withoutDeck = CARDS.filter(
+      card => !deck.some(deckCard => deckCard.id === card.id)
+    );
+    return [...withoutDeck].sort((left, right) => {
+      const leftOwned = (inventory.counts[left.id] ?? 0) > 0;
+      const rightOwned = (inventory.counts[right.id] ?? 0) > 0;
+      if (leftOwned !== rightOwned) {
+        return leftOwned ? -1 : 1;
+      }
+      return RARITY_ORDER.indexOf(left.rarity) - RARITY_ORDER.indexOf(right.rarity);
+    });
+  }, [deck, inventory.counts]);
 
   return (
     <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 24 }}>

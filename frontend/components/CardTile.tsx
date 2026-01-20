@@ -12,21 +12,19 @@ const RARITY_COLORS: Record<Rarity, string> = {
   [Rarity.DIAMOND]: "#26c6da",
 };
 
-const CLASS_COLORS: Record<CardClass, string> = {
-  [CardClass.ATTACK]: "#ef5350",
-  [CardClass.DEFENSE]: "#42a5f5",
-  [CardClass.SUPPORT]: "#66bb6a",
-  [CardClass.CONTROL]: "#7e57c2",
-  [CardClass.CONTINUOUS]: "#26a69a",
-  [CardClass.EVADE]: "#26c6da",
-  [CardClass.CHAIN]: "#ff7043",
-  [CardClass.STRATEGY]: "#ffca28",
+const CLASS_ICONS: Record<CardClass, string> = {
+  [CardClass.ATTACK]: "⚔️",
+  [CardClass.DEFENSE]: "🛡️",
+  [CardClass.SUPPORT]: "✨",
+  [CardClass.CONTROL]: "🧿",
+  [CardClass.CONTINUOUS]: "🔁",
+  [CardClass.EVADE]: "💨",
+  [CardClass.CHAIN]: "⛓️",
+  [CardClass.STRATEGY]: "🧠",
 };
 
-function getCardGradient(card: Card) {
-  const rarityColor = RARITY_COLORS[card.rarity];
-  const classColor = CLASS_COLORS[card.cardClass];
-  return `linear-gradient(135deg, ${rarityColor}, ${classColor})`;
+function getCardBackground(card: Card) {
+  return RARITY_COLORS[card.rarity];
 }
 
 function formatPowerDisplay(card: Card, awakeningLevel?: number) {
@@ -95,7 +93,7 @@ export function CardTile({
         borderRadius: 8,
         border: "1px solid #666",
         textAlign: "left",
-        background: obtained ? getCardGradient(card) : "#d9d9d9",
+        background: obtained ? getCardBackground(card) : "#d9d9d9",
         color: "#000",
         cursor,
         opacity: obtained ? 1 : 0.7,
@@ -127,19 +125,37 @@ export function CardTile({
           ))}
         </div>
       )}
-      {isNew && (
-        <span
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            width: 12,
-            height: 12,
-            borderRadius: "50%",
-            background: "#e53935",
-          }}
-        />
-      )}
+      <div
+        style={{
+          position: "absolute",
+          top: 6,
+          right: 6,
+          width: 22,
+          height: 22,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.85)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
+        }}
+        title={`Classe: ${card.cardClass}`}
+      >
+        {CLASS_ICONS[card.cardClass]}
+        {isNew && (
+          <span
+            style={{
+              position: "absolute",
+              top: -2,
+              right: -2,
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              background: "#e53935",
+            }}
+          />
+        )}
+      </div>
       {duplicateCount > 0 && (
         <span
           style={{

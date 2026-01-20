@@ -13,21 +13,19 @@ const RARITY_COLORS: Record<Rarity, string> = {
   [Rarity.DIAMOND]: "#26c6da",
 };
 
-const CLASS_COLORS: Record<CardClass, string> = {
-  [CardClass.ATTACK]: "#ef5350",
-  [CardClass.DEFENSE]: "#42a5f5",
-  [CardClass.SUPPORT]: "#66bb6a",
-  [CardClass.CONTROL]: "#7e57c2",
-  [CardClass.CONTINUOUS]: "#26a69a",
-  [CardClass.EVADE]: "#26c6da",
-  [CardClass.CHAIN]: "#ff7043",
-  [CardClass.STRATEGY]: "#ffca28",
+const CLASS_ICONS: Record<CardClass, string> = {
+  [CardClass.ATTACK]: "⚔️",
+  [CardClass.DEFENSE]: "🛡️",
+  [CardClass.SUPPORT]: "✨",
+  [CardClass.CONTROL]: "🧿",
+  [CardClass.CONTINUOUS]: "🔁",
+  [CardClass.EVADE]: "💨",
+  [CardClass.CHAIN]: "⛓️",
+  [CardClass.STRATEGY]: "🧠",
 };
 
-function getCardGradient(card: Card) {
-  const rarityColor = RARITY_COLORS[card.rarity];
-  const classColor = CLASS_COLORS[card.cardClass];
-  return `linear-gradient(135deg, ${rarityColor}, ${classColor})`;
+function getCardBackground(card: Card) {
+  return RARITY_COLORS[card.rarity];
 }
 
 function formatPowerDisplay(card: Card) {
@@ -70,13 +68,14 @@ export function CardView({ card, onClick, selectable, style }: Props) {
     <div
       onClick={onClick}
       style={{
+        position: "relative",
         border: "1px solid rgba(0,0,0,0.45)",
         padding: 12,
         margin: 6,
         width: 140,
         height: 200,
         cursor: selectable ? "pointer" : "default",
-        background: getCardGradient(card),
+        background: getCardBackground(card),
         color: "#111",
         boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
         ...style,
@@ -106,6 +105,24 @@ export function CardView({ card, onClick, selectable, style }: Props) {
           ))}
         </div>
       )}
+      <div
+        style={{
+          position: "absolute",
+          top: 6,
+          right: 6,
+          width: 22,
+          height: 22,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.85)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
+        }}
+        title={`Classe: ${card.cardClass}`}
+      >
+        {CLASS_ICONS[card.cardClass]}
+      </div>
       <strong>{card.name}</strong>
       <div>Power: {formatPowerDisplay(card)}</div>
       <div>{card.cardClass}</div>
