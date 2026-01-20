@@ -228,8 +228,8 @@ export function TowerScreen() {
             ) : (
               <>
                 <h2>❌ Derrota</h2>
-                <button type="button" onClick={() => handleExit(floor)}>
-                  Sair
+                <button type="button" onClick={() => handleExit(1)}>
+                  Reiniciar
                 </button>
               </>
             )}
