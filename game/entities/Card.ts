@@ -26,6 +26,19 @@ export interface DotEffect {
   type: "DOT";
 }
 
+export type StatusEffect =
+  | {
+      type: "FROZEN";
+      roundsLeft: number;
+    }
+  | ({
+      type: "DOT";
+    } & DotEffect)
+  | {
+      type: "SHIELD";
+      shield: Shield;
+    };
+
 export class Card {
   readonly id: string;
   readonly name: string;
@@ -36,9 +49,7 @@ export class Card {
   power: number;
   buffPowerPctTotal: number;
   hp: number;
-  statusFrozenRounds: number;
-  dotList: DotEffect[];
-  shield: Shield | null;
+  statusEffects: StatusEffect[];
 
   constructor(props: CardProps) {
     this.id = props.id;
@@ -50,9 +61,7 @@ export class Card {
     this.power = this.calculateInitialPower();
     this.buffPowerPctTotal = 0;
     this.hp = this.power;
-    this.statusFrozenRounds = 0;
-    this.dotList = [];
-    this.shield = null;
+    this.statusEffects = [];
   }
 
   private calculateInitialPower(): number {
