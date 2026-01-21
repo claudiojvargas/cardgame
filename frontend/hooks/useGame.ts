@@ -7,6 +7,12 @@ import { AIDifficulty } from "../../game/ai/AIDifficulty";
 import type { IAgent } from "../../game/ai/IAgent";
 import { CombatEvent } from "../../game/core/CombatLog";
 
+export type GamePhase =
+  | "PLAYER_TURN"
+  | "AI_TURN"
+  | "ANIMATING"
+  | "GAME_OVER";
+
 export function useGame(initialState: GameState, agent?: IAgent) {
   const [state, setState] = useState<GameState>(initialState);
   const [lastAiAction, setLastAiAction] = useState<{
@@ -15,6 +21,8 @@ export function useGame(initialState: GameState, agent?: IAgent) {
     reason?: string;
   } | null>(null);
   const [lastCombatEvents, setLastCombatEvents] = useState<CombatEvent[]>([]);
+  const [combatHistory, setCombatHistory] = useState<CombatEvent[]>([]);
+  const [phase, setPhase] = useState<GamePhase>("PLAYER_TURN");
 
   const ai = useMemo(
     () => agent ?? new SimpleAIAgent(AIDifficulty.NORMAL),
@@ -25,7 +33,21 @@ export function useGame(initialState: GameState, agent?: IAgent) {
     setState(initialState);
     setLastAiAction(null);
     setLastCombatEvents([]);
+    setCombatHistory([]);
   }, [initialState]);
+
+  useEffect(() => {
+    if (state.status !== GameStatus.IN_PROGRESS) {
+      setPhase("GAME_OVER");
+      return;
+    }
+
+    if (state.currentPlayer.id === "AI") {
+      setPhase("AI_TURN");
+    } else {
+      setPhase("PLAYER_TURN");
+    }
+  }, [state]);
 
   useEffect(() => {
     if (state.status !== GameStatus.IN_PROGRESS) return;
@@ -39,6 +61,7 @@ export function useGame(initialState: GameState, agent?: IAgent) {
     );
     setLastAiAction(decision);
     setLastCombatEvents(result.events);
+    setCombatHistory(prev => [...prev, ...result.events]);
     setState(result.state);
   }, [ai, state]);
 
@@ -54,6 +77,7 @@ export function useGame(initialState: GameState, agent?: IAgent) {
 
     setLastAiAction(null);
     setLastCombatEvents(result.events);
+    setCombatHistory(prev => [...prev, ...result.events]);
     setState(result.state);
   }
 
@@ -62,5 +86,7 @@ export function useGame(initialState: GameState, agent?: IAgent) {
     playerAttack,
     lastAiAction,
     lastCombatEvents,
+    combatHistory,
+    phase,
   };
 }

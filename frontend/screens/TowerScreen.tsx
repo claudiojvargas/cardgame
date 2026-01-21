@@ -45,7 +45,39 @@ export function TowerScreen() {
     createIdleState(floor, rng)
   );
 
-  const { state, playerAttack, lastAiAction } = useGame(initialState);
+  const {
+    state,
+    playerAttack,
+    lastAiAction,
+    combatHistory,
+    phase,
+  } = useGame(initialState);
+
+  const recentEvents = useMemo(
+    () => combatHistory.slice(-5).reverse(),
+    [combatHistory]
+  );
+
+  function formatEvent(event: (typeof combatHistory)[number]) {
+    switch (event.type) {
+      case "attack_declared":
+        return `${event.attackerId} atacou ${event.defenderId}`;
+      case "damage_applied":
+        return `${event.sourceId} causou ${Math.round(event.amount)} em ${event.targetId}`;
+      case "card_destroyed":
+        return `${event.cardId} foi derrotada`;
+      case "dot_applied":
+        return `${event.sourceId} aplicou DOT em ${event.targetId}`;
+      case "shield_applied":
+        return `${event.targetId} recebeu escudo`;
+      case "proc_triggered":
+        return `${event.sourceId} ativou ${event.effect}`;
+      case "round_start":
+        return `Turno ${event.turn} começou`;
+      default:
+        return event.type;
+    }
+  }
 
   function startBattle(currentFloor: number) {
     setInitialState(createGameState(currentFloor));
@@ -165,6 +197,26 @@ export function TowerScreen() {
                 <p style={{ margin: 0, color: "#666" }}>
                   Aguardando ação do bot.
                 </p>
+              )}
+            </div>
+            <div>
+              <h3 style={{ marginTop: 0 }}>🎬 Fase</h3>
+              <p style={{ margin: 0, color: "#333" }}>{phase}</p>
+            </div>
+            <div>
+              <h3 style={{ marginTop: 0 }}>📜 Últimos eventos</h3>
+              {recentEvents.length === 0 ? (
+                <p style={{ margin: 0, color: "#666" }}>
+                  Nenhum evento ainda.
+                </p>
+              ) : (
+                <ul style={{ margin: 0, paddingLeft: 16 }}>
+                  {recentEvents.map((event, index) => (
+                    <li key={`${event.type}-${event.turn}-${index}`}>
+                      {formatEvent(event)}
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
             <div>
