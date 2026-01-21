@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { Card } from "../../game/entities/Card";
 import { calculateCardPower } from "../../game/systems/powerCalculator";
+import { getDots, getFrozenRounds, getShield } from "../../game/systems/StatusSystem";
 import { CardClass, Rarity } from "../../game/types/enums";
 
 const RARITY_COLORS: Record<Rarity, string> = {
@@ -43,13 +44,13 @@ function getStatusBadges(card: Card) {
   if (card.buffPowerPctTotal > 0) {
     badges.push({ label: "Buff de poder", emoji: "⚡" });
   }
-  if (card.shield) {
+  if (getShield(card)) {
     badges.push({ label: "Escudo ativo", emoji: "🛡️" });
   }
-  if (card.statusFrozenRounds > 0) {
+  if (getFrozenRounds(card) > 0) {
     badges.push({ label: "Congelado", emoji: "❄️" });
   }
-  if (card.dotList.length > 0) {
+  if (getDots(card).length > 0) {
     badges.push({ label: "DOT ativo", emoji: "☠️" });
   }
   return badges;

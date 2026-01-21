@@ -8,6 +8,7 @@ import { GameState } from "../../game/core/GameState";
 import { GameStatus } from "../../game/types/enums";
 
 import { TowerEnemyFactory } from "../../game/tower/TowerEnemyFactory";
+import { createSeededRng } from "../../game/utils/random";
 
 export function TowerScreen() {
   const [floor, setFloor] = useState(() => loadStoredFloor());
@@ -20,24 +21,28 @@ export function TowerScreen() {
   >([]);
   const [chestCounter, setChestCounter] = useState(1);
 
+  const rng = useMemo(() => createSeededRng(Date.now()), []);
+
   // Player é persistente na run
-  const player = useMemo(() => createPlayer(), []);
+  const player = useMemo(() => createPlayer(rng), [rng]);
 
   function createGameState(currentFloor: number): GameState {
     const enemyDeck = TowerEnemyFactory.createEnemy(currentFloor);
-    const enemy = new Player("AI", enemyDeck);
+    const enemy = new Player("AI", enemyDeck, rng);
 
     return new GameState(
       [player, enemy],
-      Math.random() > 0.5 ? 0 : 1,
+      rng.next() > 0.5 ? 0 : 1,
       1,
-      GameStatus.IN_PROGRESS
+      GameStatus.IN_PROGRESS,
+      undefined,
+      rng
     );
   }
 
   // Estado inicial da batalha atual
   const [initialState, setInitialState] = useState<GameState>(() =>
-    createIdleState(floor)
+    createIdleState(floor, rng)
   );
 
   const { state, playerAttack, lastAiAction } = useGame(initialState);
@@ -50,7 +55,7 @@ export function TowerScreen() {
   function handleExit(nextFloor: number) {
     setFloor(nextFloor);
     saveStoredFloor(nextFloor);
-    setInitialState(createIdleState(nextFloor));
+    setInitialState(createIdleState(nextFloor, rng));
     setBattleActive(false);
   }
 
@@ -145,10 +150,17 @@ export function TowerScreen() {
             <div>
               <h3 style={{ marginTop: 0 }}>🧠 Última jogada</h3>
               {lastAiAction ? (
-                <p style={{ margin: 0, color: "#333" }}>
-                  🤖 {lastAiAction.attackerId} atacou{" "}
-                  {lastAiAction.defenderId}
-                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <p style={{ margin: 0, color: "#333" }}>
+                    🤖 {lastAiAction.attackerId} atacou{" "}
+                    {lastAiAction.defenderId}
+                  </p>
+                  {lastAiAction.reason && (
+                    <p style={{ margin: 0, color: "#555", fontSize: 12 }}>
+                      {lastAiAction.reason}
+                    </p>
+                  )}
+                </div>
               ) : (
                 <p style={{ margin: 0, color: "#666" }}>
                   Aguardando ação do bot.
@@ -258,14 +270,16 @@ function saveStoredFloor(floor: number) {
   window.localStorage.setItem("tower-floor", String(floor));
 }
 
-function createIdleState(currentFloor: number) {
-  const player = createPlayer();
+function createIdleState(currentFloor: number, rng: ReturnType<typeof createSeededRng>) {
+  const player = createPlayer(rng);
   const enemyDeck = TowerEnemyFactory.createEnemy(currentFloor);
-  const enemy = new Player("AI", enemyDeck);
+  const enemy = new Player("AI", enemyDeck, rng);
   return new GameState(
     [player, enemy],
     0,
     0,
-    GameStatus.FINISHED
+    GameStatus.FINISHED,
+    undefined,
+    rng
   );
 }
