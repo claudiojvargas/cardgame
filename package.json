@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "simulate": "ts-node game/simulate.ts",
     "test:core": "ts-node tools/coreCombatTests.ts",
+    "simulate-balance": "ts-node tools/simulateBalance.ts",
     "build": "tsc",
     "start": "node dist/simulate.ts",
     "seed-cards": "ts-node game/seedCards.ts",
