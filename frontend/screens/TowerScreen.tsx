@@ -150,10 +150,17 @@ export function TowerScreen() {
             <div>
               <h3 style={{ marginTop: 0 }}>🧠 Última jogada</h3>
               {lastAiAction ? (
-                <p style={{ margin: 0, color: "#333" }}>
-                  🤖 {lastAiAction.attackerId} atacou{" "}
-                  {lastAiAction.defenderId}
-                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <p style={{ margin: 0, color: "#333" }}>
+                    🤖 {lastAiAction.attackerId} atacou{" "}
+                    {lastAiAction.defenderId}
+                  </p>
+                  {lastAiAction.reason && (
+                    <p style={{ margin: 0, color: "#555", fontSize: 12 }}>
+                      {lastAiAction.reason}
+                    </p>
+                  )}
+                </div>
               ) : (
                 <p style={{ margin: 0, color: "#666" }}>
                   Aguardando ação do bot.

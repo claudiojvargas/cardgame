@@ -4,17 +4,22 @@ import { BattleResolver } from "../../game/core/BattleResolver";
 import { GameStatus } from "../../game/types/enums";
 import { SimpleAIAgent } from "../../game/ai/SimpleAIAgent";
 import { AIDifficulty } from "../../game/ai/AIDifficulty";
+import type { IAgent } from "../../game/ai/IAgent";
 import { CombatEvent } from "../../game/core/CombatLog";
 
-export function useGame(initialState: GameState) {
+export function useGame(initialState: GameState, agent?: IAgent) {
   const [state, setState] = useState<GameState>(initialState);
   const [lastAiAction, setLastAiAction] = useState<{
     attackerId: string;
     defenderId: string;
+    reason?: string;
   } | null>(null);
   const [lastCombatEvents, setLastCombatEvents] = useState<CombatEvent[]>([]);
 
-  const ai = useMemo(() => new SimpleAIAgent(AIDifficulty.NORMAL), []);
+  const ai = useMemo(
+    () => agent ?? new SimpleAIAgent(AIDifficulty.NORMAL),
+    [agent]
+  );
 
   useEffect(() => {
     setState(initialState);
