@@ -60,10 +60,10 @@ export function CardsScreen() {
     saveInventory(inventory);
   }, [inventory]);
 
-  useEffect(() => () => {
+  useEffect(() => {
     if (inventory.newCards.length === 0) return;
-    saveInventory({ ...inventory, newCards: [] });
-  }, [inventory]);
+    setInventory(current => ({ ...current, newCards: [] }));
+  }, []);
 
   function getAwakeningValue(cardId: string) {
     return inventory.awakenings[cardId] ?? 0;
