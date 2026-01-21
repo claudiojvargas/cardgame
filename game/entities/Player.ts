@@ -1,6 +1,7 @@
 import { Card, Shield } from "./Card";
 import { Deck } from "./Deck";
 import { CardClass, Rarity } from "../types/enums";
+import { RandomNumberGenerator, defaultRng } from "../utils/random";
 
 export class Player {
   private static readonly MAX_FIELD_SIZE = 3;
@@ -8,10 +9,12 @@ export class Player {
   readonly deck: Deck;
   field: Card[];
   drawPile: Card[];
+  private readonly rng: RandomNumberGenerator;
 
-  constructor(id: string, deck: Deck) {
+  constructor(id: string, deck: Deck, rng: RandomNumberGenerator = defaultRng) {
     this.id = id;
     this.deck = deck;
+    this.rng = rng;
     this.drawPile = this.shuffle(deck.cards.map(c => c.clone()));
     this.field = [];
     this.drawInitialHand(3);
@@ -31,7 +34,12 @@ export class Player {
   }
 
   private shuffle(cards: Card[]): Card[] {
-    return [...cards].sort(() => Math.random() - 0.5);
+    const shuffled = [...cards];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(this.rng.next() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   }
 
   private drawInitialHand(count: number) {
@@ -96,12 +104,12 @@ export class Player {
     if (pool.length <= count) {
       return pool;
     }
-    return shuffleArray(pool).slice(0, count);
+    return shuffleArray(pool, this.rng).slice(0, count);
   }
 
   private rollProc(card: Card, chance: number, onProc: () => void) {
     if (!isProcEligible(card.rarity)) return;
-    if (Math.random() < chance) {
+    if (this.rng.next() < chance) {
       onProc();
     }
   }
@@ -116,8 +124,13 @@ function isProcEligible(rarity: Rarity) {
   );
 }
 
-function shuffleArray<T>(items: T[]): T[] {
-  return [...items].sort(() => Math.random() - 0.5);
+function shuffleArray<T>(items: T[], rng: RandomNumberGenerator): T[] {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng.next() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 function buildShield(type: Shield["type"]): Shield {

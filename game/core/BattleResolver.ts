@@ -1,7 +1,10 @@
 import { GameState } from "./GameState";
 import { GameStatus } from "../types/enums";
 import { Card, DotEffect, Shield } from "../entities/Card";
+import { Player } from "../entities/Player";
 import { CardClass, Rarity } from "../types/enums";
+import { BattleResult, CombatEvent } from "./CombatLog";
+import { RandomNumberGenerator } from "../utils/random";
 
 export class BattleResolver {
   static resolveAttack(
@@ -9,6 +12,15 @@ export class BattleResolver {
     attackerCardId: string,
     defenderCardId: string
   ): GameState {
+    return this.resolveAttackWithLog(state, attackerCardId, defenderCardId)
+      .state;
+  }
+
+  static resolveAttackWithLog(
+    state: GameState,
+    attackerCardId: string,
+    defenderCardId: string
+  ): BattleResult {
     if (state.status !== GameStatus.IN_PROGRESS) {
       throw new Error("Game already finished");
     }
@@ -20,24 +32,43 @@ export class BattleResolver {
       throw new Error("Invalid card selection");
     }
 
-    const players = [...state.players] as [any, any];
+    const events: CombatEvent[] = [];
+    const players = [...state.players] as [Player, Player];
     const current = players[state.currentPlayerIndex];
     const opponent = players[state.currentPlayerIndex === 0 ? 1 : 0];
+    const rng = state.rng;
 
-    applyStartRoundEffects(current, opponent);
-    applyStartRoundEffects(opponent, current);
+    events.push({
+      type: "round_start",
+      playerId: current.id,
+      turn: state.turn,
+    });
+
+    applyStartRoundEffects(current, opponent, rng, events, state.turn);
+    applyStartRoundEffects(opponent, current, rng, events, state.turn);
 
     if (!canAttack(attacker)) {
-      return new GameState(
-        players,
-        state.currentPlayerIndex === 0 ? 1 : 0,
-        state.turn + 1,
-        state.status,
-        state.winnerId
-      );
+      return {
+        state: new GameState(
+          players,
+          state.currentPlayerIndex === 0 ? 1 : 0,
+          state.turn + 1,
+          state.status,
+          state.winnerId,
+          rng
+        ),
+        events,
+      };
     }
 
-    resolveAttackFlow(attacker, defender, current, opponent);
+    events.push({
+      type: "attack_declared",
+      attackerId: attacker.id,
+      defenderId: defender.id,
+      turn: state.turn,
+    });
+
+    resolveAttackFlow(attacker, defender, current, opponent, rng, events, state.turn);
 
     // CHECK END GAME
     let status = GameStatus.IN_PROGRESS;
@@ -55,21 +86,28 @@ export class BattleResolver {
       status = GameStatus.FINISHED;
     }
 
-    return new GameState(
-      players,
-      state.currentPlayerIndex === 0 ? 1 : 0,
-      state.turn + 1,
-      status,
-      winnerId
-    );
+    return {
+      state: new GameState(
+        players,
+        state.currentPlayerIndex === 0 ? 1 : 0,
+        state.turn + 1,
+        status,
+        winnerId,
+        rng
+      ),
+      events,
+    };
   }
 }
 
 function resolveAttackFlow(
   attacker: Card,
   defender: Card,
-  current: any,
-  opponent: any
+  current: Player,
+  opponent: Player,
+  rng: RandomNumberGenerator,
+  events: CombatEvent[],
+  turn: number
 ) {
   if (!canAttack(attacker)) return;
 
@@ -78,16 +116,22 @@ function resolveAttackFlow(
   }
 
   const damage = getEffectivePower(attacker);
-  applyDamage(defender, damage, attacker, opponent, current);
+  applyDamage(defender, damage, attacker, opponent, current, false, rng, events, turn);
 
-  applyPostAttackEffects(attacker, defender, current, opponent, damage);
+  applyPostAttackEffects(attacker, defender, current, opponent, damage, rng, events, turn);
 }
 
 function canAttack(card: Card) {
   return card.statusFrozenRounds === 0;
 }
 
-function applyStartRoundEffects(current: any, opponent: any) {
+function applyStartRoundEffects(
+  current: Player,
+  opponent: Player,
+  rng: RandomNumberGenerator,
+  events: CombatEvent[],
+  turn: number
+) {
   current.field.forEach((card: Card) => {
     if (card.statusFrozenRounds > 0) {
       card.statusFrozenRounds -= 1;
@@ -95,7 +139,7 @@ function applyStartRoundEffects(current: any, opponent: any) {
 
     if (card.dotList.length > 0) {
       card.dotList.forEach(dot => {
-        applyDamage(card, dot.tickDamage, card, current, opponent, true);
+        applyDamage(card, dot.tickDamage, card, current, opponent, true, rng, events, turn);
       });
       card.dotList = card.dotList
         .map(dot => ({ ...dot, roundsLeft: dot.roundsLeft - 1 }))
@@ -103,14 +147,14 @@ function applyStartRoundEffects(current: any, opponent: any) {
     }
 
     if (card.cardClass === CardClass.STRATEGY) {
-      const targets = pickRandomTargets(opponent.field, 2);
+      const targets = pickRandomTargets(opponent.field, 2, rng);
       targets.forEach(target => {
-        applyDamage(target, card.basePower * 0.25, card, opponent, current);
+        applyDamage(target, card.basePower * 0.25, card, opponent, current, false, rng, events, turn);
       });
 
-      rollProc(card, 0.1, () => {
+      rollProc(card, 0.1, "STRATEGY_SHIELD_TEAM", rng, events, turn, () => {
         current.field.forEach((ally: Card) => {
-          ally.shield = buildShield("TOTAL_REFLECT_100");
+          applyShield(ally, "TOTAL_REFLECT_100", events, turn);
         });
       });
     }
@@ -121,44 +165,91 @@ function applyDamage(
   defender: Card,
   damage: number,
   attacker: Card,
-  defenderOwner: any,
-  attackerOwner: any,
-  isDot = false
+  defenderOwner: Player,
+  attackerOwner: Player,
+  isDot: boolean,
+  rng: RandomNumberGenerator,
+  events: CombatEvent[],
+  turn: number
 ) {
   defender.hp -= damage;
+  events.push({
+    type: "damage_applied",
+    targetId: defender.id,
+    sourceId: attacker.id,
+    amount: damage,
+    isDot,
+    turn,
+  });
 
   if (defender.shield?.consumedOnDamaged) {
     const reflect = defender.shield.type === "TOTAL_REFLECT_100" ? 1 : 0.5;
-    applyReflectedDamage(attacker, damage * reflect, attackerOwner);
+    applyReflectedDamage(attacker, damage * reflect, attackerOwner, defender.id, events, turn);
     defender.shield = null;
   }
 
   if (defender.hp <= 0) {
     defenderOwner.removeCard(defender.id);
+    events.push({
+      type: "card_destroyed",
+      cardId: defender.id,
+      ownerId: defenderOwner.id,
+      turn,
+    });
   }
 
   if (!isDot) {
-    applyOnHitEffects(attacker, defender, attackerOwner, defenderOwner);
+    applyOnHitEffects(attacker, defender, attackerOwner, defenderOwner, rng, events, turn);
   }
 }
 
-function applyReflectedDamage(attacker: Card, damage: number, attackerOwner: any) {
+function applyReflectedDamage(
+  attacker: Card,
+  damage: number,
+  attackerOwner: Player,
+  sourceId: string,
+  events: CombatEvent[],
+  turn: number
+) {
   if (attacker.cardClass === CardClass.EVADE) {
     return;
   }
   attacker.hp -= damage;
+  events.push({
+    type: "damage_applied",
+    targetId: attacker.id,
+    sourceId,
+    amount: damage,
+    isDot: false,
+    turn,
+  });
   if (attacker.hp <= 0) {
     attackerOwner.removeCard(attacker.id);
+    events.push({
+      type: "card_destroyed",
+      cardId: attacker.id,
+      ownerId: attackerOwner.id,
+      turn,
+    });
   }
 }
 
-function applyOnHitEffects(attacker: Card, defender: Card, current: any, opponent: any) {
+function applyOnHitEffects(
+  attacker: Card,
+  defender: Card,
+  current: Player,
+  opponent: Player,
+  rng: RandomNumberGenerator,
+  events: CombatEvent[],
+  turn: number
+) {
   if (attacker.cardClass === CardClass.CONTROL) {
     defender.statusFrozenRounds = Math.max(defender.statusFrozenRounds, 4);
-    rollProc(attacker, 0.05, () => {
+    rollProc(attacker, 0.05, "CONTROL_FREEZE_CHAIN", rng, events, turn, () => {
       const extra = pickRandomTargets(
         opponent.field.filter((card: Card) => card.id !== defender.id),
-        1
+        1,
+        rng
       );
       extra.forEach(target => {
         target.statusFrozenRounds = Math.max(target.statusFrozenRounds, 4);
@@ -167,8 +258,8 @@ function applyOnHitEffects(attacker: Card, defender: Card, current: any, opponen
   }
 
   if (attacker.cardClass === CardClass.EVADE) {
-    rollProc(attacker, 0.05, () => {
-      attacker.shield = buildShield("TOTAL_REFLECT_100");
+    rollProc(attacker, 0.05, "EVADE_SHIELD", rng, events, turn, () => {
+      applyShield(attacker, "TOTAL_REFLECT_100", events, turn);
     });
   }
 }
@@ -176,9 +267,12 @@ function applyOnHitEffects(attacker: Card, defender: Card, current: any, opponen
 function applyPostAttackEffects(
   attacker: Card,
   defender: Card,
-  current: any,
-  opponent: any,
-  damage: number
+  current: Player,
+  opponent: Player,
+  damage: number,
+  rng: RandomNumberGenerator,
+  events: CombatEvent[],
+  turn: number
 ) {
   if (attacker.cardClass === CardClass.CONTINUOUS) {
     const dot: DotEffect = {
@@ -188,14 +282,23 @@ function applyPostAttackEffects(
       type: "DOT",
     };
     defender.dotList.push(dot);
+    events.push({
+      type: "dot_applied",
+      targetId: defender.id,
+      sourceId: attacker.id,
+      rounds: dot.roundsLeft,
+      tickDamage: dot.tickDamage,
+      turn,
+    });
 
-    rollProc(attacker, 0.05, () => {
+    rollProc(attacker, 0.05, "CONTINUOUS_EXTRA_ATTACK", rng, events, turn, () => {
       const extraTargets = pickRandomTargets(
         opponent.field.filter((card: Card) => card.id !== defender.id),
-        1
+        1,
+        rng
       );
       extraTargets.forEach(target => {
-        resolveAttackFlow(attacker, target, current, opponent);
+        resolveAttackFlow(attacker, target, current, opponent, rng, events, turn);
       });
     });
   }
@@ -203,21 +306,22 @@ function applyPostAttackEffects(
   if (attacker.cardClass === CardClass.CHAIN) {
     const extraTargets = pickRandomTargets(
       opponent.field.filter((card: Card) => card.id !== defender.id),
-      1
+      1,
+      rng
     );
     extraTargets.forEach(target => {
-      applyDamage(target, damage, attacker, opponent, current);
+      applyDamage(target, damage, attacker, opponent, current, false, rng, events, turn);
     });
 
-    rollProc(attacker, 0.05, () => {
+    rollProc(attacker, 0.05, "CHAIN_ATTACK_ALL", rng, events, turn, () => {
       opponent.field.forEach((target: Card) => {
-        applyDamage(target, damage, attacker, opponent, current);
+        applyDamage(target, damage, attacker, opponent, current, false, rng, events, turn);
       });
     });
   }
 
   if (attacker.cardClass === CardClass.ATTACK) {
-    rollProc(attacker, 0.05, () => {
+    rollProc(attacker, 0.05, "ATTACK_TEAM_BUFF", rng, events, turn, () => {
       current.field.forEach((ally: Card) => {
         ally.buffPowerPctTotal += 0.25;
       });
@@ -225,9 +329,9 @@ function applyPostAttackEffects(
   }
 
   if (attacker.cardClass === CardClass.DEFENSE) {
-    rollProc(attacker, 0.05, () => {
+    rollProc(attacker, 0.05, "DEFENSE_SHIELD_TEAM", rng, events, turn, () => {
       current.field.forEach((ally: Card) => {
-        ally.shield = buildShield("TOTAL_REFLECT_100");
+        applyShield(ally, "TOTAL_REFLECT_100", events, turn);
       });
     });
   }
@@ -237,9 +341,24 @@ function getEffectivePower(card: Card) {
   return card.power * (1 + card.buffPowerPctTotal);
 }
 
-function rollProc(card: Card, chance: number, onProc: () => void) {
+function rollProc(
+  card: Card,
+  chance: number,
+  effect: string,
+  rng: RandomNumberGenerator,
+  events: CombatEvent[],
+  turn: number,
+  onProc: () => void
+) {
   if (!isProcEligible(card.rarity)) return;
-  if (Math.random() < chance) {
+  if (rng.next() < chance) {
+    events.push({
+      type: "proc_triggered",
+      sourceId: card.id,
+      chance,
+      effect,
+      turn,
+    });
     onProc();
   }
 }
@@ -262,10 +381,33 @@ function buildShield(type: Shield["type"]): Shield {
   };
 }
 
-function pickRandomTargets<T>(targets: T[], count: number): T[] {
+function applyShield(
+  target: Card,
+  type: Shield["type"],
+  events: CombatEvent[],
+  turn: number
+) {
+  target.shield = buildShield(type);
+  events.push({
+    type: "shield_applied",
+    targetId: target.id,
+    shieldType: type,
+    turn,
+  });
+}
+
+function pickRandomTargets<T>(
+  targets: T[],
+  count: number,
+  rng: RandomNumberGenerator
+): T[] {
   if (targets.length <= count) {
     return targets;
   }
-  const pool = [...targets].sort(() => Math.random() - 0.5);
+  const pool = [...targets];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng.next() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
   return pool.slice(0, count);
 }
