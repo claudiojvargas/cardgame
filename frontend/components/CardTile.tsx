@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { Card } from "../../game/entities/Card";
 import { calculateCardPower } from "../../game/systems/powerCalculator";
 import { CardClass, Rarity } from "../../game/types/enums";
@@ -28,9 +27,12 @@ function getCardBackground(card: Card) {
   return RARITY_COLORS[card.rarity];
 }
 
-function formatPowerDisplay(card: Card) {
+function formatPowerDisplay(card: Card, awakeningLevel?: number) {
   const buffPct = card.buffPowerPctTotal ?? 0;
-  const basePower = calculateCardPower(card);
+  const basePower = calculateCardPower({
+    ...card,
+    awakening: awakeningLevel ?? card.awakening,
+  });
   const effectivePower = Math.round(basePower * (1 + buffPct));
   if (buffPct > 0) {
     return `${effectivePower} (+${Math.round(buffPct * 100)}%)`;
@@ -57,36 +59,54 @@ function getStatusBadges(card: Card) {
 
 interface Props {
   card: Card;
-  onClick?: () => void;
+  obtained: boolean;
+  isNew?: boolean;
+  duplicateCount?: number;
+  awakeningValue?: number;
   selectable?: boolean;
-  style?: CSSProperties;
+  onClick?: () => void;
 }
 
-export function CardView({ card, onClick, selectable, style }: Props) {
+export function CardTile({
+  card,
+  obtained,
+  isNew = false,
+  duplicateCount = 0,
+  awakeningValue,
+  selectable,
+  onClick,
+}: Props) {
+  const awakeningDisplay = awakeningValue ?? card.awakening;
+  const isSelectable = selectable ?? obtained;
+  const cursor = !obtained ? "not-allowed" : isSelectable ? "pointer" : "default";
   const badges = getStatusBadges(card);
   return (
-    <div
-      onClick={onClick}
+    <button
+      type="button"
+      onClick={obtained && isSelectable ? onClick : undefined}
       style={{
         position: "relative",
-        border: "1px solid rgba(0,0,0,0.45)",
+        height: 200,
+        width: 140,
         padding: 12,
         margin: 6,
-        width: 140,
-        height: 200,
-        cursor: selectable ? "pointer" : "default",
-        background: getCardBackground(card),
-        color: "#111",
-        boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
-        ...style,
+        borderRadius: 8,
+        border: "1px solid #666",
+        textAlign: "left",
+        background: obtained ? getCardBackground(card) : "#d9d9d9",
+        color: "#000",
+        cursor,
+        opacity: obtained ? 1 : 0.7,
       }}
     >
       {badges.length > 0 && (
         <div
           style={{
+            position: "absolute",
+            top: 6,
+            left: 6,
             display: "flex",
             gap: 4,
-            marginBottom: 6,
           }}
         >
           {badges.map(badge => (
@@ -122,11 +142,56 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         title={`Classe: ${card.cardClass}`}
       >
         {CLASS_ICONS[card.cardClass]}
+        {isNew && (
+          <span
+            style={{
+              position: "absolute",
+              top: -2,
+              right: -2,
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              background: "#e53935",
+            }}
+          />
+        )}
       </div>
-      <strong>{card.name}</strong>
-      <div>Power: {formatPowerDisplay(card)}</div>
-      <div>{card.cardClass}</div>
-      <div>{card.rarity}</div>
-    </div>
+      {duplicateCount > 0 && (
+        <span
+          style={{
+            position: "absolute",
+            bottom: 8,
+            left: 8,
+            padding: "2px 6px",
+            borderRadius: 10,
+            background: "#111",
+            color: "#fff",
+            fontSize: 12,
+          }}
+        >
+          x{duplicateCount}
+        </span>
+      )}
+      <span
+        style={{
+          position: "absolute",
+          bottom: 8,
+          right: 8,
+          padding: "2px 6px",
+          borderRadius: 10,
+          background: "#e0e0e0",
+          color: "#000",
+          fontSize: 12,
+        }}
+      >
+        Desp {awakeningDisplay}
+      </span>
+      <strong style={{ display: "block", marginBottom: 8 }}>
+        {card.name}
+      </strong>
+      <div>Poder: {formatPowerDisplay(card, awakeningDisplay)}</div>
+      <div>Raridade: {card.rarity}</div>
+      <div>Classe: {card.cardClass}</div>
+    </button>
   );
 }
