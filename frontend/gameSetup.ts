@@ -3,6 +3,7 @@ import { Deck } from "../game/entities/Deck";
 import { Player } from "../game/entities/Player";
 import { CardClass, Rarity } from "../game/types/enums";
 import { CARDS } from "../game/data/cards.catalog";
+import { RandomNumberGenerator, defaultRng } from "../game/utils/random";
 
 const DECK_STORAGE_KEY = "player-deck";
 
@@ -23,7 +24,7 @@ const card = (
   });
 
 // 🔹 Deck base do jogador (fixo na run)
-export function createPlayer() {
+export function createPlayer(rng: RandomNumberGenerator = defaultRng) {
   const savedDeckIds = loadDeckFromStorage();
   const savedCards = savedDeckIds
     .map(id => CARDS.find(cardData => cardData.id === id))
@@ -43,7 +44,7 @@ export function createPlayer() {
         ]
   );
 
-  return new Player("Player", deck);
+  return new Player("Player", deck, rng);
 }
 
 function loadDeckFromStorage(): string[] {

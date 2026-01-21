@@ -1,5 +1,6 @@
 import { Player } from "../entities/Player";
 import { GameStatus } from "../types/enums";
+import { RandomNumberGenerator, defaultRng } from "../utils/random";
 
 export class GameState {
   readonly players: [Player, Player];
@@ -7,19 +8,22 @@ export class GameState {
   readonly turn: number;
   readonly status: GameStatus;
   readonly winnerId?: string;
+  readonly rng: RandomNumberGenerator;
 
   constructor(
     players: [Player, Player],
     currentPlayerIndex: number,
     turn: number,
     status: GameStatus,
-    winnerId?: string
+    winnerId?: string,
+    rng: RandomNumberGenerator = defaultRng
   ) {
     this.players = players;
     this.currentPlayerIndex = currentPlayerIndex;
     this.turn = turn;
     this.status = status;
     this.winnerId = winnerId;
+    this.rng = rng;
   }
 
   get currentPlayer(): Player {
