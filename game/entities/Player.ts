@@ -1,7 +1,8 @@
-import { Card, Shield } from "./Card";
+import { Card } from "./Card";
 import { Deck } from "./Deck";
 import { CardClass, Rarity } from "../types/enums";
 import { RandomNumberGenerator, defaultRng } from "../utils/random";
+import { createShield, setShield } from "../systems/StatusSystem";
 
 export class Player {
   private static readonly MAX_FIELD_SIZE = 3;
@@ -67,11 +68,11 @@ export class Player {
       case CardClass.DEFENSE: {
         const allies = this.pickRandomAllies(card, 2);
         allies.forEach(ally => {
-          ally.shield = buildShield("REFLECT_50");
+          setShield(ally, createShield("REFLECT_50"));
         });
         this.rollProc(card, 0.05, () => {
           allies.forEach(ally => {
-            ally.shield = buildShield("TOTAL_REFLECT_100");
+            setShield(ally, createShield("TOTAL_REFLECT_100"));
           });
         });
         break;
@@ -131,13 +132,4 @@ function shuffleArray<T>(items: T[], rng: RandomNumberGenerator): T[] {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
-}
-
-function buildShield(type: Shield["type"]): Shield {
-  return {
-    type,
-    usesLeft: 1,
-    consumedOnAttack: true,
-    consumedOnDamaged: true,
-  };
 }

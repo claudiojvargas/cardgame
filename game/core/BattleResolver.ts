@@ -5,6 +5,18 @@ import { Player } from "../entities/Player";
 import { CardClass, Rarity } from "../types/enums";
 import { BattleResult, CombatEvent } from "./CombatLog";
 import { RandomNumberGenerator } from "../utils/random";
+import {
+  addDot,
+  applyFrozen,
+  consumeShieldOnAttack,
+  consumeShieldOnDamaged,
+  createShield,
+  decrementFrozen,
+  getDots,
+  getFrozenRounds,
+  tickDots,
+  setShield,
+} from "../systems/StatusSystem";
 
 export class BattleResolver {
   static resolveAttack(
@@ -111,9 +123,7 @@ function resolveAttackFlow(
 ) {
   if (!canAttack(attacker)) return;
 
-  if (attacker.shield?.consumedOnAttack) {
-    attacker.shield = null;
-  }
+  consumeShieldOnAttack(attacker);
 
   const damage = getEffectivePower(attacker);
   applyDamage(defender, damage, attacker, opponent, current, false, rng, events, turn);
@@ -122,7 +132,7 @@ function resolveAttackFlow(
 }
 
 function canAttack(card: Card) {
-  return card.statusFrozenRounds === 0;
+  return getFrozenRounds(card) === 0;
 }
 
 function applyStartRoundEffects(
@@ -133,17 +143,16 @@ function applyStartRoundEffects(
   turn: number
 ) {
   current.field.forEach((card: Card) => {
-    if (card.statusFrozenRounds > 0) {
-      card.statusFrozenRounds -= 1;
+    if (getFrozenRounds(card) > 0) {
+      decrementFrozen(card);
     }
 
-    if (card.dotList.length > 0) {
-      card.dotList.forEach(dot => {
+    const dots = getDots(card);
+    if (dots.length > 0) {
+      dots.forEach(dot => {
         applyDamage(card, dot.tickDamage, card, current, opponent, true, rng, events, turn);
       });
-      card.dotList = card.dotList
-        .map(dot => ({ ...dot, roundsLeft: dot.roundsLeft - 1 }))
-        .filter(dot => dot.roundsLeft > 0);
+      tickDots(card);
     }
 
     if (card.cardClass === CardClass.STRATEGY) {
@@ -182,10 +191,10 @@ function applyDamage(
     turn,
   });
 
-  if (defender.shield?.consumedOnDamaged) {
-    const reflect = defender.shield.type === "TOTAL_REFLECT_100" ? 1 : 0.5;
+  const shield = consumeShieldOnDamaged(defender);
+  if (shield) {
+    const reflect = shield.type === "TOTAL_REFLECT_100" ? 1 : 0.5;
     applyReflectedDamage(attacker, damage * reflect, attackerOwner, defender.id, events, turn);
-    defender.shield = null;
   }
 
   if (defender.hp <= 0) {
@@ -244,7 +253,7 @@ function applyOnHitEffects(
   turn: number
 ) {
   if (attacker.cardClass === CardClass.CONTROL) {
-    defender.statusFrozenRounds = Math.max(defender.statusFrozenRounds, 4);
+    applyFrozen(defender, 4);
     rollProc(attacker, 0.05, "CONTROL_FREEZE_CHAIN", rng, events, turn, () => {
       const extra = pickRandomTargets(
         opponent.field.filter((card: Card) => card.id !== defender.id),
@@ -252,7 +261,7 @@ function applyOnHitEffects(
         rng
       );
       extra.forEach(target => {
-        target.statusFrozenRounds = Math.max(target.statusFrozenRounds, 4);
+        applyFrozen(target, 4);
       });
     });
   }
@@ -281,7 +290,7 @@ function applyPostAttackEffects(
       sourceId: attacker.id,
       type: "DOT",
     };
-    defender.dotList.push(dot);
+    addDot(defender, dot);
     events.push({
       type: "dot_applied",
       targetId: defender.id,
@@ -372,22 +381,13 @@ function isProcEligible(rarity: Rarity) {
   );
 }
 
-function buildShield(type: Shield["type"]): Shield {
-  return {
-    type,
-    usesLeft: 1,
-    consumedOnAttack: true,
-    consumedOnDamaged: true,
-  };
-}
-
 function applyShield(
   target: Card,
   type: Shield["type"],
   events: CombatEvent[],
   turn: number
 ) {
-  target.shield = buildShield(type);
+  setShield(target, createShield(type));
   events.push({
     type: "shield_applied",
     targetId: target.id,
