@@ -193,6 +193,7 @@ export function CardTile({
       <div>Poder: {formatPowerDisplay(card, awakeningDisplay)}</div>
       <div>Raridade: {card.rarity}</div>
       <div>Classe: {card.cardClass}</div>
+      <div>Região: {card.regiao}</div>
     </button>
   );
 }

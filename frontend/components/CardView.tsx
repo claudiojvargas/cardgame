@@ -128,6 +128,7 @@ export function CardView({ card, onClick, selectable, style }: Props) {
       <div>Power: {formatPowerDisplay(card)}</div>
       <div>{card.cardClass}</div>
       <div>{card.rarity}</div>
+      <div>{card.regiao}</div>
     </div>
   );
 }
