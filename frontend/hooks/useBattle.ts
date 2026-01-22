@@ -13,7 +13,7 @@ export type GamePhase =
   | "ANIMATING"
   | "GAME_OVER";
 
-export function useGame(initialState: GameState, agent?: IAgent) {
+export function useBattle(initialState: GameState, agent?: IAgent) {
   const [state, setState] = useState<GameState>(initialState);
   const [lastAiAction, setLastAiAction] = useState<{
     attackerId: string;

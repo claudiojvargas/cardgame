@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { GameBoard } from "../components/GameBoard";
+import { useBattle } from "../hooks/useBattle";
 import { useGame } from "../hooks/useGame";
 import { createPlayer } from "../gameSetup";
 
@@ -9,8 +10,10 @@ import { GameStatus } from "../../game/types/enums";
 
 import { TowerEnemyFactory } from "../../game/tower/TowerEnemyFactory";
 import { createSeededRng } from "../../game/utils/random";
+import { rewardByFloor } from "../../game/tower/TowerRewards";
 
 export function TowerScreen() {
+  const { actions } = useGame();
   const [floor, setFloor] = useState(() => loadStoredFloor());
   const [battleActive, setBattleActive] = useState(false);
   const [floorClears, setFloorClears] = useState<Record<number, number>>(
@@ -51,7 +54,7 @@ export function TowerScreen() {
     lastAiAction,
     combatHistory,
     phase,
-  } = useGame(initialState);
+  } = useBattle(initialState);
 
   const recentEvents = useMemo(
     () => combatHistory.slice(-5).reverse(),
@@ -82,6 +85,7 @@ export function TowerScreen() {
   function startBattle(currentFloor: number) {
     setInitialState(createGameState(currentFloor));
     setBattleActive(true);
+    actions.recordTowerRunStart();
   }
 
   function handleExit(nextFloor: number) {
@@ -106,6 +110,19 @@ export function TowerScreen() {
       ]);
       return { ...prev, [currentFloor]: nextCount };
     });
+  }
+
+  function grantTowerRewards(currentFloor: number) {
+    const reward = rewardByFloor(currentFloor);
+    if (reward.gold > 0) {
+      actions.addCurrency("gold", reward.gold);
+    }
+    if (reward.blueDiamonds) {
+      actions.addCurrency("diamonds", reward.blueDiamonds);
+    }
+    if (reward.chestId) {
+      grantChest(currentFloor);
+    }
   }
 
   const startLabel = floor > 1 ? "Continuar" : "Iniciar";
@@ -270,7 +287,8 @@ export function TowerScreen() {
                     type="button"
                     onClick={() => {
                       const nextFloor = floor + 1;
-                      grantChest(floor);
+                      actions.recordTowerResult({ win: true, floor });
+                      grantTowerRewards(floor);
                       setFloor(nextFloor);
                       startBattle(nextFloor);
                     }}
@@ -281,7 +299,8 @@ export function TowerScreen() {
                     type="button"
                     onClick={() => {
                       const nextFloor = floor + 1;
-                      grantChest(floor);
+                      actions.recordTowerResult({ win: true, floor });
+                      grantTowerRewards(floor);
                       handleExit(nextFloor);
                     }}
                   >
@@ -292,7 +311,13 @@ export function TowerScreen() {
             ) : (
               <>
                 <h2>❌ Derrota</h2>
-                <button type="button" onClick={() => handleExit(1)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    actions.recordTowerResult({ win: false, floor });
+                    handleExit(1);
+                  }}
+                >
                   Reiniciar
                 </button>
               </>
