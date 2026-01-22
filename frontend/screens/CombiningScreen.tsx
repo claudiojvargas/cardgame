@@ -1,17 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CARDS } from "../../game/data/cards.catalog";
 import { Card } from "../../game/entities/Card";
 import { Rarity } from "../../game/types/enums";
 import { CardTile } from "../components/CardTile";
-import {
-  loadInventory,
-  saveInventory,
-  type PlayerInventory,
-} from "../utils/inventory";
+import { useGame } from "../hooks/useGame";
 
 const REQUIRED_CARDS = 4;
-const GUARANTEE_THRESHOLD = 15;
-const DIAMOND_GUARANTEE_THRESHOLD = 100;
 const UPGRADE_CHANCE = 0.02;
 
 const RARITY_ORDER: Rarity[] = [
@@ -31,12 +25,6 @@ const INCENSE_RARITIES = new Set<Rarity>([
   Rarity.MYTHIC,
   Rarity.DIAMOND,
 ]);
-
-function getGuaranteeThreshold(rarity: Rarity) {
-  return rarity === Rarity.DIAMOND
-    ? DIAMOND_GUARANTEE_THRESHOLD
-    : GUARANTEE_THRESHOLD;
-}
 
 function getUpgradeTarget(rarity: Rarity): Rarity | null {
   if (rarity === Rarity.COMMON) {
@@ -64,11 +52,9 @@ function buildCardMap(cards: Card[]) {
 }
 
 export function CombiningScreen() {
+  const { profile, actions, getIncenseThreshold } = useGame();
   const rarityMap = useMemo(() => buildRarityMap(CARDS), []);
   const cardMap = useMemo(() => buildCardMap(CARDS), []);
-  const [inventory, setInventory] = useState<PlayerInventory>(() =>
-    loadInventory([])
-  );
   const [selectedSlots, setSelectedSlots] = useState<Array<string | null>>(
     Array.from({ length: REQUIRED_CARDS }, () => null)
   );
@@ -78,12 +64,8 @@ export function CombiningScreen() {
     card: Card | null;
   } | null>(null);
 
-  useEffect(() => {
-    saveInventory(inventory);
-  }, [inventory]);
-
   function getAvailableDuplicates(rarity: Rarity) {
-    return Object.entries(inventory.counts).reduce((sum, [id, count]) => {
+    return Object.entries(profile.collection.inventory).reduce((sum, [id, count]) => {
       if (rarityMap[id] === rarity) {
         return sum + Math.max(0, count - 1);
       }
@@ -92,27 +74,7 @@ export function CombiningScreen() {
   }
 
   function getAvailableCardDuplicates(cardId: string) {
-    return Math.max(0, (inventory.counts[cardId] ?? 0) - 1);
-  }
-
-  function consumeDuplicatesByRarity(rarity: Rarity, amount: number) {
-    const nextCounts = { ...inventory.counts };
-    let remaining = amount;
-
-    Object.keys(nextCounts).forEach(cardId => {
-      if (remaining <= 0) return;
-      if (rarityMap[cardId] !== rarity) return;
-
-      const available = nextCounts[cardId] ?? 0;
-      const duplicates = Math.max(0, available - 1);
-      if (duplicates <= 0) return;
-
-      const used = Math.min(duplicates, remaining);
-      nextCounts[cardId] = available - used;
-      remaining -= used;
-    });
-
-    return nextCounts;
+    return Math.max(0, (profile.collection.inventory[cardId] ?? 0) - 1);
   }
 
   function drawRandomCard(rarity: Rarity): Card | null {
@@ -158,7 +120,7 @@ export function CombiningScreen() {
     const pool = CARDS.filter(card => card.rarity === rarity);
     const nextSlots: Array<string | null> = [];
     let remaining = REQUIRED_CARDS;
-    const counts = { ...inventory.counts };
+    const counts = { ...profile.collection.inventory };
 
     pool.forEach(card => {
       if (remaining <= 0) return;
@@ -189,8 +151,8 @@ export function CombiningScreen() {
     if (getAvailableDuplicates(rarity) < REQUIRED_CARDS) return;
 
     const upgradeTarget = getUpgradeTarget(rarity);
-    const incenseCount = inventory.incense[rarity] ?? 0;
-    const guaranteeThreshold = getGuaranteeThreshold(rarity);
+    const incenseCount = profile.stats.incense[rarity] ?? 0;
+    const guaranteeThreshold = getIncenseThreshold(rarity);
     const hasGuarantee =
       INCENSE_RARITIES.has(rarity) && incenseCount >= guaranteeThreshold - 1;
 
@@ -205,32 +167,23 @@ export function CombiningScreen() {
       }
     }
 
-    const nextCounts = consumeDuplicatesByRarity(rarity, REQUIRED_CARDS);
     const rewardCard = drawRandomCard(resultRarity);
-    if (rewardCard) {
-      nextCounts[rewardCard.id] = (nextCounts[rewardCard.id] ?? 0) + 1;
-    }
-
-    const nextNewCards = new Set(inventory.newCards);
-    if (rewardCard && (inventory.counts[rewardCard.id] ?? 0) === 0) {
-      nextNewCards.add(rewardCard.id);
-    }
-
-    const nextIncense = { ...inventory.incense };
+    selectedCards.forEach(card => actions.removeCard(card.id, 1));
+    actions.recordCombine(rarity);
     if (INCENSE_RARITIES.has(rarity)) {
       if (hasGuarantee && upgradeTarget) {
-        nextIncense[rarity] = 0;
+        actions.updateIncense(rarity, true);
       } else if (!upgradedByRng) {
-        nextIncense[rarity] = (nextIncense[rarity] ?? 0) + 1;
+        actions.updateIncense(rarity, false);
       }
     }
-
-    setInventory(current => ({
-      ...current,
-      counts: nextCounts,
-      newCards: Array.from(nextNewCards),
-      incense: nextIncense,
-    }));
+    if (rewardCard) {
+      actions.addCard(rewardCard.id, 1);
+      const currentQty = profile.collection.inventory[rewardCard.id] ?? 0;
+      if (currentQty === 0) {
+        actions.markCardNew(rewardCard.id);
+      }
+    }
     setSelectedSlots(Array.from({ length: REQUIRED_CARDS }, () => null));
     setLastResult({
       base: rarity,
@@ -240,12 +193,12 @@ export function CombiningScreen() {
   }
 
   const duplicateCards = CARDS.filter(
-    card => (inventory.counts[card.id] ?? 0) > 1
+    card => (profile.collection.inventory[card.id] ?? 0) > 1
   );
 
   const incenseList = Array.from(INCENSE_RARITIES).map(rarity => ({
     rarity,
-    value: inventory.incense[rarity] ?? 0,
+    value: profile.stats.incense[rarity] ?? 0,
   }));
 
   const canCombine =
@@ -295,7 +248,7 @@ export function CombiningScreen() {
                 obtained
                 duplicateCount={Math.max(
                   0,
-                  (inventory.counts[card.id] ?? 0) - 1
+                  (profile.collection.inventory[card.id] ?? 0) - 1
                 )}
                 onClick={() => handleSelectCard(card)}
               />
@@ -378,7 +331,7 @@ export function CombiningScreen() {
         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
           {incenseList.map(item => (
             <div key={item.rarity}>
-              {item.rarity}: {item.value}/{getGuaranteeThreshold(item.rarity)}
+              {item.rarity}: {item.value}/{getIncenseThreshold(item.rarity)}
             </div>
           ))}
         </div>

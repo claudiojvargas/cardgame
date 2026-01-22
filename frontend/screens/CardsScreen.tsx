@@ -3,11 +3,7 @@ import { Card } from "../../game/entities/Card";
 import { CARDS } from "../../game/data/cards.catalog";
 import { Rarity } from "../../game/types/enums";
 import { CardTile } from "../components/CardTile";
-import {
-  loadInventory,
-  saveInventory,
-  type PlayerInventory,
-} from "../utils/inventory";
+import { useGame } from "../hooks/useGame";
 
 const MAX_DECK_SIZE = 6;
 const DECK_STORAGE_KEY = "player-deck";
@@ -21,34 +17,21 @@ const RARITY_ORDER: Rarity[] = [
   Rarity.COMMON,
 ];
 
-function getInitialOwnedIds() {
-  return new Set<string>([
-    "common_attack_001",
-    "uncommon_defense_001",
-    "rare_support_001",
-  ]);
-}
-
 export function CardsScreen() {
-  const ownedIds = useMemo(() => getInitialOwnedIds(), []);
-  const [inventory, setInventory] = useState<PlayerInventory>(() =>
-    loadInventory(CARDS.filter(card => ownedIds.has(card.id)))
-  );
+  const { profile } = useGame();
   const [deck, setDeck] = useState<Card[]>(() => {
     const storedDeck = loadDeckFromStorage()
       .map(id => CARDS.find(card => card.id === id))
       .filter((card): card is Card => Boolean(card))
-      .filter(card => (inventory.counts[card.id] ?? 0) > 0)
+      .filter(card => (profile.collection.inventory[card.id] ?? 0) > 0)
       .slice(0, MAX_DECK_SIZE);
 
     if (storedDeck.length > 0) {
       return storedDeck;
     }
 
-    return CARDS.filter(card => (inventory.counts[card.id] ?? 0) > 0).slice(
-      0,
-      MAX_DECK_SIZE
-    );
+    return CARDS.filter(card => (profile.collection.inventory[card.id] ?? 0) > 0)
+      .slice(0, MAX_DECK_SIZE);
   });
 
   useEffect(() => {
@@ -56,21 +39,12 @@ export function CardsScreen() {
     window.localStorage.setItem(DECK_STORAGE_KEY, JSON.stringify(deckIds));
   }, [deck]);
 
-  useEffect(() => {
-    saveInventory(inventory);
-  }, [inventory]);
-
-  useEffect(() => {
-    if (inventory.newCards.length === 0) return;
-    setInventory(current => ({ ...current, newCards: [] }));
-  }, []);
-
   function getAwakeningValue(cardId: string) {
-    return inventory.awakenings[cardId] ?? 0;
+    return profile.collection.awakenings[cardId] ?? 0;
   }
 
   function handleCardClick(card: Card) {
-    if ((inventory.counts[card.id] ?? 0) === 0) return;
+    if ((profile.collection.inventory[card.id] ?? 0) === 0) return;
     if (deck.some(deckCard => deckCard.id === card.id)) return;
 
     if (deck.length >= MAX_DECK_SIZE) {
@@ -92,8 +66,11 @@ export function CardsScreen() {
           <CardTile
             card={card}
             obtained
-            isNew={inventory.newCards.includes(card.id)}
-            duplicateCount={Math.max(0, (inventory.counts[card.id] ?? 0) - 1)}
+            isNew={profile.collection.isNew[card.id] ?? false}
+            duplicateCount={Math.max(
+              0,
+              (profile.collection.inventory[card.id] ?? 0) - 1
+            )}
             awakeningValue={getAwakeningValue(card.id)}
             onClick={() => handleDeckCardClick(card)}
           />
@@ -124,14 +101,14 @@ export function CardsScreen() {
       card => !deck.some(deckCard => deckCard.id === card.id)
     );
     return [...withoutDeck].sort((left, right) => {
-      const leftOwned = (inventory.counts[left.id] ?? 0) > 0;
-      const rightOwned = (inventory.counts[right.id] ?? 0) > 0;
+      const leftOwned = (profile.collection.inventory[left.id] ?? 0) > 0;
+      const rightOwned = (profile.collection.inventory[right.id] ?? 0) > 0;
       if (leftOwned !== rightOwned) {
         return leftOwned ? -1 : 1;
       }
       return RARITY_ORDER.indexOf(left.rarity) - RARITY_ORDER.indexOf(right.rarity);
     });
-  }, [deck, inventory.counts]);
+  }, [deck, profile.collection.inventory]);
 
   return (
     <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 24 }}>
@@ -160,9 +137,12 @@ export function CardsScreen() {
             <CardTile
               key={card.id}
               card={card}
-              obtained={(inventory.counts[card.id] ?? 0) > 0}
-              isNew={inventory.newCards.includes(card.id)}
-              duplicateCount={Math.max(0, (inventory.counts[card.id] ?? 0) - 1)}
+              obtained={(profile.collection.inventory[card.id] ?? 0) > 0}
+              isNew={profile.collection.isNew[card.id] ?? false}
+              duplicateCount={Math.max(
+                0,
+                (profile.collection.inventory[card.id] ?? 0) - 1
+              )}
               awakeningValue={getAwakeningValue(card.id)}
               onClick={() => handleCardClick(card)}
             />

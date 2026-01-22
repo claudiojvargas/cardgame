@@ -1,34 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CARDS } from "../../game/data/cards.catalog";
 import { CHESTS } from "../../game/data/chests.catalog";
 import { Card } from "../../game/entities/Card";
-import {
-  loadInventory,
-  saveInventory,
-  loadWallet,
-  saveWallet,
-  type PlayerInventory,
-  type PlayerWallet,
-} from "../utils/inventory";
+import { useGame } from "../hooks/useGame";
 
 export function ChestsScreen() {
-  const [wallet, setWallet] = useState<PlayerWallet>(() => loadWallet());
-  const [inventory, setInventory] = useState<PlayerInventory>(() =>
-    loadInventory([])
-  );
+  const { profile, actions } = useGame();
   const [lastReward, setLastReward] = useState<{
     chestName: string;
     gold: number;
     cards: Card[];
   } | null>(null);
-
-  useEffect(() => {
-    saveWallet(wallet);
-  }, [wallet]);
-
-  useEffect(() => {
-    saveInventory(inventory);
-  }, [inventory]);
 
   function randomBetween(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -63,39 +45,23 @@ export function ChestsScreen() {
   }
 
   function handleOpenChest(chestType: (typeof CHESTS)[number]) {
-    if (wallet.gold < chestType.priceGold) return;
+    if (profile.currencies.gold < chestType.priceGold) return;
     const goldReward = randomBetween(chestType.goldRange[0], chestType.goldRange[1]);
     const cards = drawCards(chestType, 4);
 
-    const updatedCounts = { ...inventory.counts };
-    const updatedNew = new Set(inventory.newCards);
-    const updatedAwakenings = { ...inventory.awakenings };
-
+    actions.spendCurrency("gold", chestType.priceGold);
+    if (goldReward > 0) {
+      actions.addCurrency("gold", goldReward);
+    }
+    actions.recordChestOpened(chestType.type);
     cards.forEach(card => {
-      const current = updatedCounts[card.id] ?? 0;
-      updatedCounts[card.id] = current + 1;
-      if (current === 0) {
-        updatedNew.add(card.id);
-      }
-      if (updatedAwakenings[card.id] === undefined) {
-        updatedAwakenings[card.id] = 0;
+      actions.addCard(card.id, 1);
+      const currentQty = profile.collection.inventory[card.id] ?? 0;
+      if (currentQty === 0) {
+        actions.markCardNew(card.id);
       }
     });
 
-    const nextInventory: PlayerInventory = {
-      counts: updatedCounts,
-      newCards: Array.from(updatedNew),
-      awakenings: updatedAwakenings,
-      incense: inventory.incense,
-    };
-
-    const nextWallet: PlayerWallet = {
-      ...wallet,
-      gold: wallet.gold - chestType.priceGold + goldReward,
-    };
-
-    setInventory(nextInventory);
-    setWallet(nextWallet);
     setLastReward({
       chestName: chestType.name,
       gold: goldReward,
@@ -119,7 +85,7 @@ export function ChestsScreen() {
           }}
         >
           <strong>Ouro</strong>
-          <div>{wallet.gold}</div>
+          <div>{profile.currencies.gold}</div>
         </div>
         <div
           style={{
@@ -131,7 +97,7 @@ export function ChestsScreen() {
           }}
         >
           <strong>Diamantes</strong>
-          <div>{wallet.diamonds}</div>
+          <div>{profile.currencies.diamonds}</div>
         </div>
       </div>
 
