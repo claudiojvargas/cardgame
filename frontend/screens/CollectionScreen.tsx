@@ -81,14 +81,6 @@ const COLLECTION_GROUPS: Array<{ id: CollectionGroupId; label: string; entries: 
     },
   ];
 
-const SORT_OPTIONS = [
-  { id: "POWER", label: "Poder" },
-  { id: "NAME", label: "Nome" },
-  { id: "RARITY", label: "Raridade" },
-  { id: "AWAKENING", label: "Despertar" },
-] as const;
-
-type SortOption = (typeof SORT_OPTIONS)[number]["id"];
 type OwnershipFilter = "ALL" | "OWNED" | "MISSING";
 
 function getCollectionKey(entry: CollectionEntry) {
@@ -101,9 +93,7 @@ export function CollectionScreen() {
   const [selectedCollection, setSelectedCollection] = useState<CollectionEntry | null>(null);
   const [visitedCollections, setVisitedCollections] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
-  const [rarityFilters, setRarityFilters] = useState<Rarity[]>([]);
   const [ownershipFilter, setOwnershipFilter] = useState<OwnershipFilter>("ALL");
-  const [sortBy, setSortBy] = useState<SortOption>("POWER");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const groupsToShow = COLLECTION_GROUPS.filter(group => group.id === activeGroup);
@@ -119,9 +109,7 @@ export function CollectionScreen() {
       [getCollectionKey(entry)]: true,
     }));
     setSearch("");
-    setRarityFilters([]);
     setOwnershipFilter("ALL");
-    setSortBy("POWER");
   }
 
   const collectionCards = useMemo(() => {
@@ -133,6 +121,13 @@ export function CollectionScreen() {
       return card.rarity === selectedCollection.value;
     });
   }, [selectedCollection]);
+
+  const collectionIndex = useMemo(() => {
+    return collectionCards.reduce<Record<string, number>>((acc, card, index) => {
+      acc[card.id] = index;
+      return acc;
+    }, {});
+  }, [collectionCards]);
 
   const filteredCards = useMemo(() => {
     let current = [...collectionCards];
@@ -149,19 +144,18 @@ export function CollectionScreen() {
       });
     }
 
-    if (rarityFilters.length > 0) {
-      current = current.filter(card => rarityFilters.includes(card.rarity));
-    }
-
     current.sort((left, right) => {
-      if (sortBy === "NAME") {
-        return left.name.localeCompare(right.name);
+      const leftOwned = (profile.collection.inventory[left.id] ?? 0) > 0;
+      const rightOwned = (profile.collection.inventory[right.id] ?? 0) > 0;
+      if (leftOwned !== rightOwned) {
+        return leftOwned ? -1 : 1;
       }
-      if (sortBy === "RARITY") {
-        return RARITY_ORDER.indexOf(left.rarity) - RARITY_ORDER.indexOf(right.rarity);
+      if (!leftOwned && !rightOwned) {
+        return (collectionIndex[left.id] ?? 0) - (collectionIndex[right.id] ?? 0);
       }
-      if (sortBy === "AWAKENING") {
-        return getAwakeningValue(right.id) - getAwakeningValue(left.id);
+      const rarityOrder = RARITY_ORDER.indexOf(left.rarity) - RARITY_ORDER.indexOf(right.rarity);
+      if (rarityOrder !== 0) {
+        return rarityOrder;
       }
       const leftPower = calculateCardPower({
         ...left,
@@ -179,10 +173,9 @@ export function CollectionScreen() {
     collectionCards,
     search,
     ownershipFilter,
-    rarityFilters,
-    sortBy,
     profile.collection.inventory,
     profile.collection.awakenings,
+    collectionIndex,
   ]);
 
   if (selectedCollection) {
@@ -234,49 +227,6 @@ export function CollectionScreen() {
 
         <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <h2>Filtros rápidos</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {Object.values(Rarity).map(rarity => {
-              const active = rarityFilters.includes(rarity);
-              return (
-                <button
-                  key={rarity}
-                  type="button"
-                  onClick={() => {
-                    setRarityFilters(current =>
-                      current.includes(rarity)
-                        ? current.filter(item => item !== rarity)
-                        : [...current, rarity]
-                    );
-                  }}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 999,
-                    border: "1px solid #444",
-                    background: active ? "#f5f5f5" : "#1b1b1b",
-                    color: active ? "#111" : "#f5f5f5",
-                  }}
-                >
-                  {RARITY_LABELS[rarity]}
-                </button>
-              );
-            })}
-            {rarityFilters.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setRarityFilters([])}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  border: "1px dashed #666",
-                  background: "transparent",
-                  color: "#ccc",
-                }}
-              >
-                Limpar
-              </button>
-            )}
-          </div>
-
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             <button
               type="button"
@@ -342,26 +292,6 @@ export function CollectionScreen() {
                   minWidth: 220,
                 }}
               />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 12, color: "#aaa" }}>Ordenar</span>
-              <select
-                value={sortBy}
-                onChange={event => setSortBy(event.target.value as SortOption)}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "1px solid #444",
-                  background: "#111",
-                  color: "#f5f5f5",
-                }}
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
             </label>
           </div>
         </section>
