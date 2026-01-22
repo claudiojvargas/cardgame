@@ -52,6 +52,7 @@ export function TowerScreen() {
     state,
     playerAttack,
     lastAiAction,
+    lastCombatEvents,
     combatHistory,
     phase,
   } = useBattle(initialState);
@@ -183,6 +184,8 @@ export function TowerScreen() {
             state={state}
             onAttack={playerAttack}
             lastAiDefenderId={lastAiAction?.defenderId ?? null}
+            lastAiAction={lastAiAction}
+            lastCombatEvents={lastCombatEvents}
           />
 
           <aside
