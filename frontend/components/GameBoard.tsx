@@ -6,7 +6,15 @@ import { CombatEvent } from "../../game/core/CombatLog";
 type AttackAnimation = {
   attackerId: string;
   defenderId: string;
-  side: "player" | "enemy";
+};
+
+type DamageFloat = {
+  cardId: string;
+  amount: number;
+};
+
+type DeathFlash = {
+  ownerId: string;
 };
 
 interface Props {
@@ -36,6 +44,8 @@ export function GameBoard({
   );
   const [attackAnimation, setAttackAnimation] =
     useState<AttackAnimation | null>(null);
+  const [damageFloat, setDamageFloat] = useState<DamageFloat | null>(null);
+  const [deathFlash, setDeathFlash] = useState<DeathFlash | null>(null);
 
   const player = state.players.find(p => p.id === "Player")!;
   const enemy = state.players.find(p => p.id === "AI")!;
@@ -54,24 +64,58 @@ export function GameBoard({
     const attackEvent = lastCombatEvents.find(
       event => event.type === "attack_declared"
     ) as CombatEvent | undefined;
-    if (!attackEvent || attackEvent.type !== "attack_declared") return;
+    if (attackEvent && attackEvent.type === "attack_declared") {
+      setAttackAnimation({
+        attackerId: attackEvent.attackerId,
+        defenderId: attackEvent.defenderId,
+      });
 
-    const side = player.field.some(card => card.id === attackEvent.attackerId)
-      ? "player"
-      : "enemy";
+      const attackTimeout = window.setTimeout(() => {
+        setAttackAnimation(null);
+      }, 300);
 
-    setAttackAnimation({
-      attackerId: attackEvent.attackerId,
-      defenderId: attackEvent.defenderId,
-      side,
+      return () => window.clearTimeout(attackTimeout);
+    }
+
+    return undefined;
+  }, [lastCombatEvents]);
+
+  useEffect(() => {
+    if (!lastCombatEvents || lastCombatEvents.length === 0) return;
+
+    const damageEvent = lastCombatEvents.find(
+      event => event.type === "damage_applied"
+    ) as CombatEvent | undefined;
+    if (!damageEvent || damageEvent.type !== "damage_applied") return;
+
+    setDamageFloat({
+      cardId: damageEvent.targetId,
+      amount: damageEvent.amount,
     });
 
-    const timeoutId = window.setTimeout(() => {
-      setAttackAnimation(null);
-    }, 650);
+    const damageTimeout = window.setTimeout(() => {
+      setDamageFloat(null);
+    }, 600);
 
-    return () => window.clearTimeout(timeoutId);
-  }, [lastCombatEvents, player.field]);
+    return () => window.clearTimeout(damageTimeout);
+  }, [lastCombatEvents]);
+
+  useEffect(() => {
+    if (!lastCombatEvents || lastCombatEvents.length === 0) return;
+
+    const destroyEvent = lastCombatEvents.find(
+      event => event.type === "card_destroyed"
+    ) as CombatEvent | undefined;
+    if (!destroyEvent || destroyEvent.type !== "card_destroyed") return;
+
+    setDeathFlash({ ownerId: destroyEvent.ownerId });
+
+    const deathTimeout = window.setTimeout(() => {
+      setDeathFlash(null);
+    }, 250);
+
+    return () => window.clearTimeout(deathTimeout);
+  }, [lastCombatEvents]);
 
   return (
     <div
@@ -89,30 +133,43 @@ export function GameBoard({
       <style>{`
         @keyframes attack-swing-player {
           0% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(-18px) scale(1.05); }
-          70% { transform: translateY(-6px) scale(0.98); }
+          60% { transform: translateY(-18px) scale(1.05); }
           100% { transform: translateY(0) scale(1); }
         }
         @keyframes attack-swing-enemy {
           0% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(18px) scale(1.05); }
-          70% { transform: translateY(6px) scale(0.98); }
+          60% { transform: translateY(18px) scale(1.05); }
           100% { transform: translateY(0) scale(1); }
         }
         @keyframes attack-hit {
           0% { transform: translateX(0) scale(1); box-shadow: 0 0 0 rgba(255, 82, 82, 0); }
-          30% { transform: translateX(-6px) scale(0.98); box-shadow: 0 0 16px rgba(255, 82, 82, 0.55); }
-          60% { transform: translateX(6px) scale(1.02); box-shadow: 0 0 20px rgba(255, 82, 82, 0.45); }
+          50% { transform: translateX(-6px) scale(0.98); box-shadow: 0 0 16px rgba(255, 82, 82, 0.55); }
           100% { transform: translateX(0) scale(1); box-shadow: 0 0 0 rgba(255, 82, 82, 0); }
         }
+        @keyframes damage-float {
+          0% { opacity: 0; transform: translateY(0); }
+          20% { opacity: 1; transform: translateY(-8px); }
+          100% { opacity: 0; transform: translateY(-28px); }
+        }
+        @keyframes death-flash {
+          0% { opacity: 0; transform: scale(0.6); }
+          40% { opacity: 1; transform: scale(1.05); }
+          100% { opacity: 0; transform: scale(1); }
+        }
         .attack-swing-player {
-          animation: attack-swing-player 0.6s ease;
+          animation: attack-swing-player 0.3s ease;
         }
         .attack-swing-enemy {
-          animation: attack-swing-enemy 0.6s ease;
+          animation: attack-swing-enemy 0.3s ease;
         }
         .attack-hit {
-          animation: attack-hit 0.5s ease;
+          animation: attack-hit 0.12s ease;
+        }
+        .damage-float {
+          animation: damage-float 0.6s ease;
+        }
+        .death-flash {
+          animation: death-flash 0.25s ease;
         }
       `}</style>
       <p>
@@ -169,7 +226,26 @@ export function GameBoard({
             }}
           />
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", position: "relative" }}>
+          {deathFlash?.ownerId === "AI" && (
+            <div
+              className="death-flash"
+              style={{
+                position: "absolute",
+                top: -8,
+                right: 12,
+                background: "rgba(0,0,0,0.75)",
+                color: "#fff",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 12,
+                zIndex: 5,
+                pointerEvents: "none",
+              }}
+            >
+              💀 Carta destruída
+            </div>
+          )}
           {enemy.field.map(card => {
             const selectable = !!selectedAttacker && isPlayerTurn;
             const opacity =
@@ -187,13 +263,31 @@ export function GameBoard({
               : isDefender
                 ? "attack-hit"
                 : "";
+            const showDamage = damageFloat?.cardId === card.id;
 
             return (
               <div
                 key={card.id}
-                style={{ opacity }}
+                style={{ opacity, position: "relative" }}
                 className={animationClass}
               >
+                {showDamage && (
+                  <div
+                    className="damage-float"
+                    style={{
+                      position: "absolute",
+                      top: 6,
+                      right: 10,
+                      zIndex: 4,
+                      fontWeight: 700,
+                      color: "#e53935",
+                      textShadow: "0 2px 6px rgba(0,0,0,0.35)",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    -{Math.round(damageFloat.amount)}
+                  </div>
+                )}
                 <CardTile
                   card={card}
                   obtained
@@ -234,7 +328,26 @@ export function GameBoard({
             }}
           />
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", position: "relative" }}>
+          {deathFlash?.ownerId === "Player" && (
+            <div
+              className="death-flash"
+              style={{
+                position: "absolute",
+                top: -8,
+                right: 12,
+                background: "rgba(0,0,0,0.75)",
+                color: "#fff",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 12,
+                zIndex: 5,
+                pointerEvents: "none",
+              }}
+            >
+              💀 Carta destruída
+            </div>
+          )}
           {player.field.map(card => {
             const selectable = isPlayerTurn;
             const opacity =
@@ -252,13 +365,31 @@ export function GameBoard({
               : isDefender
                 ? "attack-hit"
                 : "";
+            const showDamage = damageFloat?.cardId === card.id;
 
             return (
               <div
                 key={card.id}
-                style={{ opacity }}
+                style={{ opacity, position: "relative" }}
                 className={animationClass}
               >
+                {showDamage && (
+                  <div
+                    className="damage-float"
+                    style={{
+                      position: "absolute",
+                      top: 6,
+                      right: 10,
+                      zIndex: 4,
+                      fontWeight: 700,
+                      color: "#e53935",
+                      textShadow: "0 2px 6px rgba(0,0,0,0.35)",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    -{Math.round(damageFloat.amount)}
+                  </div>
+                )}
                 <CardTile
                   card={card}
                   obtained
