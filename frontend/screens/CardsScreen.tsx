@@ -100,14 +100,11 @@ export function CardsScreen() {
     const withoutDeck = CARDS.filter(
       card => !deck.some(deckCard => deckCard.id === card.id)
     );
-    return [...withoutDeck].sort((left, right) => {
-      const leftOwned = (profile.collection.inventory[left.id] ?? 0) > 0;
-      const rightOwned = (profile.collection.inventory[right.id] ?? 0) > 0;
-      if (leftOwned !== rightOwned) {
-        return leftOwned ? -1 : 1;
-      }
-      return RARITY_ORDER.indexOf(left.rarity) - RARITY_ORDER.indexOf(right.rarity);
-    });
+    return withoutDeck
+      .filter(card => (profile.collection.inventory[card.id] ?? 0) > 0)
+      .sort(
+        (left, right) => RARITY_ORDER.indexOf(left.rarity) - RARITY_ORDER.indexOf(right.rarity)
+      );
   }, [deck, profile.collection.inventory]);
 
   return (
