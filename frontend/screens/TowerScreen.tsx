@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GameBoard } from "../components/GameBoard";
 import { useBattle } from "../hooks/useBattle";
 import { useGame } from "../hooks/useGame";
@@ -29,6 +29,10 @@ export function TowerScreen() {
   const [animationPreset, setAnimationPreset] = useState<
     "rápido" | "normal" | "cinemático"
   >("normal");
+  const [lastPreset, setLastPreset] = useState<
+    "rápido" | "normal" | "cinemático"
+  >("normal");
+  const [aiProgress, setAiProgress] = useState(0);
 
   // Player é persistente na run
   const player = useMemo(() => createPlayer(rng), [rng]);
@@ -60,12 +64,63 @@ export function TowerScreen() {
     combatHistory,
     phase,
     isAiThinking,
+    lastAiDurationMs,
+    skipAiTurn,
   } = useBattle(initialState, undefined, { aiDelayMs });
 
   const recentEvents = useMemo(
     () => combatHistory.slice(-5).reverse(),
     [combatHistory]
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedDelay = window.localStorage.getItem("tower-ai-delay");
+    const storedPreset = window.localStorage.getItem("tower-animation-preset");
+    if (storedDelay) {
+      const parsed = Number(storedDelay);
+      if (!Number.isNaN(parsed)) {
+        setAiDelayMs(parsed);
+      }
+    }
+    if (
+      storedPreset === "rápido" ||
+      storedPreset === "normal" ||
+      storedPreset === "cinemático"
+    ) {
+      setAnimationPreset(storedPreset);
+      setLastPreset(storedPreset);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("tower-ai-delay", String(aiDelayMs));
+  }, [aiDelayMs]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("tower-animation-preset", animationPreset);
+  }, [animationPreset]);
+
+  useEffect(() => {
+    if (!isAiThinking) {
+      setAiProgress(0);
+      return;
+    }
+    const start = performance.now();
+    let frameId = 0;
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const progress = Math.min(1, elapsed / aiDelayMs);
+      setAiProgress(progress);
+      if (progress < 1 && isAiThinking) {
+        frameId = window.requestAnimationFrame(tick);
+      }
+    };
+    frameId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [aiDelayMs, isAiThinking]);
 
   function formatEvent(event: (typeof combatHistory)[number]) {
     switch (event.type) {
@@ -202,6 +257,8 @@ export function TowerScreen() {
             lastAiAction={lastAiAction}
             lastCombatEvents={lastCombatEvents}
             animationTimings={animationTimings}
+            isAiThinking={isAiThinking}
+            onSkipAiDelay={skipAiTurn}
           />
 
           <aside
@@ -228,11 +285,40 @@ export function TowerScreen() {
                       {lastAiAction.reason}
                     </p>
                   )}
+                  {lastAiDurationMs !== null && (
+                    <p style={{ margin: 0, color: "#777", fontSize: 12 }}>
+                      Bot atacou em {(lastAiDurationMs / 1000).toFixed(1)}s
+                    </p>
+                  )}
                 </div>
               ) : (
                 <p style={{ margin: 0, color: "#666" }}>
                   {isAiThinking ? "Bot pensando..." : "Aguardando ação do bot."}
                 </p>
+              )}
+              {isAiThinking && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div
+                    style={{
+                      height: 6,
+                      background: "#e0e0e0",
+                      borderRadius: 999,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${Math.round(aiProgress * 100)}%`,
+                        background: "linear-gradient(90deg, #42a5f5, #7e57c2)",
+                        transition: "width 80ms linear",
+                      }}
+                    />
+                  </div>
+                  <button type="button" onClick={skipAiTurn}>
+                    Pular espera do bot
+                  </button>
+                </div>
               )}
             </div>
             <div>
@@ -282,10 +368,10 @@ export function TowerScreen() {
                     value={aiDelayMs}
                     onChange={event => setAiDelayMs(Number(event.target.value))}
                   >
-                    <option value={1000}>Rápido (1s)</option>
-                    <option value={1600}>Equilibrado (1.6s)</option>
+                    <option value={1500}>Rápido (1.5s)</option>
+                    <option value={2000}>Equilibrado (2s)</option>
                     <option value={2600}>Padrão (2.6s)</option>
-                    <option value={3200}>Cinemático (3.2s)</option>
+                    <option value={3000}>Cinemático (3s)</option>
                   </select>
                 </label>
                 <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -294,17 +380,37 @@ export function TowerScreen() {
                   </span>
                   <select
                     value={animationPreset}
-                    onChange={event =>
-                      setAnimationPreset(
-                        event.target.value as "rápido" | "normal" | "cinemático"
-                      )
-                    }
+                    onChange={event => {
+                      const value = event.target.value as
+                        | "rápido"
+                        | "normal"
+                        | "cinemático";
+                      setAnimationPreset(value);
+                      if (value !== "rápido") {
+                        setLastPreset(value);
+                      }
+                    }}
                   >
                     <option value="rápido">Rápido</option>
                     <option value="normal">Normal</option>
                     <option value="cinemático">Cinemático</option>
                   </select>
                 </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (animationPreset === "rápido") {
+                      setAnimationPreset(lastPreset);
+                    } else {
+                      setLastPreset(animationPreset);
+                      setAnimationPreset("rápido");
+                    }
+                  }}
+                >
+                  {animationPreset === "rápido"
+                    ? "Restaurar ritmo"
+                    : "Acelerar animações"}
+                </button>
               </div>
             </div>
           </aside>
