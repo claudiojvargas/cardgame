@@ -5,6 +5,7 @@ import { ChestsScreen } from "./screens/ChestsScreen";
 import { AwakeningScreen } from "./screens/AwakeningScreen";
 import { CombiningScreen } from "./screens/CombiningScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
+import { CollectionScreen } from "./screens/CollectionScreen";
 import { GameProvider } from "./hooks/useGame";
 
 type Screen =
@@ -14,7 +15,8 @@ type Screen =
   | "CHESTS"
   | "AWAKENING"
   | "COMBINING"
-  | "PROFILE";
+  | "PROFILE"
+  | "COLLECTION";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("MENU");
@@ -48,6 +50,10 @@ function App() {
 
   if (screen === "PROFILE") {
     content = <ProfileScreen />;
+  }
+
+  if (screen === "COLLECTION") {
+    content = <CollectionScreen />;
   }
 
   return (
@@ -88,6 +94,15 @@ function App() {
             }}
           >
             📚 Ver Cartas
+          </button>
+          <button
+            onClick={() => setScreen("COLLECTION")}
+            style={{
+              padding: "8px 16px",
+              fontWeight: screen === "COLLECTION" ? "bold" : "normal",
+            }}
+          >
+            🗂️ Coleção
           </button>
           <button
             onClick={() => setScreen("CHESTS")}
