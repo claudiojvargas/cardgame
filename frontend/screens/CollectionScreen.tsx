@@ -81,8 +81,6 @@ const COLLECTION_GROUPS: Array<{ id: CollectionGroupId; label: string; entries: 
     },
   ];
 
-type OwnershipFilter = "ALL" | "OWNED" | "MISSING";
-
 function getCollectionKey(entry: CollectionEntry) {
   return `${entry.groupId}:${entry.id}`;
 }
@@ -92,8 +90,6 @@ export function CollectionScreen() {
   const [activeGroup, setActiveGroup] = useState<CollectionGroupId>("CLASS");
   const [selectedCollection, setSelectedCollection] = useState<CollectionEntry | null>(null);
   const [visitedCollections, setVisitedCollections] = useState<Record<string, boolean>>({});
-  const [search, setSearch] = useState("");
-  const [ownershipFilter, setOwnershipFilter] = useState<OwnershipFilter>("ALL");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const groupsToShow = COLLECTION_GROUPS.filter(group => group.id === activeGroup);
@@ -108,8 +104,6 @@ export function CollectionScreen() {
       ...current,
       [getCollectionKey(entry)]: true,
     }));
-    setSearch("");
-    setOwnershipFilter("ALL");
   }
 
   const collectionCards = useMemo(() => {
@@ -131,18 +125,6 @@ export function CollectionScreen() {
 
   const filteredCards = useMemo(() => {
     let current = [...collectionCards];
-
-    if (search.trim()) {
-      const query = search.trim().toLowerCase();
-      current = current.filter(card => card.name.toLowerCase().includes(query));
-    }
-
-    if (ownershipFilter !== "ALL") {
-      current = current.filter(card => {
-        const owned = (profile.collection.inventory[card.id] ?? 0) > 0;
-        return ownershipFilter === "OWNED" ? owned : !owned;
-      });
-    }
 
     current.sort((left, right) => {
       const leftOwned = (profile.collection.inventory[left.id] ?? 0) > 0;
@@ -171,8 +153,6 @@ export function CollectionScreen() {
     return current;
   }, [
     collectionCards,
-    search,
-    ownershipFilter,
     profile.collection.inventory,
     profile.collection.awakenings,
     collectionIndex,
@@ -225,75 +205,10 @@ export function CollectionScreen() {
           </span>
         </header>
 
-        <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <h2>Filtros rápidos</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => setOwnershipFilter("ALL")}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: "1px solid #444",
-                background: ownershipFilter === "ALL" ? "#f5f5f5" : "#1b1b1b",
-                color: ownershipFilter === "ALL" ? "#111" : "#f5f5f5",
-              }}
-            >
-              Todas
-            </button>
-            <button
-              type="button"
-              onClick={() => setOwnershipFilter("OWNED")}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: "1px solid #444",
-                background: ownershipFilter === "OWNED" ? "#f5f5f5" : "#1b1b1b",
-                color: ownershipFilter === "OWNED" ? "#111" : "#f5f5f5",
-              }}
-            >
-              Obtidas
-            </button>
-            <button
-              type="button"
-              onClick={() => setOwnershipFilter("MISSING")}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: "1px solid #444",
-                background: ownershipFilter === "MISSING" ? "#f5f5f5" : "#1b1b1b",
-                color: ownershipFilter === "MISSING" ? "#111" : "#f5f5f5",
-              }}
-            >
-              Não obtidas
-            </button>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-            }}
-          >
-            <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 12, color: "#aaa" }}>Buscar</span>
-              <input
-                value={search}
-                onChange={event => setSearch(event.target.value)}
-                placeholder="Nome da carta"
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "1px solid #444",
-                  background: "#111",
-                  color: "#f5f5f5",
-                  minWidth: 220,
-                }}
-              />
-            </label>
-          </div>
+        <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <span style={{ fontSize: 12, color: "#888" }}>
+            Exibindo cartas obtidas primeiro (raridade alta → baixa).
+          </span>
         </section>
 
         <section>
