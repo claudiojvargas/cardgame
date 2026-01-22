@@ -25,6 +25,10 @@ export function TowerScreen() {
   const [chestCounter, setChestCounter] = useState(1);
 
   const rng = useMemo(() => createSeededRng(Date.now()), []);
+  const [aiDelayMs, setAiDelayMs] = useState(2600);
+  const [animationPreset, setAnimationPreset] = useState<
+    "rápido" | "normal" | "cinemático"
+  >("normal");
 
   // Player é persistente na run
   const player = useMemo(() => createPlayer(rng), [rng]);
@@ -56,7 +60,7 @@ export function TowerScreen() {
     combatHistory,
     phase,
     isAiThinking,
-  } = useBattle(initialState);
+  } = useBattle(initialState, undefined, { aiDelayMs });
 
   const recentEvents = useMemo(
     () => combatHistory.slice(-5).reverse(),
@@ -128,6 +132,16 @@ export function TowerScreen() {
   }
 
   const startLabel = floor > 1 ? "Continuar" : "Iniciar";
+  const animationTimings = useMemo(() => {
+    switch (animationPreset) {
+      case "rápido":
+        return { attackMs: 360, hitMs: 140, damageMs: 420, deathMs: 200 };
+      case "cinemático":
+        return { attackMs: 720, hitMs: 220, damageMs: 700, deathMs: 320 };
+      default:
+        return { attackMs: 520, hitMs: 180, damageMs: 550, deathMs: 250 };
+    }
+  }, [animationPreset]);
 
   return (
     <div
@@ -187,6 +201,7 @@ export function TowerScreen() {
             lastAiDefenderId={lastAiAction?.defenderId ?? null}
             lastAiAction={lastAiAction}
             lastCombatEvents={lastCombatEvents}
+            animationTimings={animationTimings}
           />
 
           <aside
@@ -255,6 +270,42 @@ export function TowerScreen() {
                   ))}
                 </ul>
               )}
+            </div>
+            <div>
+              <h3 style={{ marginTop: 0 }}>⚙️ Ajustes de batalha</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <span style={{ fontSize: 12, color: "#555" }}>
+                    Tempo de resposta do bot
+                  </span>
+                  <select
+                    value={aiDelayMs}
+                    onChange={event => setAiDelayMs(Number(event.target.value))}
+                  >
+                    <option value={1000}>Rápido (1s)</option>
+                    <option value={1600}>Equilibrado (1.6s)</option>
+                    <option value={2600}>Padrão (2.6s)</option>
+                    <option value={3200}>Cinemático (3.2s)</option>
+                  </select>
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <span style={{ fontSize: 12, color: "#555" }}>
+                    Ritmo das animações
+                  </span>
+                  <select
+                    value={animationPreset}
+                    onChange={event =>
+                      setAnimationPreset(
+                        event.target.value as "rápido" | "normal" | "cinemático"
+                      )
+                    }
+                  >
+                    <option value="rápido">Rápido</option>
+                    <option value="normal">Normal</option>
+                    <option value="cinemático">Cinemático</option>
+                  </select>
+                </label>
+              </div>
             </div>
           </aside>
         </div>

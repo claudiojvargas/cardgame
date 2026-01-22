@@ -27,6 +27,12 @@ interface Props {
     reason?: string;
   } | null;
   lastCombatEvents?: CombatEvent[];
+  animationTimings?: {
+    attackMs: number;
+    hitMs: number;
+    damageMs: number;
+    deathMs: number;
+  };
 }
 
 export function GameBoard({
@@ -35,6 +41,7 @@ export function GameBoard({
   lastAiDefenderId,
   lastAiAction,
   lastCombatEvents,
+  animationTimings,
 }: Props) {
   const [selectedAttacker, setSelectedAttacker] = useState<string | null>(
     null
@@ -50,6 +57,16 @@ export function GameBoard({
   const player = state.players.find(p => p.id === "Player")!;
   const enemy = state.players.find(p => p.id === "AI")!;
   const isPlayerTurn = state.currentPlayer.id === "Player";
+  const timings = animationTimings ?? {
+    attackMs: 520,
+    hitMs: 180,
+    damageMs: 550,
+    deathMs: 250,
+  };
+  const attackSeconds = timings.attackMs / 1000;
+  const hitSeconds = timings.hitMs / 1000;
+  const damageSeconds = timings.damageMs / 1000;
+  const deathSeconds = timings.deathMs / 1000;
 
   useEffect(() => {
     if (!isPlayerTurn) {
@@ -72,7 +89,7 @@ export function GameBoard({
 
       const attackTimeout = window.setTimeout(() => {
         setAttackAnimation(null);
-      }, 520);
+      }, timings.attackMs);
 
       return () => window.clearTimeout(attackTimeout);
     }
@@ -95,7 +112,7 @@ export function GameBoard({
 
     const damageTimeout = window.setTimeout(() => {
       setDamageFloat(null);
-    }, 450);
+    }, timings.damageMs);
 
     return () => window.clearTimeout(damageTimeout);
   }, [lastCombatEvents]);
@@ -112,7 +129,7 @@ export function GameBoard({
 
     const deathTimeout = window.setTimeout(() => {
       setDeathFlash(null);
-    }, 200);
+    }, timings.deathMs);
 
     return () => window.clearTimeout(deathTimeout);
   }, [lastCombatEvents]);
@@ -157,19 +174,19 @@ export function GameBoard({
           100% { opacity: 0; transform: scale(1); }
         }
         .attack-swing-player {
-          animation: attack-swing-player 0.52s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: attack-swing-player ${attackSeconds}s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .attack-swing-enemy {
-          animation: attack-swing-enemy 0.52s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: attack-swing-enemy ${attackSeconds}s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .attack-hit {
-          animation: attack-hit 0.18s ease-out;
+          animation: attack-hit ${hitSeconds}s ease-out;
         }
         .damage-float {
-          animation: damage-float 0.55s ease-out;
+          animation: damage-float ${damageSeconds}s ease-out;
         }
         .death-flash {
-          animation: death-flash 0.25s ease-out;
+          animation: death-flash ${deathSeconds}s ease-out;
         }
       `}</style>
       <p>

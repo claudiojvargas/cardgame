@@ -13,7 +13,17 @@ export type GamePhase =
   | "ANIMATING"
   | "GAME_OVER";
 
-export function useBattle(initialState: GameState, agent?: IAgent) {
+export type BattleOptions = {
+  aiDelayMs?: number;
+};
+
+const DEFAULT_AI_DELAY_MS = 2600;
+
+export function useBattle(
+  initialState: GameState,
+  agent?: IAgent,
+  options?: BattleOptions
+) {
   const [state, setState] = useState<GameState>(initialState);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [lastAiAction, setLastAiAction] = useState<{
@@ -29,6 +39,7 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     () => agent ?? new SimpleAIAgent(AIDifficulty.NORMAL),
     [agent]
   );
+  const aiDelayMs = options?.aiDelayMs ?? DEFAULT_AI_DELAY_MS;
 
   useEffect(() => {
     setState(initialState);
@@ -68,10 +79,10 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
       setCombatHistory(prev => [...prev, ...result.events]);
       setState(result.state);
       setIsAiThinking(false);
-    }, 2600);
+    }, aiDelayMs);
 
     return () => window.clearTimeout(timeoutId);
-  }, [ai, state]);
+  }, [ai, aiDelayMs, state]);
 
   function playerAttack(attackerId: string, defenderId: string) {
     if (state.status !== GameStatus.IN_PROGRESS) return;
