@@ -15,6 +15,7 @@ export type GamePhase =
 
 export function useBattle(initialState: GameState, agent?: IAgent) {
   const [state, setState] = useState<GameState>(initialState);
+  const [isAiThinking, setIsAiThinking] = useState(false);
   const [lastAiAction, setLastAiAction] = useState<{
     attackerId: string;
     defenderId: string;
@@ -34,6 +35,7 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     setLastAiAction(null);
     setLastCombatEvents([]);
     setCombatHistory([]);
+    setIsAiThinking(false);
   }, [initialState]);
 
   useEffect(() => {
@@ -53,16 +55,22 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     if (state.status !== GameStatus.IN_PROGRESS) return;
     if (state.currentPlayer.id !== "AI") return;
 
-    const decision = ai.decide(state);
-    const result = BattleResolver.resolveAttackWithLog(
-      state,
-      decision.attackerId,
-      decision.defenderId
-    );
-    setLastAiAction(decision);
-    setLastCombatEvents(result.events);
-    setCombatHistory(prev => [...prev, ...result.events]);
-    setState(result.state);
+    setIsAiThinking(true);
+    const timeoutId = window.setTimeout(() => {
+      const decision = ai.decide(state);
+      const result = BattleResolver.resolveAttackWithLog(
+        state,
+        decision.attackerId,
+        decision.defenderId
+      );
+      setLastAiAction(decision);
+      setLastCombatEvents(result.events);
+      setCombatHistory(prev => [...prev, ...result.events]);
+      setState(result.state);
+      setIsAiThinking(false);
+    }, 2600);
+
+    return () => window.clearTimeout(timeoutId);
   }, [ai, state]);
 
   function playerAttack(attackerId: string, defenderId: string) {
@@ -88,5 +96,6 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     lastCombatEvents,
     combatHistory,
     phase,
+    isAiThinking,
   };
 }

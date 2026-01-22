@@ -72,7 +72,7 @@ export function GameBoard({
 
       const attackTimeout = window.setTimeout(() => {
         setAttackAnimation(null);
-      }, 240);
+      }, 520);
 
       return () => window.clearTimeout(attackTimeout);
     }
@@ -157,19 +157,19 @@ export function GameBoard({
           100% { opacity: 0; transform: scale(1); }
         }
         .attack-swing-player {
-          animation: attack-swing-player 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: attack-swing-player 0.52s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .attack-swing-enemy {
-          animation: attack-swing-enemy 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: attack-swing-enemy 0.52s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .attack-hit {
-          animation: attack-hit 0.1s ease-out;
+          animation: attack-hit 0.18s ease-out;
         }
         .damage-float {
-          animation: damage-float 0.45s ease-out;
+          animation: damage-float 0.55s ease-out;
         }
         .death-flash {
-          animation: death-flash 0.2s ease-out;
+          animation: death-flash 0.25s ease-out;
         }
       `}</style>
       <p>

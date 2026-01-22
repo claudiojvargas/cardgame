@@ -55,6 +55,7 @@ export function TowerScreen() {
     lastCombatEvents,
     combatHistory,
     phase,
+    isAiThinking,
   } = useBattle(initialState);
 
   const recentEvents = useMemo(
@@ -215,7 +216,7 @@ export function TowerScreen() {
                 </div>
               ) : (
                 <p style={{ margin: 0, color: "#666" }}>
-                  Aguardando ação do bot.
+                  {isAiThinking ? "Bot pensando..." : "Aguardando ação do bot."}
                 </p>
               )}
             </div>
