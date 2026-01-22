@@ -72,7 +72,7 @@ export function GameBoard({
 
       const attackTimeout = window.setTimeout(() => {
         setAttackAnimation(null);
-      }, 300);
+      }, 240);
 
       return () => window.clearTimeout(attackTimeout);
     }
@@ -95,7 +95,7 @@ export function GameBoard({
 
     const damageTimeout = window.setTimeout(() => {
       setDamageFloat(null);
-    }, 600);
+    }, 450);
 
     return () => window.clearTimeout(damageTimeout);
   }, [lastCombatEvents]);
@@ -112,7 +112,7 @@ export function GameBoard({
 
     const deathTimeout = window.setTimeout(() => {
       setDeathFlash(null);
-    }, 250);
+    }, 200);
 
     return () => window.clearTimeout(deathTimeout);
   }, [lastCombatEvents]);
@@ -157,19 +157,19 @@ export function GameBoard({
           100% { opacity: 0; transform: scale(1); }
         }
         .attack-swing-player {
-          animation: attack-swing-player 0.3s ease;
+          animation: attack-swing-player 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .attack-swing-enemy {
-          animation: attack-swing-enemy 0.3s ease;
+          animation: attack-swing-enemy 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .attack-hit {
-          animation: attack-hit 0.12s ease;
+          animation: attack-hit 0.1s ease-out;
         }
         .damage-float {
-          animation: damage-float 0.6s ease;
+          animation: damage-float 0.45s ease-out;
         }
         .death-flash {
-          animation: death-flash 0.25s ease;
+          animation: death-flash 0.2s ease-out;
         }
       `}</style>
       <p>
