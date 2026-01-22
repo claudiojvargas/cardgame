@@ -1,38 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CARDS } from "../../game/data/cards.catalog";
 import { Card } from "../../game/entities/Card";
 import { getAwakeningCost } from "../../game/systems/powerCalculator";
 import { getRarityConfig } from "../../game/config/rarity.config";
 import { CardTile } from "../components/CardTile";
-import {
-  loadInventory,
-  saveInventory,
-  type PlayerInventory,
-} from "../utils/inventory";
+import { useGame } from "../hooks/useGame";
 
 export function AwakeningScreen() {
+  const { profile, actions } = useGame();
   const ownedCards = useMemo(() => CARDS, []);
-  const [inventory, setInventory] = useState<PlayerInventory>(() =>
-    loadInventory([])
-  );
   const [selectedCardId, setSelectedCardId] = useState<string | null>(
     null
   );
-
-  useEffect(() => {
-    saveInventory(inventory);
-  }, [inventory]);
 
   const selectedCard = selectedCardId
     ? ownedCards.find(card => card.id === selectedCardId) ?? null
     : null;
 
   const awakeningLevel = selectedCardId
-    ? inventory.awakenings[selectedCardId] ?? 0
+    ? profile.collection.awakenings[selectedCardId] ?? 0
     : 0;
 
   const duplicatesAvailable = selectedCardId
-    ? Math.max(0, (inventory.counts[selectedCardId] ?? 0) - 1)
+    ? Math.max(0, (profile.collection.inventory[selectedCardId] ?? 0) - 1)
     : 0;
 
   const awakeningCost = selectedCard
@@ -49,37 +39,21 @@ export function AwakeningScreen() {
       getRarityConfig(selectedCard.rarity).maxAwakening;
 
   function handleSelectCard(card: Card) {
-    if ((inventory.counts[card.id] ?? 0) === 0) return;
+    if ((profile.collection.inventory[card.id] ?? 0) === 0) return;
     setSelectedCardId(card.id);
   }
 
   function handleAwaken() {
     if (!selectedCardId || !selectedCard) return;
     if (!canAwaken) return;
-
-    setInventory(current => {
-      const nextCounts = { ...current.counts };
-      const nextAwakenings = { ...current.awakenings };
-
-      nextCounts[selectedCardId] = Math.max(
-        0,
-        (nextCounts[selectedCardId] ?? 0) - awakeningCost
-      );
-      nextAwakenings[selectedCardId] =
-        (nextAwakenings[selectedCardId] ?? 0) + 1;
-
-      return {
-        ...current,
-        counts: nextCounts,
-        awakenings: nextAwakenings,
-      };
-    });
+    actions.removeCard(selectedCardId, awakeningCost);
+    actions.setAwakening(selectedCardId, awakeningLevel + 1);
   }
 
   const ownedList = ownedCards.filter(card => {
-    const ownedCount = inventory.counts[card.id] ?? 0;
+    const ownedCount = profile.collection.inventory[card.id] ?? 0;
     if (ownedCount <= 1) return false;
-    const currentAwakening = inventory.awakenings[card.id] ?? 0;
+    const currentAwakening = profile.collection.awakenings[card.id] ?? 0;
     if (currentAwakening >= getRarityConfig(card.rarity).maxAwakening) {
       return false;
     }
@@ -103,7 +77,7 @@ export function AwakeningScreen() {
               awakeningValue={awakeningLevel}
               duplicateCount={Math.max(
                 0,
-                (inventory.counts[selectedCard.id] ?? 0) - 1
+                (profile.collection.inventory[selectedCard.id] ?? 0) - 1
               )}
             />
             <div>
@@ -159,12 +133,12 @@ export function AwakeningScreen() {
               key={card.id}
               card={card}
               obtained
-              isNew={inventory.newCards.includes(card.id)}
+              isNew={profile.collection.isNew[card.id] ?? false}
               duplicateCount={Math.max(
                 0,
-                (inventory.counts[card.id] ?? 0) - 1
+                (profile.collection.inventory[card.id] ?? 0) - 1
               )}
-              awakeningValue={inventory.awakenings[card.id] ?? 0}
+              awakeningValue={profile.collection.awakenings[card.id] ?? 0}
               onClick={() => handleSelectCard(card)}
             />
           ))}
