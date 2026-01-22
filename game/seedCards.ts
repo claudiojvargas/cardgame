@@ -105,6 +105,8 @@ function generateCards(plan: SeedPlan, existingCards: Card[]): Card[] {
           cardClass,
           basePower,
           awakening: 0,
+          historia: "Desconhecida",
+          regiao: "Desconhecida",
         });
 
         existingIds.add(card.id);
@@ -133,6 +135,8 @@ function serializeCard(card: Card): string {
     cardClass: CardClass.${getEnumKey(CardClass, card.cardClass)},
     basePower: ${card.basePower},
     awakening: ${card.awakening},
+    historia: "${card.historia}",
+    regiao: "${card.regiao}",
   })`;
 }
 

@@ -8,6 +8,8 @@ export interface CardProps {
   rarity: Rarity;
   basePower: number;
   awakening: number;
+  historia: string;
+  regiao: string;
 }
 
 export type ShieldType = "REFLECT_50" | "TOTAL_REFLECT_100";
@@ -45,6 +47,8 @@ export class Card {
   readonly cardClass: CardClass;
   readonly rarity: Rarity;
   readonly basePower: number;
+  readonly historia: string;
+  readonly regiao: string;
   awakening: number;
   power: number;
   buffPowerPctTotal: number;
@@ -57,6 +61,8 @@ export class Card {
     this.cardClass = props.cardClass;
     this.rarity = props.rarity;
     this.basePower = props.basePower;
+    this.historia = props.historia;
+    this.regiao = props.regiao;
     this.awakening = props.awakening;
     this.power = this.calculateInitialPower();
     this.buffPowerPctTotal = 0;
@@ -76,6 +82,8 @@ export class Card {
       rarity: this.rarity,
       basePower: this.basePower,
       awakening: this.awakening,
+      historia: this.historia,
+      regiao: this.regiao,
     });
   }
 }

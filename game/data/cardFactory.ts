@@ -9,5 +9,7 @@ export function createCardFromDefinition(definition: CardDefinition): Card {
     cardClass: definition.cardClass,
     basePower: definition.basePower,
     awakening: definition.awakening,
+    historia: definition.historia ?? "Desconhecida",
+    regiao: definition.regiao ?? "Desconhecida",
   });
 }

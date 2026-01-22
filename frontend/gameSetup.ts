@@ -21,6 +21,8 @@ const card = (
     cardClass: cls,
     rarity,
     awakening: 0,
+    historia: "Desconhecida",
+    regiao: "Desconhecida",
   });
 
 // 🔹 Deck base do jogador (fixo na run)

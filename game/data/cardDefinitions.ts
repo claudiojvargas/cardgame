@@ -14,6 +14,8 @@ export interface CardDefinition {
   cardClass: CardClass;
   basePower: number;
   awakening: number;
+  historia?: string;
+  regiao?: string;
   effects?: CardEffectDefinition[];
 }
 
