@@ -5,6 +5,7 @@ import { getRarityConfig } from "../../game/config/rarity.config";
 import { calculateCardPower } from "../../game/systems/powerCalculator";
 import { CardClass, Rarity } from "../../game/types/enums";
 import { useGame } from "../hooks/useGame";
+import { getCardImageUrl } from "../utils/cardImages";
 
 type CollectionGroupId = "CLASS" | "RARITY";
 
@@ -268,9 +269,13 @@ export function CollectionScreen() {
                       color: obtained ? "#f5f5f5" : "#555",
                       marginBottom: 10,
                       fontSize: 12,
+                      backgroundImage: obtained ? `url(${getCardImageUrl(card.id)})` : "none",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
                     }}
                   >
-                    {obtained ? "Arte da carta" : "Silhueta"}
+                    {obtained ? "" : "Silhueta"}
                   </div>
                   <strong style={{ display: "block", marginBottom: 6 }}>
                     {obtained ? card.name : "???"}
@@ -355,10 +360,24 @@ export function CollectionScreen() {
                   : "Encontre essa carta em baús ou eventos especiais."}
               </p>
               {selectedObtained && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <strong>História</strong>
-                  <p style={{ margin: 0, color: "#bbb" }}>{selectedCard.historia}</p>
-                </div>
+                <>
+                  <div
+                    style={{
+                      height: 180,
+                      borderRadius: 12,
+                      border: "1px solid #333",
+                      backgroundImage: `url(${getCardImageUrl(selectedCard.id)})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                    aria-label={`Arte da carta ${selectedCard.name}`}
+                  />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <strong>História</strong>
+                    <p style={{ margin: 0, color: "#bbb" }}>{selectedCard.historia}</p>
+                  </div>
+                </>
               )}
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span>
