@@ -339,6 +339,7 @@ export function CollectionScreen() {
                 <span>
                   Raridade: {selectedObtained ? RARITY_LABELS[selectedCard.rarity] : "???"}
                 </span>
+                <span>Região: {selectedObtained ? selectedCard.regiao : "???"}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span>Base Power: {selectedObtained ? selectedCard.basePower : "???"}</span>
@@ -353,6 +354,12 @@ export function CollectionScreen() {
                   ? CLASS_EFFECTS[selectedCard.cardClass]
                   : "Encontre essa carta em baús ou eventos especiais."}
               </p>
+              {selectedObtained && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <strong>História</strong>
+                  <p style={{ margin: 0, color: "#bbb" }}>{selectedCard.historia}</p>
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span>
                   Status: {selectedObtained ? "Obtida" : "Não obtida"}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GameState } from "../../game/core/GameState";
 import { BattleResolver } from "../../game/core/BattleResolver";
 import { GameStatus } from "../../game/types/enums";
@@ -13,8 +13,20 @@ export type GamePhase =
   | "ANIMATING"
   | "GAME_OVER";
 
-export function useBattle(initialState: GameState, agent?: IAgent) {
+export type BattleOptions = {
+  aiDelayMs?: number;
+};
+
+const DEFAULT_AI_DELAY_MS = 2600;
+
+export function useBattle(
+  initialState: GameState,
+  agent?: IAgent,
+  options?: BattleOptions
+) {
   const [state, setState] = useState<GameState>(initialState);
+  const [isAiThinking, setIsAiThinking] = useState(false);
+  const [lastAiDurationMs, setLastAiDurationMs] = useState<number | null>(null);
   const [lastAiAction, setLastAiAction] = useState<{
     attackerId: string;
     defenderId: string;
@@ -28,13 +40,28 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     () => agent ?? new SimpleAIAgent(AIDifficulty.NORMAL),
     [agent]
   );
+  const aiDelayMs = options?.aiDelayMs ?? DEFAULT_AI_DELAY_MS;
+  const aiTimeoutRef = useRef<number | null>(null);
+  const aiStartRef = useRef<number | null>(null);
+  const stateRef = useRef(state);
+  const aiRef = useRef(ai);
 
   useEffect(() => {
     setState(initialState);
     setLastAiAction(null);
     setLastCombatEvents([]);
     setCombatHistory([]);
+    setIsAiThinking(false);
+    setLastAiDurationMs(null);
   }, [initialState]);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    aiRef.current = ai;
+  }, [ai]);
 
   useEffect(() => {
     if (state.status !== GameStatus.IN_PROGRESS) {
@@ -49,13 +76,20 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     }
   }, [state]);
 
-  useEffect(() => {
-    if (state.status !== GameStatus.IN_PROGRESS) return;
-    if (state.currentPlayer.id !== "AI") return;
+  function resolveAiTurn() {
+    const currentState = stateRef.current;
+    if (currentState.status !== GameStatus.IN_PROGRESS) {
+      setIsAiThinking(false);
+      return;
+    }
+    if (currentState.currentPlayer.id !== "AI") {
+      setIsAiThinking(false);
+      return;
+    }
 
-    const decision = ai.decide(state);
+    const decision = aiRef.current.decide(currentState);
     const result = BattleResolver.resolveAttackWithLog(
-      state,
+      currentState,
       decision.attackerId,
       decision.defenderId
     );
@@ -63,7 +97,36 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     setLastCombatEvents(result.events);
     setCombatHistory(prev => [...prev, ...result.events]);
     setState(result.state);
-  }, [ai, state]);
+    if (aiStartRef.current) {
+      setLastAiDurationMs(Math.round(performance.now() - aiStartRef.current));
+    }
+    setIsAiThinking(false);
+  }
+
+  function skipAiTurn() {
+    if (!isAiThinking) return;
+    if (aiTimeoutRef.current) {
+      window.clearTimeout(aiTimeoutRef.current);
+      aiTimeoutRef.current = null;
+    }
+    resolveAiTurn();
+  }
+
+  useEffect(() => {
+    if (state.status !== GameStatus.IN_PROGRESS) return;
+    if (state.currentPlayer.id !== "AI") return;
+
+    setIsAiThinking(true);
+    aiStartRef.current = performance.now();
+    aiTimeoutRef.current = window.setTimeout(resolveAiTurn, aiDelayMs);
+
+    return () => {
+      if (aiTimeoutRef.current) {
+        window.clearTimeout(aiTimeoutRef.current);
+        aiTimeoutRef.current = null;
+      }
+    };
+  }, [aiDelayMs, state]);
 
   function playerAttack(attackerId: string, defenderId: string) {
     if (state.status !== GameStatus.IN_PROGRESS) return;
@@ -88,5 +151,8 @@ export function useBattle(initialState: GameState, agent?: IAgent) {
     lastCombatEvents,
     combatHistory,
     phase,
+    isAiThinking,
+    lastAiDurationMs,
+    skipAiTurn,
   };
 }
