@@ -25,6 +25,14 @@ type LeaderboardEntry = {
   streak: number;
 };
 
+type LiveBattle = {
+  id: string;
+  playerA: string;
+  playerB: string;
+  turn: number;
+  status: "em andamento" | "finalizando";
+};
+
 export function PvpScreen() {
   const playerSummary = useMemo(
     () => ({
@@ -103,6 +111,33 @@ export function PvpScreen() {
         result: "win",
         delta: 16,
         playedAt: "Ontem, 20:05",
+      },
+    ],
+    []
+  );
+
+  const liveBattles = useMemo<LiveBattle[]>(
+    () => [
+      {
+        id: "live-1",
+        playerA: "Atlas Prime",
+        playerB: "Valkyrie",
+        turn: 6,
+        status: "em andamento",
+      },
+      {
+        id: "live-2",
+        playerA: "Aurora",
+        playerB: "Trovão",
+        turn: 4,
+        status: "finalizando",
+      },
+      {
+        id: "live-3",
+        playerA: "Mística Solária",
+        playerB: "Eclipse",
+        turn: 7,
+        status: "em andamento",
       },
     ],
     []
@@ -378,6 +413,83 @@ export function PvpScreen() {
             ))}
           </div>
           <button type="button">Ver histórico completo</button>
+        </div>
+      </section>
+
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: 20,
+            border: "1px solid #e0e0e0",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          <h2 style={{ margin: 0 }}>Batalhas em andamento</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {liveBattles.map(battle => (
+              <div
+                key={battle.id}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  background: "#f5f5f5",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
+                <strong>
+                  {battle.playerA} vs {battle.playerB}
+                </strong>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 12,
+                    color: "#555",
+                  }}
+                >
+                  <span>Turno {battle.turn}</span>
+                  <span>{battle.status}</span>
+                </div>
+                <button type="button" style={{ alignSelf: "flex-start" }}>
+                  Assistir replay
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: 20,
+            border: "1px solid #e0e0e0",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          <h2 style={{ margin: 0 }}>Desafios rápidos</h2>
+          <p style={{ margin: 0, color: "#666" }}>
+            Escolha um rival aleatório e ganhe bônus de elo se vencer.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button type="button">⚡ Desafio relâmpago (+12 Elo)</button>
+            <button type="button">🎲 Desafio aleatório (+8 Elo)</button>
+            <button type="button">🧠 Desafio estratégico (+15 Elo)</button>
+          </div>
         </div>
       </section>
     </div>
