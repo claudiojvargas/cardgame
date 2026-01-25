@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { TowerScreen } from "./screens/TowerScreen";
+import { CampaignTowerScreen } from "./screens/CampaignTowerScreen";
 import { CardsScreen } from "./screens/CardsScreen";
 import { ChestsScreen } from "./screens/ChestsScreen";
 import { AwakeningScreen } from "./screens/AwakeningScreen";
@@ -11,6 +12,7 @@ import { GameProvider } from "./hooks/useGame";
 type Screen =
   | "MENU"
   | "TOWER"
+  | "CAMPAIGN_TOWER"
   | "CARDS"
   | "CHESTS"
   | "AWAKENING"
@@ -30,6 +32,10 @@ function App() {
 
   if (screen === "TOWER") {
     content = <TowerScreen />;
+  }
+
+  if (screen === "CAMPAIGN_TOWER") {
+    content = <CampaignTowerScreen />;
   }
 
   if (screen === "CARDS") {
@@ -85,6 +91,15 @@ function App() {
             }}
           >
             🏰 Torre
+          </button>
+          <button
+            onClick={() => setScreen("CAMPAIGN_TOWER")}
+            style={{
+              padding: "8px 16px",
+              fontWeight: screen === "CAMPAIGN_TOWER" ? "bold" : "normal",
+            }}
+          >
+            🧭 Torre Campanha
           </button>
           <button
             onClick={() => setScreen("CARDS")}
