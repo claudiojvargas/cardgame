@@ -7,22 +7,56 @@ import { GameState } from "../../game/core/GameState";
 import { GameStatus } from "../../game/types/enums";
 import { createSeededRng } from "../../game/utils/random";
 import { TowerEnemyFactory } from "../../game/tower/TowerEnemyFactory";
+import {
+  fetchPvpSnapshot,
+  postPvpMatchResult,
+  type LeaderboardEntry,
+  type MatchHistoryEntry,
+  type PvpMatchResultPayload,
+} from "../utils/pvpApi";
 
-type MatchHistoryEntry = {
-  id: string;
-  rival: string;
-  result: "win" | "loss";
-  delta: number;
-  playedAt: string;
+const DEFAULT_PLAYER_SUMMARY = {
+  name: "Mestre do Baralho",
+  rank: "Ouro II",
+  rating: 1340,
+  wins: 18,
+  losses: 9,
+  winRate: 67,
+  bestRank: "Platina III",
+  placementMatchesRemaining: 5,
 };
 
-type LeaderboardEntry = {
-  id: string;
-  name: string;
-  rank: string;
-  rating: number;
-  streak: number;
-};
+const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
+  { id: "lb-1", name: "Atlas Prime", rank: "Diamante", rating: 1820, streak: 7 },
+  { id: "lb-2", name: "Valkyrie", rank: "Diamante", rating: 1775, streak: 5 },
+  { id: "lb-3", name: "Trovão", rank: "Platina", rating: 1692, streak: 4 },
+  { id: "lb-4", name: "Eclipse", rank: "Platina", rating: 1650, streak: 3 },
+  { id: "lb-5", name: "Aurora", rank: "Ouro", rating: 1580, streak: 2 },
+];
+
+const DEFAULT_HISTORY: MatchHistoryEntry[] = [
+  {
+    id: "match-1",
+    rival: "Lyra do Abismo",
+    result: "win",
+    delta: 22,
+    playedAt: "Hoje, 14:32",
+  },
+  {
+    id: "match-2",
+    rival: "Cavaleiro Azul",
+    result: "loss",
+    delta: -18,
+    playedAt: "Hoje, 12:18",
+  },
+  {
+    id: "match-3",
+    rival: "Mística Solária",
+    result: "win",
+    delta: 16,
+    playedAt: "Ontem, 20:05",
+  },
+];
 
 export function PvpScreen() {
   const rng = useMemo(() => createSeededRng(Date.now()), []);
@@ -33,48 +67,15 @@ export function PvpScreen() {
   const [initialState, setInitialState] = useState<GameState>(() =>
     createIdleState(rng)
   );
-  const [playerSummary, setPlayerSummary] = useState(() => ({
-    name: "Mestre do Baralho",
-    rank: "Ouro II",
-    rating: 1340,
-    wins: 18,
-    losses: 9,
-    winRate: 67,
-    bestRank: "Platina III",
-    placementMatchesRemaining: 5,
-  }));
+  const [playerSummary, setPlayerSummary] = useState(
+    () => DEFAULT_PLAYER_SUMMARY
+  );
 
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([
-    { id: "lb-1", name: "Atlas Prime", rank: "Diamante", rating: 1820, streak: 7 },
-    { id: "lb-2", name: "Valkyrie", rank: "Diamante", rating: 1775, streak: 5 },
-    { id: "lb-3", name: "Trovão", rank: "Platina", rating: 1692, streak: 4 },
-    { id: "lb-4", name: "Eclipse", rank: "Platina", rating: 1650, streak: 3 },
-    { id: "lb-5", name: "Aurora", rank: "Ouro", rating: 1580, streak: 2 },
-  ]);
+  const [leaderboard, setLeaderboard] =
+    useState<LeaderboardEntry[]>(DEFAULT_LEADERBOARD);
 
-  const [history, setHistory] = useState<MatchHistoryEntry[]>([
-    {
-      id: "match-1",
-      rival: "Lyra do Abismo",
-      result: "win",
-      delta: 22,
-      playedAt: "Hoje, 14:32",
-    },
-    {
-      id: "match-2",
-      rival: "Cavaleiro Azul",
-      result: "loss",
-      delta: -18,
-      playedAt: "Hoje, 12:18",
-    },
-    {
-      id: "match-3",
-      rival: "Mística Solária",
-      result: "win",
-      delta: 16,
-      playedAt: "Ontem, 20:05",
-    },
-  ]);
+  const [history, setHistory] =
+    useState<MatchHistoryEntry[]>(DEFAULT_HISTORY);
 
   const {
     state,
@@ -98,6 +99,19 @@ export function PvpScreen() {
     setActiveRival(null);
     setInitialState(createIdleState(rng));
   }
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      const snapshot = await fetchPvpSnapshot(controller.signal);
+      if (!snapshot) return;
+      setPlayerSummary(snapshot.summary ?? DEFAULT_PLAYER_SUMMARY);
+      setLeaderboard(snapshot.leaderboard ?? DEFAULT_LEADERBOARD);
+      setHistory(snapshot.history ?? DEFAULT_HISTORY);
+    };
+    void load();
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     if (!battleActive) return;
@@ -153,6 +167,15 @@ export function PvpScreen() {
       });
       return updated.sort((a, b) => b.rating - a.rating).slice(0, 6);
     });
+
+    const payload: PvpMatchResultPayload = {
+      matchId: String(activeMatchId),
+      opponent: activeRival ?? "Bot de colocação",
+      result: win ? "win" : "loss",
+      delta,
+      finishedAt: new Date().toISOString(),
+    };
+    void postPvpMatchResult(payload);
 
     lastResolvedMatchId.current = activeMatchId;
   }, [
