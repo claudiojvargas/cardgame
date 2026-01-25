@@ -8,15 +8,6 @@ import { GameStatus } from "../../game/types/enums";
 import { createSeededRng } from "../../game/utils/random";
 import { TowerEnemyFactory } from "../../game/tower/TowerEnemyFactory";
 
-type RivalPreview = {
-  id: string;
-  name: string;
-  rank: string;
-  deckPower: number;
-  winRate: number;
-  badge: string;
-};
-
 type MatchHistoryEntry = {
   id: string;
   rival: string;
@@ -31,14 +22,6 @@ type LeaderboardEntry = {
   rank: string;
   rating: number;
   streak: number;
-};
-
-type LiveBattle = {
-  id: string;
-  playerA: string;
-  playerB: string;
-  turn: number;
-  status: "em andamento" | "finalizando";
 };
 
 export function PvpScreen() {
@@ -60,36 +43,6 @@ export function PvpScreen() {
     bestRank: "Platina III",
     placementMatchesRemaining: 5,
   }));
-
-  const rivals = useMemo<RivalPreview[]>(
-    () => [
-      {
-        id: "rival-1",
-        name: "Lyra do Abismo",
-        rank: "Ouro I",
-        deckPower: 1420,
-        winRate: 61,
-        badge: "🔥",
-      },
-      {
-        id: "rival-2",
-        name: "Cavaleiro Azul",
-        rank: "Prata I",
-        deckPower: 1290,
-        winRate: 54,
-        badge: "⚔️",
-      },
-      {
-        id: "rival-3",
-        name: "Mística Solária",
-        rank: "Ouro III",
-        deckPower: 1388,
-        winRate: 58,
-        badge: "✨",
-      },
-    ],
-    []
-  );
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([
     { id: "lb-1", name: "Atlas Prime", rank: "Diamante", rating: 1820, streak: 7 },
@@ -122,33 +75,6 @@ export function PvpScreen() {
       playedAt: "Ontem, 20:05",
     },
   ]);
-
-  const liveBattles = useMemo<LiveBattle[]>(
-    () => [
-      {
-        id: "live-1",
-        playerA: "Atlas Prime",
-        playerB: "Valkyrie",
-        turn: 6,
-        status: "em andamento",
-      },
-      {
-        id: "live-2",
-        playerA: "Aurora",
-        playerB: "Trovão",
-        turn: 4,
-        status: "finalizando",
-      },
-      {
-        id: "live-3",
-        playerA: "Mística Solária",
-        playerB: "Eclipse",
-        turn: 7,
-        status: "em andamento",
-      },
-    ],
-    []
-  );
 
   const {
     state,
@@ -459,196 +385,55 @@ export function PvpScreen() {
 
           <section
             style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)",
-              gap: 16,
+              background: "#fff",
+              borderRadius: 16,
+              padding: 20,
+              border: "1px solid #e0e0e0",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
             }}
           >
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: 20,
-                border: "1px solid #e0e0e0",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-              }}
-            >
-              <h2 style={{ margin: 0 }}>Rivais sugeridos</h2>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                  gap: 12,
-                }}
-              >
-                {rivals.map(rival => (
-                  <div
-                    key={rival.id}
-                    style={{
-                      borderRadius: 14,
-                      border: "1px solid #e6e6e6",
-                      padding: 14,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 8,
-                      background: "#fafafa",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <strong>{rival.name}</strong>
-                      <span>{rival.badge}</span>
-                    </div>
-                    <p style={{ margin: 0, color: "#666", fontSize: 12 }}>
-                      {rival.rank} • Poder {rival.deckPower}
+            <h2 style={{ margin: 0 }}>Histórico recente</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {history.map(match => (
+                <div
+                  key={match.id}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 12,
+                    background: match.result === "win" ? "#e9f7ef" : "#fdecea",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 600 }}>{match.rival}</p>
+                    <p style={{ margin: 0, fontSize: 12, color: "#666" }}>
+                      {match.playedAt}
                     </p>
-                    <p style={{ margin: 0, color: "#444", fontSize: 12 }}>
-                      {rival.winRate}% win rate
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <p style={{ margin: 0, fontWeight: 600 }}>
+                      {match.result === "win" ? "Vitória" : "Derrota"}
                     </p>
-                    <button type="button" onClick={() => startBattle(rival.name)}>
-                      Enfrentar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: 20,
-                border: "1px solid #e0e0e0",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-              }}
-            >
-              <h2 style={{ margin: 0 }}>Histórico recente</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {history.map(match => (
-                  <div
-                    key={match.id}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      background: match.result === "win" ? "#e9f7ef" : "#fdecea",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 12,
-                    }}
-                  >
-                    <div>
-                      <p style={{ margin: 0, fontWeight: 600 }}>{match.rival}</p>
-                      <p style={{ margin: 0, fontSize: 12, color: "#666" }}>
-                        {match.playedAt}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <p style={{ margin: 0, fontWeight: 600 }}>
-                        {match.result === "win" ? "Vitória" : "Derrota"}
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: 12,
-                          color: match.delta > 0 ? "#2e7d32" : "#c62828",
-                        }}
-                      >
-                        {match.delta > 0 ? "+" : ""}
-                        {match.delta} Elo
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button type="button">Ver histórico completo</button>
-            </div>
-          </section>
-
-          <section
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-              gap: 16,
-            }}
-          >
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: 20,
-                border: "1px solid #e0e0e0",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-              }}
-            >
-              <h2 style={{ margin: 0 }}>Batalhas em andamento</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {liveBattles.map(battle => (
-                  <div
-                    key={battle.id}
-                    style={{
-                      padding: "12px 14px",
-                      borderRadius: 12,
-                      background: "#f5f5f5",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
-                    }}
-                  >
-                    <strong>
-                      {battle.playerA} vs {battle.playerB}
-                    </strong>
-                    <div
+                    <p
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
+                        margin: 0,
                         fontSize: 12,
-                        color: "#555",
+                        color: match.delta > 0 ? "#2e7d32" : "#c62828",
                       }}
                     >
-                      <span>Turno {battle.turn}</span>
-                      <span>{battle.status}</span>
-                    </div>
-                    <button type="button" style={{ alignSelf: "flex-start" }}>
-                      Assistir replay
-                    </button>
+                      {match.delta > 0 ? "+" : ""}
+                      {match.delta} Elo
+                    </p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: 20,
-                border: "1px solid #e0e0e0",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-              }}
-            >
-              <h2 style={{ margin: 0 }}>Desafios rápidos</h2>
-              <p style={{ margin: 0, color: "#666" }}>
-                Escolha um rival aleatório e ganhe bônus de elo se vencer.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button type="button" onClick={() => startBattle("Desafio relâmpago")}>
-                  ⚡ Desafio relâmpago (+12 Elo)
-                </button>
-                <button type="button" onClick={() => startBattle("Desafio aleatório")}>
-                  🎲 Desafio aleatório (+8 Elo)
-                </button>
-                <button type="button" onClick={() => startBattle("Desafio estratégico")}>
-                  🧠 Desafio estratégico (+15 Elo)
-                </button>
-              </div>
-            </div>
+            <button type="button">Ver histórico completo</button>
           </section>
         </>
       )}
