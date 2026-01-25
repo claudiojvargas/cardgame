@@ -60,6 +60,9 @@ const DEFAULT_HISTORY: MatchHistoryEntry[] = [
 ];
 
 const PVP_SNAPSHOT_KEY = "pvp-snapshot-v1";
+const BASE_WIN_POINTS = 10;
+const LOSS_POINTS = -10;
+const BONUS_PER_REMAINING_CARD = 5;
 
 export function PvpScreen() {
   const { profile } = useGame();
@@ -211,7 +214,11 @@ export function PvpScreen() {
     if (lastResolvedMatchId.current === activeMatchId) return;
 
     const win = state.winnerId === "Player";
-    const delta = win ? 20 : -15;
+    const remainingCards =
+      state.players.find(player => player.id === "Player")?.field.length ?? 0;
+    const delta = win
+      ? BASE_WIN_POINTS + remainingCards * BONUS_PER_REMAINING_CARD
+      : LOSS_POINTS;
     const playedAt = new Date().toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
