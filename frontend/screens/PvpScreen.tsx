@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GameBoard } from "../components/GameBoard";
 import { useBattle } from "../hooks/useBattle";
 import { createPlayer } from "../gameSetup";
@@ -45,22 +45,21 @@ export function PvpScreen() {
   const rng = useMemo(() => createSeededRng(Date.now()), []);
   const [battleActive, setBattleActive] = useState(false);
   const [activeRival, setActiveRival] = useState<string | null>(null);
+  const [activeMatchId, setActiveMatchId] = useState(0);
+  const lastResolvedMatchId = useRef<number | null>(null);
   const [initialState, setInitialState] = useState<GameState>(() =>
     createIdleState(rng)
   );
-  const playerSummary = useMemo(
-    () => ({
-      name: "Mestre do Baralho",
-      rank: "Ouro II",
-      rating: 1340,
-      wins: 18,
-      losses: 9,
-      winRate: 67,
-      bestRank: "Platina III",
-      placementMatchesRemaining: 5,
-    }),
-    []
-  );
+  const [playerSummary, setPlayerSummary] = useState(() => ({
+    name: "Mestre do Baralho",
+    rank: "Ouro II",
+    rating: 1340,
+    wins: 18,
+    losses: 9,
+    winRate: 67,
+    bestRank: "Platina III",
+    placementMatchesRemaining: 5,
+  }));
 
   const rivals = useMemo<RivalPreview[]>(
     () => [
@@ -92,43 +91,37 @@ export function PvpScreen() {
     []
   );
 
-  const leaderboard = useMemo<LeaderboardEntry[]>(
-    () => [
-      { id: "lb-1", name: "Atlas Prime", rank: "Diamante", rating: 1820, streak: 7 },
-      { id: "lb-2", name: "Valkyrie", rank: "Diamante", rating: 1775, streak: 5 },
-      { id: "lb-3", name: "Trovão", rank: "Platina", rating: 1692, streak: 4 },
-      { id: "lb-4", name: "Eclipse", rank: "Platina", rating: 1650, streak: 3 },
-      { id: "lb-5", name: "Aurora", rank: "Ouro", rating: 1580, streak: 2 },
-    ],
-    []
-  );
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([
+    { id: "lb-1", name: "Atlas Prime", rank: "Diamante", rating: 1820, streak: 7 },
+    { id: "lb-2", name: "Valkyrie", rank: "Diamante", rating: 1775, streak: 5 },
+    { id: "lb-3", name: "Trovão", rank: "Platina", rating: 1692, streak: 4 },
+    { id: "lb-4", name: "Eclipse", rank: "Platina", rating: 1650, streak: 3 },
+    { id: "lb-5", name: "Aurora", rank: "Ouro", rating: 1580, streak: 2 },
+  ]);
 
-  const history = useMemo<MatchHistoryEntry[]>(
-    () => [
-      {
-        id: "match-1",
-        rival: "Lyra do Abismo",
-        result: "win",
-        delta: 22,
-        playedAt: "Hoje, 14:32",
-      },
-      {
-        id: "match-2",
-        rival: "Cavaleiro Azul",
-        result: "loss",
-        delta: -18,
-        playedAt: "Hoje, 12:18",
-      },
-      {
-        id: "match-3",
-        rival: "Mística Solária",
-        result: "win",
-        delta: 16,
-        playedAt: "Ontem, 20:05",
-      },
-    ],
-    []
-  );
+  const [history, setHistory] = useState<MatchHistoryEntry[]>([
+    {
+      id: "match-1",
+      rival: "Lyra do Abismo",
+      result: "win",
+      delta: 22,
+      playedAt: "Hoje, 14:32",
+    },
+    {
+      id: "match-2",
+      rival: "Cavaleiro Azul",
+      result: "loss",
+      delta: -18,
+      playedAt: "Hoje, 12:18",
+    },
+    {
+      id: "match-3",
+      rival: "Mística Solária",
+      result: "win",
+      delta: 16,
+      playedAt: "Ontem, 20:05",
+    },
+  ]);
 
   const liveBattles = useMemo<LiveBattle[]>(
     () => [
@@ -169,6 +162,7 @@ export function PvpScreen() {
 
   function startBattle(rivalName: string) {
     setActiveRival(rivalName);
+    setActiveMatchId(Date.now());
     setInitialState(createGameState(rng));
     setBattleActive(true);
   }
@@ -178,6 +172,73 @@ export function PvpScreen() {
     setActiveRival(null);
     setInitialState(createIdleState(rng));
   }
+
+  useEffect(() => {
+    if (!battleActive) return;
+    if (state.status !== GameStatus.FINISHED) return;
+    if (lastResolvedMatchId.current === activeMatchId) return;
+
+    const win = state.winnerId === "Player";
+    const delta = win ? 20 : -15;
+    const playedAt = new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    setPlayerSummary(prev => {
+      const wins = prev.wins + (win ? 1 : 0);
+      const losses = prev.losses + (win ? 0 : 1);
+      const total = wins + losses;
+      const winRate = total > 0 ? Math.round((wins / total) * 100) : prev.winRate;
+      const placementMatchesRemaining =
+        prev.placementMatchesRemaining > 0
+          ? prev.placementMatchesRemaining - 1
+          : 0;
+
+      return {
+        ...prev,
+        rating: prev.rating + delta,
+        wins,
+        losses,
+        winRate,
+        placementMatchesRemaining,
+      };
+    });
+
+    setHistory(prev => [
+      {
+        id: `match-${activeMatchId}`,
+        rival: activeRival ?? "Bot de colocação",
+        result: win ? "win" : "loss",
+        delta,
+        playedAt: `Hoje, ${playedAt}`,
+      },
+      ...prev,
+    ]);
+
+    setLeaderboard(prev => {
+      const updated = prev.filter(entry => entry.id !== "player");
+      updated.push({
+        id: "player",
+        name: playerSummary.name,
+        rank: playerSummary.rank,
+        rating: playerSummary.rating + delta,
+        streak: win ? 1 : 0,
+      });
+      return updated.sort((a, b) => b.rating - a.rating).slice(0, 6);
+    });
+
+    lastResolvedMatchId.current = activeMatchId;
+  }, [
+    activeMatchId,
+    activeRival,
+    battleActive,
+    playerSummary.name,
+    playerSummary.rank,
+    playerSummary.rating,
+    state.status,
+    state.winnerId,
+  ]);
 
   return (
     <div
