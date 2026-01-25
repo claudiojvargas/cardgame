@@ -591,6 +591,49 @@ export function PvpScreen() {
           </section>
         </>
       )}
+
+      {battleActive && state.status === GameStatus.FINISHED && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(255, 255, 255, 0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 20,
+          }}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e0e0e0",
+              borderRadius: 16,
+              padding: 24,
+              minWidth: 280,
+              textAlign: "center",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            {state.winnerId === "Player" ? (
+              <h2 style={{ margin: 0 }}>✅ Vitória!</h2>
+            ) : (
+              <h2 style={{ margin: 0 }}>❌ Derrota</h2>
+            )}
+            <p style={{ margin: 0, color: "#666" }}>
+              {state.winnerId === "Player"
+                ? "Você venceu o duelo PvP."
+                : "Seu rival levou a melhor desta vez."}
+            </p>
+            <button type="button" onClick={exitBattle}>
+              Voltar para PvP
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
