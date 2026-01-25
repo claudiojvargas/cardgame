@@ -35,6 +35,7 @@ export function PvpScreen() {
       losses: 9,
       winRate: 67,
       bestRank: "Platina III",
+      placementMatchesRemaining: 5,
     }),
     []
   );
@@ -148,6 +149,31 @@ export function PvpScreen() {
           <span style={{ color: "#f5c542" }}>• {playerSummary.rating} Elo</span>
         </div>
       </header>
+
+      {playerSummary.placementMatchesRemaining > 0 && (
+        <section
+          style={{
+            background: "#fff7e6",
+            border: "1px solid #ffe0b2",
+            borderRadius: 16,
+            padding: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <strong>Partidas de colocação</strong>
+            <p style={{ margin: "4px 0 0", color: "#8d6e63" }}>
+              Nas primeiras {playerSummary.placementMatchesRemaining} partidas,
+              você enfrenta bots para calibrar seu ranking.
+            </p>
+          </div>
+          <button type="button">🎯 Jogar colocação</button>
+        </section>
+      )}
 
       <section
         style={{
