@@ -7,6 +7,7 @@ import { AwakeningScreen } from "./screens/AwakeningScreen";
 import { CombiningScreen } from "./screens/CombiningScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { CollectionScreen } from "./screens/CollectionScreen";
+import { PvpScreen } from "./screens/PvpScreen";
 import { GameProvider } from "./hooks/useGame";
 
 type Screen =
@@ -18,7 +19,8 @@ type Screen =
   | "AWAKENING"
   | "COMBINING"
   | "PROFILE"
-  | "COLLECTION";
+  | "COLLECTION"
+  | "PVP";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("MENU");
@@ -60,6 +62,10 @@ function App() {
 
   if (screen === "COLLECTION") {
     content = <CollectionScreen />;
+  }
+
+  if (screen === "PVP") {
+    content = <PvpScreen />;
   }
 
   return (
@@ -154,6 +160,15 @@ function App() {
             }}
           >
             🙍 Perfil
+          </button>
+          <button
+            onClick={() => setScreen("PVP")}
+            style={{
+              padding: "8px 16px",
+              fontWeight: screen === "PVP" ? "bold" : "normal",
+            }}
+          >
+            ⚔️ PvP
           </button>
         </nav>
       </div>
