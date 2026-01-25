@@ -14,9 +14,10 @@ import {
   type MatchHistoryEntry,
   type PvpMatchResultPayload,
 } from "../utils/pvpApi";
+import { useGame } from "../hooks/useGame";
 
 const DEFAULT_PLAYER_SUMMARY = {
-  name: "Mestre do Baralho",
+  name: "Jogador",
   rank: "Ouro II",
   rating: 1340,
   wins: 18,
@@ -61,6 +62,7 @@ const DEFAULT_HISTORY: MatchHistoryEntry[] = [
 const PVP_SNAPSHOT_KEY = "pvp-snapshot-v1";
 
 export function PvpScreen() {
+  const { profile } = useGame();
   const rng = useMemo(() => createSeededRng(Date.now()), []);
   const [battleActive, setBattleActive] = useState(false);
   const [activeRival, setActiveRival] = useState<string | null>(null);
@@ -71,9 +73,10 @@ export function PvpScreen() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [playerSummary, setPlayerSummary] = useState(
-    () => DEFAULT_PLAYER_SUMMARY
-  );
+  const [playerSummary, setPlayerSummary] = useState(() => ({
+    ...DEFAULT_PLAYER_SUMMARY,
+    name: profile.displayName,
+  }));
 
   const [leaderboard, setLeaderboard] =
     useState<LeaderboardEntry[]>(DEFAULT_LEADERBOARD);
@@ -116,7 +119,11 @@ export function PvpScreen() {
               leaderboard?: LeaderboardEntry[];
               history?: MatchHistoryEntry[];
             };
-            setPlayerSummary(parsed.summary ?? DEFAULT_PLAYER_SUMMARY);
+            setPlayerSummary({
+              ...DEFAULT_PLAYER_SUMMARY,
+              ...parsed.summary,
+              name: profile.displayName,
+            });
             setLeaderboard(parsed.leaderboard ?? DEFAULT_LEADERBOARD);
             setHistory(parsed.history ?? DEFAULT_HISTORY);
           } catch {
@@ -136,14 +143,22 @@ export function PvpScreen() {
       } else {
         setLoadError(null);
       }
-      setPlayerSummary(snapshot.summary ?? DEFAULT_PLAYER_SUMMARY);
+      setPlayerSummary({
+        ...DEFAULT_PLAYER_SUMMARY,
+        ...snapshot.summary,
+        name: profile.displayName,
+      });
       setLeaderboard(snapshot.leaderboard ?? DEFAULT_LEADERBOARD);
       setHistory(snapshot.history ?? DEFAULT_HISTORY);
       if (typeof window !== "undefined") {
         window.localStorage.setItem(
           PVP_SNAPSHOT_KEY,
           JSON.stringify({
-            summary: snapshot.summary ?? DEFAULT_PLAYER_SUMMARY,
+            summary: {
+              ...DEFAULT_PLAYER_SUMMARY,
+              ...snapshot.summary,
+              name: profile.displayName,
+            },
             leaderboard: snapshot.leaderboard ?? DEFAULT_LEADERBOARD,
             history: snapshot.history ?? DEFAULT_HISTORY,
           })
@@ -153,7 +168,42 @@ export function PvpScreen() {
     };
     void load();
     return () => controller.abort();
-  }, []);
+  }, [profile.displayName]);
+
+  useEffect(() => {
+    setPlayerSummary(prev => ({ ...prev, name: profile.displayName }));
+    setLeaderboard(prev => {
+      const next = prev.map(entry =>
+        entry.id === "player" ? { ...entry, name: profile.displayName } : entry
+      );
+      return next;
+    });
+    if (typeof window !== "undefined") {
+      try {
+        const cached = window.localStorage.getItem(PVP_SNAPSHOT_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached) as {
+            summary?: typeof DEFAULT_PLAYER_SUMMARY;
+            leaderboard?: LeaderboardEntry[];
+            history?: MatchHistoryEntry[];
+          };
+          window.localStorage.setItem(
+            PVP_SNAPSHOT_KEY,
+            JSON.stringify({
+              ...parsed,
+              summary: {
+                ...DEFAULT_PLAYER_SUMMARY,
+                ...parsed.summary,
+                name: profile.displayName,
+              },
+            })
+          );
+        }
+      } catch {
+        // ignore cache errors
+      }
+    }
+  }, [profile.displayName]);
 
   useEffect(() => {
     if (!battleActive) return;
