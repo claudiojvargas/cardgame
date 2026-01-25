@@ -1,4 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { GameBoard } from "../components/GameBoard";
+import { useBattle } from "../hooks/useBattle";
+import { createPlayer } from "../gameSetup";
+import { Player } from "../../game/entities/Player";
+import { GameState } from "../../game/core/GameState";
+import { GameStatus } from "../../game/types/enums";
+import { createSeededRng } from "../../game/utils/random";
+import { TowerEnemyFactory } from "../../game/tower/TowerEnemyFactory";
 
 type RivalPreview = {
   id: string;
@@ -34,6 +42,12 @@ type LiveBattle = {
 };
 
 export function PvpScreen() {
+  const rng = useMemo(() => createSeededRng(Date.now()), []);
+  const [battleActive, setBattleActive] = useState(false);
+  const [activeRival, setActiveRival] = useState<string | null>(null);
+  const [initialState, setInitialState] = useState<GameState>(() =>
+    createIdleState(rng)
+  );
   const playerSummary = useMemo(
     () => ({
       name: "Mestre do Baralho",
@@ -143,6 +157,28 @@ export function PvpScreen() {
     []
   );
 
+  const {
+    state,
+    playerAttack,
+    lastAiAction,
+    lastCombatEvents,
+    phase,
+    isAiThinking,
+    skipAiTurn,
+  } = useBattle(initialState);
+
+  function startBattle(rivalName: string) {
+    setActiveRival(rivalName);
+    setInitialState(createGameState(rng));
+    setBattleActive(true);
+  }
+
+  function exitBattle() {
+    setBattleActive(false);
+    setActiveRival(null);
+    setInitialState(createIdleState(rng));
+  }
+
   return (
     <div
       style={{
@@ -152,346 +188,409 @@ export function PvpScreen() {
         gap: 20,
       }}
     >
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0 }}>⚔️ Arena PvP</h1>
-          <p style={{ margin: 0, color: "#666" }}>
-            Temporada 1 • Combates com decks reais e IA tática.
-          </p>
-        </div>
+      {battleActive ? (
         <div
           style={{
-            background: "#111",
-            color: "#fff",
-            padding: "10px 16px",
-            borderRadius: 999,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 14,
-          }}
-        >
-          <span style={{ fontWeight: 600 }}>Seu Rank</span>
-          <span>{playerSummary.rank}</span>
-          <span style={{ color: "#f5c542" }}>• {playerSummary.rating} Elo</span>
-        </div>
-      </header>
-
-      {playerSummary.placementMatchesRemaining > 0 && (
-        <section
-          style={{
-            background: "#fff7e6",
-            border: "1px solid #ffe0b2",
-            borderRadius: 16,
-            padding: 16,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <strong>Partidas de colocação</strong>
-            <p style={{ margin: "4px 0 0", color: "#8d6e63" }}>
-              Nas primeiras {playerSummary.placementMatchesRemaining} partidas,
-              você enfrenta bots para calibrar seu ranking.
-            </p>
-          </div>
-          <button type="button">🎯 Jogar colocação</button>
-        </section>
-      )}
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: 20,
-            border: "1px solid #e0e0e0",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-            display: "flex",
-            flexDirection: "column",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) 280px",
             gap: 16,
+            minHeight: 0,
           }}
         >
-          <div
+          <GameBoard
+            state={state}
+            onAttack={playerAttack}
+            lastAiDefenderId={lastAiAction?.defenderId ?? null}
+            lastAiAction={lastAiAction}
+            lastCombatEvents={lastCombatEvents}
+            isAiThinking={isAiThinking}
+            onSkipAiDelay={skipAiTurn}
+          />
+          <aside
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e0e0e0",
+              borderRadius: 12,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            <div>
+              <h2 style={{ marginTop: 0 }}>Partida PvP</h2>
+              <p style={{ margin: 0, color: "#666" }}>
+                Rival: {activeRival ?? "Bot de colocação"}
+              </p>
+            </div>
+            <div>
+              <h3 style={{ marginTop: 0 }}>Fase</h3>
+              <p style={{ margin: 0, color: "#333" }}>{phase}</p>
+            </div>
+            <button type="button" onClick={exitBattle}>
+              Sair da partida
+            </button>
+          </aside>
+        </div>
+      ) : (
+        <>
+          <header
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center",
-              gap: 12,
+              alignItems: "flex-end",
+              gap: 16,
               flexWrap: "wrap",
             }}
           >
             <div>
-              <h2 style={{ margin: 0 }}>Perfil competitivo</h2>
-              <p style={{ margin: "4px 0 0", color: "#666" }}>
-                Última atualização: agora mesmo
+              <h1 style={{ margin: 0 }}>⚔️ Arena PvP</h1>
+              <p style={{ margin: 0, color: "#666" }}>
+                Temporada 1 • Combates com decks reais e IA tática.
               </p>
             </div>
-            <button type="button">🎯 Encontrar partida</button>
-          </div>
+            <div
+              style={{
+                background: "#111",
+                color: "#fff",
+                padding: "10px 16px",
+                borderRadius: 999,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 14,
+              }}
+            >
+              <span style={{ fontWeight: 600 }}>Seu Rank</span>
+              <span>{playerSummary.rank}</span>
+              <span style={{ color: "#f5c542" }}>• {playerSummary.rating} Elo</span>
+            </div>
+          </header>
 
-          <div
+          {playerSummary.placementMatchesRemaining > 0 && (
+            <section
+              style={{
+                background: "#fff7e6",
+                border: "1px solid #ffe0b2",
+                borderRadius: 16,
+                padding: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <strong>Partidas de colocação</strong>
+                <p style={{ margin: "4px 0 0", color: "#8d6e63" }}>
+                  Nas primeiras {playerSummary.placementMatchesRemaining} partidas,
+                  você enfrenta bots para calibrar seu ranking.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => startBattle("Bot de colocação")}
+              >
+                🎯 Jogar colocação
+              </button>
+            </section>
+          )}
+
+          <section
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-              gap: 12,
+              gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)",
+              gap: 16,
             }}
           >
-            <StatCard label="Jogador" value={playerSummary.name} />
-            <StatCard label="Vitórias" value={playerSummary.wins} />
-            <StatCard label="Derrotas" value={playerSummary.losses} />
-            <StatCard label="Win Rate" value={`${playerSummary.winRate}%`} />
-            <StatCard label="Melhor Rank" value={playerSummary.bestRank} />
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: 20,
-            border: "1px solid #e0e0e0",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <h2 style={{ margin: 0 }}>Ranking Global</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {leaderboard.map((entry, index) => (
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                padding: 20,
+                border: "1px solid #e0e0e0",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
               <div
-                key={entry.id}
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "24px 1fr auto",
-                  gap: 12,
-                  alignItems: "center",
-                  padding: "8px 10px",
-                  borderRadius: 12,
-                  background: index === 0 ? "#fef7e0" : "#f7f7f7",
-                }}
-              >
-                <strong>#{index + 1}</strong>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 600 }}>{entry.name}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: "#666" }}>
-                    {entry.rank} • {entry.rating} Elo
-                  </p>
-                </div>
-                <span style={{ fontSize: 12, color: "#333" }}>
-                  🔥 {entry.streak} vit.
-                </span>
-              </div>
-            ))}
-          </div>
-          <button type="button" style={{ marginTop: 8 }}>
-            Ver ranking completo
-          </button>
-        </div>
-      </section>
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: 20,
-            border: "1px solid #e0e0e0",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <h2 style={{ margin: 0 }}>Rivais sugeridos</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: 12,
-            }}
-          >
-            {rivals.map(rival => (
-              <div
-                key={rival.id}
-                style={{
-                  borderRadius: 14,
-                  border: "1px solid #e6e6e6",
-                  padding: 14,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  background: "#fafafa",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <strong>{rival.name}</strong>
-                  <span>{rival.badge}</span>
-                </div>
-                <p style={{ margin: 0, color: "#666", fontSize: 12 }}>
-                  {rival.rank} • Poder {rival.deckPower}
-                </p>
-                <p style={{ margin: 0, color: "#444", fontSize: 12 }}>
-                  {rival.winRate}% win rate
-                </p>
-                <button type="button">Enfrentar</button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: 20,
-            border: "1px solid #e0e0e0",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <h2 style={{ margin: 0 }}>Histórico recente</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {history.map(match => (
-              <div
-                key={match.id}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  background: match.result === "win" ? "#e9f7ef" : "#fdecea",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   gap: 12,
+                  flexWrap: "wrap",
                 }}
               >
                 <div>
-                  <p style={{ margin: 0, fontWeight: 600 }}>{match.rival}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: "#666" }}>
-                    {match.playedAt}
+                  <h2 style={{ margin: 0 }}>Perfil competitivo</h2>
+                  <p style={{ margin: "4px 0 0", color: "#666" }}>
+                    Última atualização: agora mesmo
                   </p>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <p style={{ margin: 0, fontWeight: 600 }}>
-                    {match.result === "win" ? "Vitória" : "Derrota"}
-                  </p>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 12,
-                      color: match.delta > 0 ? "#2e7d32" : "#c62828",
-                    }}
-                  >
-                    {match.delta > 0 ? "+" : ""}
-                    {match.delta} Elo
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button type="button">Ver histórico completo</button>
-        </div>
-      </section>
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: 20,
-            border: "1px solid #e0e0e0",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <h2 style={{ margin: 0 }}>Batalhas em andamento</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {liveBattles.map(battle => (
-              <div
-                key={battle.id}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  background: "#f5f5f5",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 6,
-                }}
-              >
-                <strong>
-                  {battle.playerA} vs {battle.playerB}
-                </strong>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 12,
-                    color: "#555",
-                  }}
-                >
-                  <span>Turno {battle.turn}</span>
-                  <span>{battle.status}</span>
-                </div>
-                <button type="button" style={{ alignSelf: "flex-start" }}>
-                  Assistir replay
+                <button type="button" onClick={() => startBattle("Rival aleatório")}>
+                  🎯 Encontrar partida
                 </button>
               </div>
-            ))}
-          </div>
-        </div>
 
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: 20,
-            border: "1px solid #e0e0e0",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <h2 style={{ margin: 0 }}>Desafios rápidos</h2>
-          <p style={{ margin: 0, color: "#666" }}>
-            Escolha um rival aleatório e ganhe bônus de elo se vencer.
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <button type="button">⚡ Desafio relâmpago (+12 Elo)</button>
-            <button type="button">🎲 Desafio aleatório (+8 Elo)</button>
-            <button type="button">🧠 Desafio estratégico (+15 Elo)</button>
-          </div>
-        </div>
-      </section>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                <StatCard label="Jogador" value={playerSummary.name} />
+                <StatCard label="Vitórias" value={playerSummary.wins} />
+                <StatCard label="Derrotas" value={playerSummary.losses} />
+                <StatCard label="Win Rate" value={`${playerSummary.winRate}%`} />
+                <StatCard label="Melhor Rank" value={playerSummary.bestRank} />
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                padding: 20,
+                border: "1px solid #e0e0e0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Ranking Global</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {leaderboard.map((entry, index) => (
+                  <div
+                    key={entry.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "24px 1fr auto",
+                      gap: 12,
+                      alignItems: "center",
+                      padding: "8px 10px",
+                      borderRadius: 12,
+                      background: index === 0 ? "#fef7e0" : "#f7f7f7",
+                    }}
+                  >
+                    <strong>#{index + 1}</strong>
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600 }}>{entry.name}</p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#666" }}>
+                        {entry.rank} • {entry.rating} Elo
+                      </p>
+                    </div>
+                    <span style={{ fontSize: 12, color: "#333" }}>
+                      🔥 {entry.streak} vit.
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <button type="button" style={{ marginTop: 8 }}>
+                Ver ranking completo
+              </button>
+            </div>
+          </section>
+
+          <section
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)",
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                padding: 20,
+                border: "1px solid #e0e0e0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Rivais sugeridos</h2>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                {rivals.map(rival => (
+                  <div
+                    key={rival.id}
+                    style={{
+                      borderRadius: 14,
+                      border: "1px solid #e6e6e6",
+                      padding: 14,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                      background: "#fafafa",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <strong>{rival.name}</strong>
+                      <span>{rival.badge}</span>
+                    </div>
+                    <p style={{ margin: 0, color: "#666", fontSize: 12 }}>
+                      {rival.rank} • Poder {rival.deckPower}
+                    </p>
+                    <p style={{ margin: 0, color: "#444", fontSize: 12 }}>
+                      {rival.winRate}% win rate
+                    </p>
+                    <button type="button" onClick={() => startBattle(rival.name)}>
+                      Enfrentar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                padding: 20,
+                border: "1px solid #e0e0e0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Histórico recente</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {history.map(match => (
+                  <div
+                    key={match.id}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 12,
+                      background: match.result === "win" ? "#e9f7ef" : "#fdecea",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 12,
+                    }}
+                  >
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600 }}>{match.rival}</p>
+                      <p style={{ margin: 0, fontSize: 12, color: "#666" }}>
+                        {match.playedAt}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <p style={{ margin: 0, fontWeight: 600 }}>
+                        {match.result === "win" ? "Vitória" : "Derrota"}
+                      </p>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 12,
+                          color: match.delta > 0 ? "#2e7d32" : "#c62828",
+                        }}
+                      >
+                        {match.delta > 0 ? "+" : ""}
+                        {match.delta} Elo
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button type="button">Ver histórico completo</button>
+            </div>
+          </section>
+
+          <section
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                padding: 20,
+                border: "1px solid #e0e0e0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Batalhas em andamento</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {liveBattles.map(battle => (
+                  <div
+                    key={battle.id}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 12,
+                      background: "#f5f5f5",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                    }}
+                  >
+                    <strong>
+                      {battle.playerA} vs {battle.playerB}
+                    </strong>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: 12,
+                        color: "#555",
+                      }}
+                    >
+                      <span>Turno {battle.turn}</span>
+                      <span>{battle.status}</span>
+                    </div>
+                    <button type="button" style={{ alignSelf: "flex-start" }}>
+                      Assistir replay
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                padding: 20,
+                border: "1px solid #e0e0e0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Desafios rápidos</h2>
+              <p style={{ margin: 0, color: "#666" }}>
+                Escolha um rival aleatório e ganhe bônus de elo se vencer.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button type="button" onClick={() => startBattle("Desafio relâmpago")}>
+                  ⚡ Desafio relâmpago (+12 Elo)
+                </button>
+                <button type="button" onClick={() => startBattle("Desafio aleatório")}>
+                  🎲 Desafio aleatório (+8 Elo)
+                </button>
+                <button type="button" onClick={() => startBattle("Desafio estratégico")}>
+                  🧠 Desafio estratégico (+15 Elo)
+                </button>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -511,5 +610,33 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
       <span style={{ fontSize: 12, color: "#777" }}>{label}</span>
       <strong style={{ fontSize: 14 }}>{value}</strong>
     </div>
+  );
+}
+
+function createGameState(rng: ReturnType<typeof createSeededRng>) {
+  const player = createPlayer(rng);
+  const enemyDeck = TowerEnemyFactory.createEnemy(1);
+  const enemy = new Player("AI", enemyDeck, rng);
+  return new GameState(
+    [player, enemy],
+    rng.next() > 0.5 ? 0 : 1,
+    1,
+    GameStatus.IN_PROGRESS,
+    undefined,
+    rng
+  );
+}
+
+function createIdleState(rng: ReturnType<typeof createSeededRng>) {
+  const player = createPlayer(rng);
+  const enemyDeck = TowerEnemyFactory.createEnemy(1);
+  const enemy = new Player("AI", enemyDeck, rng);
+  return new GameState(
+    [player, enemy],
+    0,
+    0,
+    GameStatus.FINISHED,
+    undefined,
+    rng
   );
 }
