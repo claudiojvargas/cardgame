@@ -31,6 +31,10 @@ export type PvpSnapshot = {
   history?: MatchHistoryEntry[];
 };
 
+export type PvpSnapshotResponse = PvpSnapshot & {
+  error?: string;
+};
+
 export type PvpMatchResultPayload = {
   matchId: string;
   opponent: string;
@@ -52,7 +56,7 @@ async function fetchJson<T>(input: RequestInfo, init?: RequestInit) {
 }
 
 export async function fetchPvpSnapshot(signal?: AbortSignal) {
-  return fetchJson<PvpSnapshot>("/api/pvp/summary", { signal });
+  return fetchJson<PvpSnapshotResponse>("/api/pvp/summary", { signal });
 }
 
 export async function postPvpMatchResult(payload: PvpMatchResultPayload) {

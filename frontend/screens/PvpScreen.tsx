@@ -58,6 +58,8 @@ const DEFAULT_HISTORY: MatchHistoryEntry[] = [
   },
 ];
 
+const PVP_SNAPSHOT_KEY = "pvp-snapshot-v1";
+
 export function PvpScreen() {
   const rng = useMemo(() => createSeededRng(Date.now()), []);
   const [battleActive, setBattleActive] = useState(false);
@@ -67,6 +69,8 @@ export function PvpScreen() {
   const [initialState, setInitialState] = useState<GameState>(() =>
     createIdleState(rng)
   );
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [playerSummary, setPlayerSummary] = useState(
     () => DEFAULT_PLAYER_SUMMARY
   );
@@ -103,11 +107,49 @@ export function PvpScreen() {
   useEffect(() => {
     const controller = new AbortController();
     const load = async () => {
+      if (typeof window !== "undefined") {
+        const cached = window.localStorage.getItem(PVP_SNAPSHOT_KEY);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached) as {
+              summary?: typeof DEFAULT_PLAYER_SUMMARY;
+              leaderboard?: LeaderboardEntry[];
+              history?: MatchHistoryEntry[];
+            };
+            setPlayerSummary(parsed.summary ?? DEFAULT_PLAYER_SUMMARY);
+            setLeaderboard(parsed.leaderboard ?? DEFAULT_LEADERBOARD);
+            setHistory(parsed.history ?? DEFAULT_HISTORY);
+          } catch {
+            // ignore cache parse errors
+          }
+        }
+      }
+
       const snapshot = await fetchPvpSnapshot(controller.signal);
-      if (!snapshot) return;
+      if (!snapshot) {
+        setLoadError("Não foi possível carregar o ranking agora.");
+        setIsLoading(false);
+        return;
+      }
+      if (snapshot.error) {
+        setLoadError(snapshot.error);
+      } else {
+        setLoadError(null);
+      }
       setPlayerSummary(snapshot.summary ?? DEFAULT_PLAYER_SUMMARY);
       setLeaderboard(snapshot.leaderboard ?? DEFAULT_LEADERBOARD);
       setHistory(snapshot.history ?? DEFAULT_HISTORY);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          PVP_SNAPSHOT_KEY,
+          JSON.stringify({
+            summary: snapshot.summary ?? DEFAULT_PLAYER_SUMMARY,
+            leaderboard: snapshot.leaderboard ?? DEFAULT_LEADERBOARD,
+            history: snapshot.history ?? DEFAULT_HISTORY,
+          })
+        );
+      }
+      setIsLoading(false);
     };
     void load();
     return () => controller.abort();
@@ -178,6 +220,53 @@ export function PvpScreen() {
     void postPvpMatchResult(payload);
 
     lastResolvedMatchId.current = activeMatchId;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        PVP_SNAPSHOT_KEY,
+        JSON.stringify({
+          summary: {
+            ...playerSummary,
+            rating: playerSummary.rating + delta,
+            wins: playerSummary.wins + (win ? 1 : 0),
+            losses: playerSummary.losses + (win ? 0 : 1),
+            winRate: Math.round(
+              ((playerSummary.wins + (win ? 1 : 0)) /
+                (playerSummary.wins +
+                  playerSummary.losses +
+                  1)) *
+                100
+            ),
+            placementMatchesRemaining:
+              playerSummary.placementMatchesRemaining > 0
+                ? playerSummary.placementMatchesRemaining - 1
+                : 0,
+          },
+          leaderboard: leaderboard
+            .filter(entry => entry.id !== "player")
+            .concat([
+              {
+                id: "player",
+                name: playerSummary.name,
+                rank: playerSummary.rank,
+                rating: playerSummary.rating + delta,
+                streak: win ? 1 : 0,
+              },
+            ])
+            .sort((a, b) => b.rating - a.rating)
+            .slice(0, 6),
+          history: [
+            {
+              id: `match-${activeMatchId}`,
+              rival: activeRival ?? "Bot de colocação",
+              result: win ? "win" : "loss",
+              delta,
+              playedAt: `Hoje, ${playedAt}`,
+            },
+            ...history,
+          ],
+        })
+      );
+    }
   }, [
     activeMatchId,
     activeRival,
@@ -187,6 +276,8 @@ export function PvpScreen() {
     playerSummary.rating,
     state.status,
     state.winnerId,
+    history,
+    leaderboard,
   ]);
 
   return (
@@ -417,7 +508,35 @@ export function PvpScreen() {
               gap: 12,
             }}
           >
-            <h2 style={{ margin: 0 }}>Histórico recente</h2>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Histórico recente</h2>
+              {isLoading && (
+                <span style={{ fontSize: 12, color: "#666" }}>
+                  Atualizando ranking...
+                </span>
+              )}
+            </div>
+            {loadError && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 10,
+                  background: "#fff3e0",
+                  color: "#8d6e63",
+                  fontSize: 12,
+                }}
+              >
+                {loadError}
+              </div>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {history.map(match => (
                 <div
