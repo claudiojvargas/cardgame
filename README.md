@@ -72,3 +72,64 @@ de carta deve passar pela factory para manter defaults consistentes.
 ├── tsconfig.json
 ├── vite.config.js
 └── .gitignore
+```
+
+---
+
+## 🎨 Padrão global de UI (design system)
+
+Use este padrão como referência para todas as telas do jogo.
+
+### 1) Resolução base + safe area
+- Artboard: **1080 × 2400 (20:9)**
+- Safe area: **Top 140 / Bottom 160 / Side 36**
+- Screen padding: **36** (lado) dentro do safe
+
+### 2) Grid e espaçamentos (tokens)
+- Use múltiplos de **8px**
+  - `space-1 = 8`
+  - `space-2 = 16`
+  - `space-3 = 24`
+  - `space-4 = 32`
+  - `space-5 = 40`
+  - `space-6 = 48`
+  - `space-8 = 64`
+
+### 3) Proporções oficiais de assets
+- Carta (sempre **2:3**)
+  - Master card art + frame/overlay: **768 × 1152**
+  - Thumb (inventário/codex): **256 × 384**
+  - Mini (HUD/loot): **128 × 192**
+- Ícones
+  - **64 × 64** (normal)
+  - **128 × 128** (grande / destaque)
+
+### 4) Tamanho padrão da carta na UI (render)
+- `width: clamp(220px, 24vw, 288px)`
+- `height: auto` via `aspect-ratio: 2/3`
+
+### 5) Zonas padrão de layout (todas as telas)
+- **Top Bar (10%)**: voltar, título, moedas/config
+- **Content (75–80%)**: listas, campos, cartas etc.
+- **Bottom Bar (15–20%)**: CTA principal (Atacar, Abrir, Fundir, Despertar)
+
+### 6) Tipografia (escala simples)
+- Título: **32–36**
+- Subtítulo: **24**
+- Texto: **18–20**
+- Micro: **14–16**
+- Escala: **1.25x**
+
+### 7) Regras visuais (consistência)
+- Conteúdo **nunca** em cima da arte da carta (use placas/bandas da moldura).
+- Brilho/filigrana só na borda (centro limpo).
+- Mesma linguagem de raridade (cores/efeitos) em moldura, badge, brilho e drop.
+
+### ✅ Checklist de padrões
+- UI base: **1080×2400**
+- Safe: **Top 140 / Bottom 160 / Side 36**
+- Grid: **8px**
+- Carta master: **768×1152 (2:3)**
+- Thumb: **256×384**
+- Card UI size: `clamp(220px, 24vw, 288px)` + `aspect-ratio: 2/3`
+- Layout de telas: **TopBar + Content + BottomCTA**
