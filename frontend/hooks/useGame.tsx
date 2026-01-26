@@ -15,6 +15,7 @@ interface GameActions {
   markCardNew: (cardId: string) => void;
   markAllAsSeen: () => void;
   setAwakening: (cardId: string, value: number) => void;
+  setDeckIds: (deckIds: string[]) => void;
   recordTowerRunStart: () => void;
   recordTowerResult: (payload: { win: boolean; floor: number }) => void;
   recordChestOpened: (chestId: string) => void;
@@ -30,13 +31,9 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null);
 
-function getStarterCardIds() {
-  return ["common_attack_001", "uncommon_defense_001", "rare_support_001"];
-}
-
 function buildInitialProfile(stored: UserProfile | null) {
   if (stored) return stored;
-  return createDefaultProfile(getStarterCardIds());
+  return createDefaultProfile();
 }
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
@@ -64,6 +61,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       markCardNew: cardId => updateProfile(svc => svc.markCardNew(cardId)),
       markAllAsSeen: () => updateProfile(svc => svc.markAllAsSeen()),
       setAwakening: (cardId, value) => updateProfile(svc => svc.setAwakening(cardId, value)),
+      setDeckIds: deckIds => updateProfile(svc => svc.setDeckIds(deckIds)),
       recordTowerRunStart: () => updateProfile(svc => svc.recordTowerRunStart()),
       recordTowerResult: payload => updateProfile(svc => svc.recordTowerResult(payload)),
       recordChestOpened: chestId => updateProfile(svc => svc.recordChestOpened(chestId)),

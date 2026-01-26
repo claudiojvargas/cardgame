@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { Card } from "./entities/Card";
 import { CardClass, Rarity } from "./types/enums";
 import { getRarityConfig } from "./config/rarity.config";
-import { CARDS as EXISTING_CARDS } from "./data/cards.catalog";
+import type { CardEffectDefinition, CardDefinition } from "./data/cardDefinitions";
+import { CARD_DEFINITIONS } from "./data/cardDefinitions";
 
-const OUTPUT_PATH = path.join(__dirname, "data", "cards.catalog.ts");
+const OUTPUT_PATH = path.join(__dirname, "data", "cardDefinitions.ts");
 
 type SeedPlan = Record<Rarity, Partial<Record<CardClass, number>>>;
 
@@ -65,7 +65,7 @@ function getNextIndex(existingIds: Set<string>, rarity: Rarity, cardClass: CardC
   return maxIndex + 1;
 }
 
-function generateCards(plan: SeedPlan, existingCards: Card[]): Card[] {
+function generateCards(plan: SeedPlan, existingCards: CardDefinition[]): CardDefinition[] {
   const existingIds = new Set(existingCards.map(card => card.id));
   const counts: Record<string, number> = {};
 
@@ -74,7 +74,7 @@ function generateCards(plan: SeedPlan, existingCards: Card[]): Card[] {
     counts[key] = (counts[key] ?? 0) + 1;
   });
 
-  const newCards: Card[] = [];
+  const newCards: CardDefinition[] = [];
 
   Object.entries(plan).forEach(([rarityKey, classes]) => {
     if (!isRarity(rarityKey)) {
@@ -98,7 +98,7 @@ function generateCards(plan: SeedPlan, existingCards: Card[]): Card[] {
 
       for (let i = 0; i < missing; i += 1) {
         const basePower = randomBasePower(minPower, maxPower);
-        const card = new Card({
+        const card: CardDefinition = {
           id: `${rarity}_${cardClass}_${String(nextIndex).padStart(3, "0")}`,
           name: `Carta ${rarity}-${cardClass} ${String(nextIndex).padStart(3, "0")}`,
           rarity,
@@ -107,7 +107,7 @@ function generateCards(plan: SeedPlan, existingCards: Card[]): Card[] {
           awakening: 0,
           historia: "Desconhecida",
           regiao: "Desconhecida",
-        });
+        };
 
         existingIds.add(card.id);
         newCards.push(card);
@@ -127,24 +127,81 @@ function getEnumKey<T extends Record<string, string>>(
   return match ? match[0] : String(value);
 }
 
-function serializeCard(card: Card): string {
-  return `  new Card({
-    id: "${card.id}",
-    name: "${card.name}",
-    rarity: Rarity.${getEnumKey(Rarity, card.rarity)},
-    cardClass: CardClass.${getEnumKey(CardClass, card.cardClass)},
-    basePower: ${card.basePower},
-    awakening: ${card.awakening},
-    historia: "${card.historia}",
-    regiao: "${card.regiao}",
-  })`;
+function escapeString(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
-function writeCatalog(cards: Card[]) {
-  const contents = `import { Card } from "../entities/Card";
-import { CardClass, Rarity } from "../types/enums";
+function serializeCardEffect(effect: CardEffectDefinition): string {
+  const lines = [
+    "      {",
+    `        id: "${escapeString(effect.id)}",`,
+    `        kind: "${escapeString(effect.kind)}",`,
+  ];
 
-export const CARDS: Card[] = [
+  if (typeof effect.chance === "number") {
+    lines.push(`        chance: ${effect.chance},`);
+  }
+
+  if (typeof effect.value === "number") {
+    lines.push(`        value: ${effect.value},`);
+  }
+
+  lines.push("      }");
+  return lines.join("\n");
+}
+
+function serializeCard(card: CardDefinition): string {
+  const lines = [
+    "  {",
+    `    id: "${escapeString(card.id)}",`,
+    `    name: "${escapeString(card.name)}",`,
+    `    rarity: Rarity.${getEnumKey(Rarity, card.rarity)},`,
+    `    cardClass: CardClass.${getEnumKey(CardClass, card.cardClass)},`,
+    `    basePower: ${card.basePower},`,
+    `    awakening: ${card.awakening},`,
+  ];
+
+  if (card.historia) {
+    lines.push(`    historia: "${escapeString(card.historia)}",`);
+  }
+
+  if (card.regiao) {
+    lines.push(`    regiao: "${escapeString(card.regiao)}",`);
+  }
+
+  if (card.effects?.length) {
+    lines.push("    effects: [");
+    lines.push(card.effects.map(serializeCardEffect).join(",\n"));
+    lines.push("    ],");
+  }
+
+  lines.push("  }");
+  return lines.join("\n");
+}
+
+function writeCatalog(cards: CardDefinition[]) {
+  const contents = `import { CardClass, Rarity } from "../types/enums";
+
+export type CardEffectDefinition = {
+  id: string;
+  kind: string;
+  chance?: number;
+  value?: number;
+};
+
+export interface CardDefinition {
+  id: string;
+  name: string;
+  rarity: Rarity;
+  cardClass: CardClass;
+  basePower: number;
+  awakening: number;
+  historia?: string;
+  regiao?: string;
+  effects?: CardEffectDefinition[];
+}
+
+export const CARD_DEFINITIONS: CardDefinition[] = [
 ${cards.map(serializeCard).join(",\n")},
 ];
 `;
@@ -153,5 +210,5 @@ ${cards.map(serializeCard).join(",\n")},
 }
 
 const plan = parsePlanArg();
-const newCards = generateCards(plan, EXISTING_CARDS);
-writeCatalog([...EXISTING_CARDS, ...newCards]);
+const newCards = generateCards(plan, CARD_DEFINITIONS);
+writeCatalog([...CARD_DEFINITIONS, ...newCards]);

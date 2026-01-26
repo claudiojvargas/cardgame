@@ -18,9 +18,14 @@ const RARITY_ORDER: Rarity[] = [
 ];
 
 export function CardsScreen() {
-  const { profile } = useGame();
+  const { profile, actions } = useGame();
   const [deck, setDeck] = useState<Card[]>(() => {
-    const storedDeck = loadDeckFromStorage()
+    const initialDeckIds =
+      profile.collection.deckIds.length > 0
+        ? profile.collection.deckIds
+        : loadDeckFromStorage();
+
+    const storedDeck = initialDeckIds
       .map(id => CARDS.find(card => card.id === id))
       .filter((card): card is Card => Boolean(card))
       .filter(card => (profile.collection.inventory[card.id] ?? 0) > 0)
@@ -36,8 +41,8 @@ export function CardsScreen() {
 
   useEffect(() => {
     const deckIds = deck.map(card => card.id);
-    window.localStorage.setItem(DECK_STORAGE_KEY, JSON.stringify(deckIds));
-  }, [deck]);
+    actions.setDeckIds(deckIds);
+  }, [actions, deck]);
 
   function getAwakeningValue(cardId: string) {
     return profile.collection.awakenings[cardId] ?? 0;
