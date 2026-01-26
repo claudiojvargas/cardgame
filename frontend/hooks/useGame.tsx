@@ -30,13 +30,9 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null);
 
-function getStarterCardIds() {
-  return ["common_attack_001", "uncommon_defense_001", "rare_support_001"];
-}
-
 function buildInitialProfile(stored: UserProfile | null) {
   if (stored) return stored;
-  return createDefaultProfile(getStarterCardIds());
+  return createDefaultProfile();
 }
 
 export function GameProvider({ children }: { children: React.ReactNode }) {

@@ -1,3 +1,4 @@
+import { STARTER_DECK_IDS } from "../data/starterDeck";
 import { Rarity } from "../types/enums";
 
 export type CurrencyType = "gold" | "diamonds";
@@ -39,7 +40,9 @@ export function createRarityRecord(defaultValue = 0): Record<Rarity, number> {
   }, {} as Record<Rarity, number>);
 }
 
-export function createDefaultProfile(starterCardIds: string[] = []): UserProfile {
+export function createDefaultProfile(
+  starterCardIds: string[] = [...STARTER_DECK_IDS]
+): UserProfile {
   const now = new Date().toISOString();
   const inventory: Record<string, number> = {};
   const isNew: Record<string, boolean> = {};
