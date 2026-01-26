@@ -3,6 +3,7 @@ import { Card } from "../../game/entities/Card";
 import { calculateCardPower } from "../../game/systems/powerCalculator";
 import { getDots, getFrozenRounds, getShield } from "../../game/systems/StatusSystem";
 import { CardClass, Rarity } from "../../game/types/enums";
+import { getCardImageUrl } from "../utils/cardImages";
 
 const RARITY_COLORS: Record<Rarity, string> = {
   [Rarity.COMMON]: "#9e9e9e",
@@ -65,6 +66,7 @@ interface Props {
 
 export function CardView({ card, onClick, selectable, style }: Props) {
   const badges = getStatusBadges(card);
+  const cardImageUrl = getCardImageUrl(card.id);
   return (
     <div
       onClick={onClick}
@@ -125,6 +127,20 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         {CLASS_ICONS[card.cardClass]}
       </div>
       <strong>{card.name}</strong>
+      <div
+        style={{
+          marginTop: 6,
+          marginBottom: 8,
+          height: 90,
+          borderRadius: 8,
+          backgroundColor: "rgba(255,255,255,0.7)",
+          backgroundImage: `url(${cardImageUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.15)",
+        }}
+        title={`Imagem da carta ${card.name}`}
+      />
       <div>Power: {formatPowerDisplay(card)}</div>
       <div>{card.cardClass}</div>
       <div>{card.rarity}</div>

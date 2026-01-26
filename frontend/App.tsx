@@ -1,22 +1,26 @@
 import { useState } from "react";
 import { TowerScreen } from "./screens/TowerScreen";
+import { CampaignTowerScreen } from "./screens/CampaignTowerScreen";
 import { CardsScreen } from "./screens/CardsScreen";
 import { ChestsScreen } from "./screens/ChestsScreen";
 import { AwakeningScreen } from "./screens/AwakeningScreen";
 import { CombiningScreen } from "./screens/CombiningScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { CollectionScreen } from "./screens/CollectionScreen";
+import { PvpScreen } from "./screens/PvpScreen";
 import { GameProvider } from "./hooks/useGame";
 
 type Screen =
   | "MENU"
   | "TOWER"
+  | "CAMPAIGN_TOWER"
   | "CARDS"
   | "CHESTS"
   | "AWAKENING"
   | "COMBINING"
   | "PROFILE"
-  | "COLLECTION";
+  | "COLLECTION"
+  | "PVP";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("MENU");
@@ -30,6 +34,10 @@ function App() {
 
   if (screen === "TOWER") {
     content = <TowerScreen />;
+  }
+
+  if (screen === "CAMPAIGN_TOWER") {
+    content = <CampaignTowerScreen />;
   }
 
   if (screen === "CARDS") {
@@ -54,6 +62,10 @@ function App() {
 
   if (screen === "COLLECTION") {
     content = <CollectionScreen />;
+  }
+
+  if (screen === "PVP") {
+    content = <PvpScreen />;
   }
 
   return (
@@ -85,6 +97,15 @@ function App() {
             }}
           >
             🏰 Torre
+          </button>
+          <button
+            onClick={() => setScreen("CAMPAIGN_TOWER")}
+            style={{
+              padding: "8px 16px",
+              fontWeight: screen === "CAMPAIGN_TOWER" ? "bold" : "normal",
+            }}
+          >
+            🧭 Torre Campanha
           </button>
           <button
             onClick={() => setScreen("CARDS")}
@@ -139,6 +160,15 @@ function App() {
             }}
           >
             🙍 Perfil
+          </button>
+          <button
+            onClick={() => setScreen("PVP")}
+            style={{
+              padding: "8px 16px",
+              fontWeight: screen === "PVP" ? "bold" : "normal",
+            }}
+          >
+            ⚔️ PvP
           </button>
         </nav>
       </div>

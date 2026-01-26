@@ -2,6 +2,7 @@ import { Card } from "../../game/entities/Card";
 import { calculateCardPower } from "../../game/systems/powerCalculator";
 import { getDots, getFrozenRounds, getShield } from "../../game/systems/StatusSystem";
 import { CardClass, Rarity } from "../../game/types/enums";
+import { getCardImageUrl } from "../utils/cardImages";
 
 const RARITY_COLORS: Record<Rarity, string> = {
   [Rarity.COMMON]: "#9e9e9e",
@@ -81,6 +82,7 @@ export function CardTile({
   const isSelectable = selectable ?? obtained;
   const cursor = !obtained ? "not-allowed" : isSelectable ? "pointer" : "default";
   const badges = getStatusBadges(card);
+  const cardImageUrl = getCardImageUrl(card.id);
   return (
     <button
       type="button"
@@ -190,6 +192,20 @@ export function CardTile({
       <strong style={{ display: "block", marginBottom: 8 }}>
         {card.name}
       </strong>
+      <div
+        style={{
+          marginBottom: 8,
+          height: 90,
+          borderRadius: 8,
+          backgroundColor: "rgba(255,255,255,0.7)",
+          backgroundImage: obtained ? `url(${cardImageUrl})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.15)",
+          filter: obtained ? "none" : "grayscale(100%)",
+        }}
+        title={obtained ? `Imagem da carta ${card.name}` : undefined}
+      />
       <div>Poder: {formatPowerDisplay(card, awakeningDisplay)}</div>
       <div>Raridade: {card.rarity}</div>
       <div>Classe: {card.cardClass}</div>
