@@ -12,6 +12,15 @@ export class ProfileService {
   constructor(private repository: ProfileRepository, initialProfile?: UserProfile) {
     const stored = initialProfile ?? repository.load();
     this.profile = stored ?? createDefaultProfile();
+    if (!Array.isArray(this.profile.collection.deckIds)) {
+      this.profile = {
+        ...this.profile,
+        collection: {
+          ...this.profile.collection,
+          deckIds: [],
+        },
+      };
+    }
     this.profile = {
       ...this.profile,
       lastLoginAt: new Date().toISOString(),
@@ -110,6 +119,20 @@ export class ProfileService {
           ...this.profile.collection.awakenings,
           [cardId]: value,
         },
+      },
+    });
+  }
+
+  setDeckIds(deckIds: string[]): UserProfile {
+    const normalized = Array.from(
+      new Set(deckIds.filter((id): id is string => typeof id === "string"))
+    ).slice(0, 6);
+
+    return this.commit({
+      ...this.profile,
+      collection: {
+        ...this.profile.collection,
+        deckIds: normalized,
       },
     });
   }

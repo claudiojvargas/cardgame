@@ -15,6 +15,7 @@ interface GameActions {
   markCardNew: (cardId: string) => void;
   markAllAsSeen: () => void;
   setAwakening: (cardId: string, value: number) => void;
+  setDeckIds: (deckIds: string[]) => void;
   recordTowerRunStart: () => void;
   recordTowerResult: (payload: { win: boolean; floor: number }) => void;
   recordChestOpened: (chestId: string) => void;
@@ -60,6 +61,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       markCardNew: cardId => updateProfile(svc => svc.markCardNew(cardId)),
       markAllAsSeen: () => updateProfile(svc => svc.markAllAsSeen()),
       setAwakening: (cardId, value) => updateProfile(svc => svc.setAwakening(cardId, value)),
+      setDeckIds: deckIds => updateProfile(svc => svc.setDeckIds(deckIds)),
       recordTowerRunStart: () => updateProfile(svc => svc.recordTowerRunStart()),
       recordTowerResult: payload => updateProfile(svc => svc.recordTowerResult(payload)),
       recordChestOpened: chestId => updateProfile(svc => svc.recordChestOpened(chestId)),

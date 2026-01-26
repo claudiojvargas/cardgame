@@ -25,6 +25,7 @@ export interface UserProfile {
     inventory: Record<string, number>;
     isNew: Record<string, boolean>;
     awakenings: Record<string, number>;
+    deckIds: string[];
   };
   stats: {
     chestsOpened: Record<string, number>;
@@ -73,6 +74,7 @@ export function createDefaultProfile(
       inventory,
       isNew,
       awakenings: {},
+      deckIds: [...starterCardIds],
     },
     stats: {
       chestsOpened: {},
