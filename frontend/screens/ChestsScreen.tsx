@@ -70,18 +70,24 @@ export function ChestsScreen() {
   }
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: "var(--screen-padding)" }}>
       <h1>🎁 Baús</h1>
       <p>Abra baús para obter cartas e ouro.</p>
 
-      <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--space-2)",
+          marginBottom: "var(--space-2)",
+        }}
+      >
         <div
           style={{
             background: "#ffffff",
             border: "1px solid #e0e0e0",
-            borderRadius: 12,
-            padding: 12,
-            minWidth: 140,
+            borderRadius: 16,
+            padding: "var(--space-2)",
+            minWidth: 144,
           }}
         >
           <strong>Ouro</strong>
@@ -91,9 +97,9 @@ export function ChestsScreen() {
           style={{
             background: "#ffffff",
             border: "1px solid #e0e0e0",
-            borderRadius: 12,
-            padding: 12,
-            minWidth: 140,
+            borderRadius: 16,
+            padding: "var(--space-2)",
+            minWidth: 144,
           }}
         >
           <strong>Diamantes</strong>
@@ -104,8 +110,8 @@ export function ChestsScreen() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 16,
+          gridTemplateColumns: "repeat(auto-fit, minmax(224px, 1fr))",
+          gap: "var(--space-2)",
         }}
       >
         {CHESTS.map(chest => (
@@ -114,11 +120,11 @@ export function ChestsScreen() {
             style={{
               background: "#ffffff",
               border: "1px solid #e0e0e0",
-              borderRadius: 12,
-              padding: 16,
+              borderRadius: 16,
+              padding: "var(--space-2)",
               display: "flex",
               flexDirection: "column",
-              gap: 8,
+              gap: "var(--space-1)",
             }}
           >
             <h3 style={{ margin: 0 }}>{chest.name}</h3>
@@ -134,7 +140,7 @@ export function ChestsScreen() {
             </div>
             <button
               type="button"
-              style={{ marginTop: 8 }}
+              style={{ marginTop: "var(--space-1)" }}
               onClick={() => handleOpenChest(chest)}
             >
               Abrir
@@ -144,17 +150,23 @@ export function ChestsScreen() {
       </div>
 
       {lastReward && (
-        <div style={{ marginTop: 24 }}>
+        <div style={{ marginTop: "var(--space-3)" }}>
           <h3>Última abertura: {lastReward.chestName}</h3>
           <p>Ouro recebido: {lastReward.gold}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "var(--space-2)",
+            }}
+          >
             {lastReward.cards.map((card, index) => (
               <div
                 key={`${card.id}-${index}`}
                 style={{
                   border: "1px solid #e0e0e0",
                   borderRadius: 8,
-                  padding: 8,
+                  padding: "var(--space-1)",
                   background: "#ffffff",
                   minWidth: 160,
                 }}

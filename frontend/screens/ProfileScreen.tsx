@@ -66,16 +66,23 @@ export function ProfileScreen() {
   }
 
   return (
-    <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
+    <div
+      style={{
+        padding: "var(--screen-padding)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-3)",
+      }}
+    >
       <section
         style={{
           background: "#ffffff",
           borderRadius: 16,
           border: "1px solid #e0e0e0",
-          padding: 20,
+          padding: "var(--space-2)",
           display: "flex",
           alignItems: "center",
-          gap: 16,
+          gap: "var(--space-2)",
         }}
       >
         <div
@@ -95,19 +102,19 @@ export function ProfileScreen() {
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ margin: 0 }}>Perfil</h1>
-          <p style={{ margin: "4px 0 12px", color: "#666" }}>
+          <p style={{ margin: "var(--space-1) 0 var(--space-2)", color: "#666" }}>
             ID: {profile.id}
           </p>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
             <input
               type="text"
               value={displayName}
               onChange={event => setDisplayName(event.target.value)}
               style={{
-                padding: "8px 12px",
+                padding: "var(--space-1) var(--space-2)",
                 borderRadius: 8,
                 border: "1px solid #ccc",
-                minWidth: 220,
+                minWidth: 224,
               }}
             />
             <button type="button" onClick={handleSaveName}>
@@ -117,7 +124,13 @@ export function ProfileScreen() {
         </div>
       </section>
 
-      <section style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+      <section
+        style={{
+          display: "grid",
+          gap: "var(--space-2)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(224px, 1fr))",
+        }}
+      >
         <div style={cardStyle}>
           <strong>🏰 Progresso</strong>
           <div>Melhor andar: {profile.progress.tower.bestFloor}</div>
@@ -134,7 +147,7 @@ export function ProfileScreen() {
           <strong>🎴 Coleção</strong>
           <div>Total de cartas: {totalCards}</div>
           <div>Únicas: {uniqueCards}</div>
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: "var(--space-1)" }}>
             {RARITY_ORDER.map(rarity => (
               <div key={rarity}>
                 {rarity}: {rarityCounts[rarity] ?? 0}
@@ -144,7 +157,7 @@ export function ProfileScreen() {
         </div>
       </section>
 
-      <section style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <section style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
         <button type="button">Ver Codex</button>
         <button type="button" onClick={() => actions.markAllAsSeen()}>
           Marcar tudo como visto
@@ -156,10 +169,10 @@ export function ProfileScreen() {
 
 const cardStyle: CSSProperties = {
   background: "#ffffff",
-  borderRadius: 12,
+  borderRadius: 16,
   border: "1px solid #e0e0e0",
-  padding: 16,
+  padding: "var(--space-2)",
   display: "flex",
   flexDirection: "column",
-  gap: 6,
+  gap: "var(--space-1)",
 };

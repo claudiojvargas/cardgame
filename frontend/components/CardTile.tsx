@@ -89,10 +89,11 @@ export function CardTile({
       onClick={obtained && isSelectable ? onClick : undefined}
       style={{
         position: "relative",
-        height: 200,
-        width: 140,
-        padding: 12,
-        margin: 6,
+        height: "auto",
+        width: "var(--card-ui-width)",
+        aspectRatio: "var(--card-ui-aspect)",
+        padding: "var(--space-2)",
+        margin: "var(--space-1)",
         borderRadius: 8,
         border: "1px solid #666",
         textAlign: "left",
@@ -106,10 +107,10 @@ export function CardTile({
         <div
           style={{
             position: "absolute",
-            top: 6,
-            left: 6,
+            top: "var(--space-1)",
+            left: "var(--space-1)",
             display: "flex",
-            gap: 4,
+            gap: "var(--space-1)",
           }}
         >
           {badges.map(badge => (
@@ -118,9 +119,9 @@ export function CardTile({
               title={badge.label}
               style={{
                 background: "rgba(255,255,255,0.85)",
-                borderRadius: 6,
-                padding: "2px 4px",
-                fontSize: 12,
+                borderRadius: 8,
+                padding: "var(--space-1)",
+                fontSize: 14,
               }}
             >
               {badge.emoji}
@@ -131,16 +132,16 @@ export function CardTile({
       <div
         style={{
           position: "absolute",
-          top: 6,
-          right: 6,
-          width: 22,
-          height: 22,
+          top: "var(--space-1)",
+          right: "var(--space-1)",
+          width: 24,
+          height: 24,
           borderRadius: "50%",
           background: "rgba(255,255,255,0.85)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 14,
+          fontSize: 16,
         }}
         title={`Classe: ${card.cardClass}`}
       >
@@ -149,10 +150,10 @@ export function CardTile({
           <span
             style={{
               position: "absolute",
-              top: -2,
-              right: -2,
-              width: 10,
-              height: 10,
+              top: -8,
+              right: -8,
+              width: 8,
+              height: 8,
               borderRadius: "50%",
               background: "#e53935",
             }}
@@ -163,13 +164,13 @@ export function CardTile({
         <span
           style={{
             position: "absolute",
-            bottom: 8,
-            left: 8,
-            padding: "2px 6px",
+            bottom: "var(--space-1)",
+            left: "var(--space-1)",
+            padding: "var(--space-1)",
             borderRadius: 10,
             background: "#111",
             color: "#fff",
-            fontSize: 12,
+            fontSize: 14,
           }}
         >
           x{duplicateCount}
@@ -178,24 +179,24 @@ export function CardTile({
       <span
         style={{
           position: "absolute",
-          bottom: 8,
-          right: 8,
-          padding: "2px 6px",
+          bottom: "var(--space-1)",
+          right: "var(--space-1)",
+          padding: "var(--space-1)",
           borderRadius: 10,
           background: "#e0e0e0",
           color: "#000",
-          fontSize: 12,
+          fontSize: 14,
         }}
       >
         Desp {awakeningDisplay}
       </span>
-      <strong style={{ display: "block", marginBottom: 8 }}>
+      <strong style={{ display: "block", marginBottom: "var(--space-1)" }}>
         {card.name}
       </strong>
       <div
         style={{
-          marginBottom: 8,
-          height: 90,
+          marginBottom: "var(--space-1)",
+          height: 96,
           borderRadius: 8,
           backgroundColor: "rgba(255,255,255,0.7)",
           backgroundImage: obtained ? `url(${cardImageUrl})` : "none",

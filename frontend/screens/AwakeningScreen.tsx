@@ -63,14 +63,20 @@ export function AwakeningScreen() {
   });
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: "var(--screen-padding)" }}>
       <h1>✨ Despertar</h1>
       <p>Selecione uma carta para evoluir.</p>
 
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: "var(--space-3)" }}>
         <h2>🧪 Carta selecionada</h2>
         {selectedCard ? (
-          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "var(--space-2)",
+              alignItems: "center",
+            }}
+          >
             <CardTile
               card={selectedCard}
               obtained
@@ -83,14 +89,20 @@ export function AwakeningScreen() {
             <div>
               <p>Nível atual: {awakeningLevel}</p>
               <p>Duplicadas disponíveis: {duplicatesAvailable}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-1)",
+                }}
+              >
                 {Array.from({ length: awakeningCost }).map((_, index) => (
                   <div
                     key={index}
                     style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: 6,
+                      width: 24,
+                      height: 24,
+                      borderRadius: 8,
                       background: "#f7c6c6",
                       border: "1px solid #e0e0e0",
                     }}
@@ -109,8 +121,9 @@ export function AwakeningScreen() {
         ) : (
           <div
             style={{
-              height: 200,
-              width: 140,
+              height: "auto",
+              width: "var(--card-ui-width)",
+              aspectRatio: "var(--card-ui-aspect)",
               borderRadius: 8,
               border: "1px dashed #999",
               background: "#f2f2f2",

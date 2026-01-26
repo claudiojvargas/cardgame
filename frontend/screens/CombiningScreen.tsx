@@ -212,8 +212,15 @@ export function CombiningScreen() {
     })();
 
   return (
-    <div style={{ padding: 20, display: "flex", gap: 16, position: "relative" }}>
-      <aside style={{ width: "25%", minWidth: 220 }}>
+    <div
+      style={{
+        padding: "var(--screen-padding)",
+        display: "flex",
+        gap: "var(--space-2)",
+        position: "relative",
+      }}
+    >
+      <aside style={{ width: "25%", minWidth: 224 }}>
         <h2>📦 Repetidas</h2>
         <p style={{ color: "#666" }}>
           Clique para enviar para um slot.
@@ -222,18 +229,18 @@ export function CombiningScreen() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 12,
+            gap: "var(--space-2)",
             maxHeight: "70vh",
             overflowY: "auto",
-            paddingRight: 4,
+            paddingRight: "var(--space-1)",
           }}
         >
           {duplicateCards.length === 0 && (
             <div
               style={{
                 border: "1px dashed #bbb",
-                borderRadius: 12,
-                padding: 12,
+                borderRadius: 16,
+                padding: "var(--space-2)",
                 background: "#f7f7f7",
                 color: "#777",
               }}
@@ -260,7 +267,13 @@ export function CombiningScreen() {
       <div style={{ flex: 1 }}>
         <h1>🔮 Combinação</h1>
         <p>Combine 4 cartas da mesma raridade para tentar evoluir.</p>
-        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "var(--space-2)",
+            marginBottom: "var(--space-2)",
+          }}
+        >
           <button type="button" onClick={handleAutoSelect}>
             Selecionar automático
           </button>
@@ -272,7 +285,7 @@ export function CombiningScreen() {
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ display: "flex", gap: "var(--space-2)" }}>
           {selectedSlots.map((slot, index) => (
             <div key={index}>
               {slot ? (
@@ -284,8 +297,9 @@ export function CombiningScreen() {
               ) : (
                 <div
                   style={{
-                    height: 200,
-                    width: 140,
+                    height: "auto",
+                    width: "var(--card-ui-width)",
+                    aspectRatio: "var(--card-ui-aspect)",
                     borderRadius: 8,
                     border: "1px dashed #bbb",
                     background: "#f7f7f7",
@@ -303,7 +317,7 @@ export function CombiningScreen() {
         </div>
 
         {lastResult && (
-          <div style={{ marginTop: 20 }}>
+          <div style={{ marginTop: "var(--space-3)" }}>
             <h3>Resultado</h3>
             <p>
               {lastResult.base} → {lastResult.result}
@@ -318,17 +332,24 @@ export function CombiningScreen() {
       <div
         style={{
           position: "absolute",
-          right: 20,
-          bottom: 20,
+          right: "var(--screen-padding)",
+          bottom: "var(--screen-padding)",
           background: "#ffffff",
           border: "1px solid #e0e0e0",
-          borderRadius: 12,
-          padding: 12,
-          minWidth: 180,
+          borderRadius: 16,
+          padding: "var(--space-2)",
+          minWidth: 176,
         }}
       >
         <strong>🧪 Incenso</strong>
-        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div
+          style={{
+            marginTop: "var(--space-1)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-1)",
+          }}
+        >
           {incenseList.map(item => (
             <div key={item.rarity}>
               {item.rarity}: {item.value}/{getIncenseThreshold(item.rarity)}

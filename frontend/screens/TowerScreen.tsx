@@ -201,13 +201,13 @@ export function TowerScreen() {
   return (
     <div
       style={{
-        padding: 20,
+        padding: "var(--screen-padding)",
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        gap: "var(--space-2)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--space-2)" }}>
         <h1 style={{ margin: 0 }}>🏰 Torre</h1>
         <h2 style={{ margin: 0, fontSize: 18 }}>Andar {floor} / 30</h2>
       </div>
@@ -226,8 +226,8 @@ export function TowerScreen() {
               background: "#ffffff",
               border: "1px solid #e0e0e0",
               borderRadius: 16,
-              padding: 24,
-              minWidth: 280,
+              padding: "var(--space-3)",
+              minWidth: 288,
               textAlign: "center",
               boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
             }}
@@ -245,8 +245,8 @@ export function TowerScreen() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) 260px",
-            gap: 16,
+            gridTemplateColumns: "minmax(0, 1fr) 256px",
+            gap: "var(--space-2)",
             minHeight: 0,
           }}
         >
@@ -265,17 +265,17 @@ export function TowerScreen() {
             style={{
               background: "#ffffff",
               border: "1px solid #e0e0e0",
-              borderRadius: 12,
-              padding: 16,
+              borderRadius: 16,
+              padding: "var(--space-2)",
               display: "flex",
               flexDirection: "column",
-              gap: 16,
+              gap: "var(--space-2)",
             }}
           >
             <div>
               <h3 style={{ marginTop: 0 }}>🧠 Última jogada</h3>
               {lastAiAction ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                   <p style={{ margin: 0, color: "#333" }}>
                     🤖 {lastAiAction.attackerId} atacou{" "}
                     {lastAiAction.defenderId}
@@ -297,10 +297,10 @@ export function TowerScreen() {
                 </p>
               )}
               {isAiThinking && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                   <div
                     style={{
-                      height: 6,
+                      height: 8,
                       background: "#e0e0e0",
                       borderRadius: 999,
                       overflow: "hidden",
@@ -332,7 +332,7 @@ export function TowerScreen() {
                   Nenhum evento ainda.
                 </p>
               ) : (
-                <ul style={{ margin: 0, paddingLeft: 16 }}>
+                <ul style={{ margin: 0, paddingLeft: "var(--space-2)" }}>
                   {recentEvents.map((event, index) => (
                     <li key={`${event.type}-${event.turn}-${index}`}>
                       {formatEvent(event)}
@@ -348,7 +348,7 @@ export function TowerScreen() {
                   Nenhum baú ainda.
                 </p>
               ) : (
-                <ul style={{ margin: 0, paddingLeft: 16 }}>
+                <ul style={{ margin: 0, paddingLeft: "var(--space-2)" }}>
                   {chests.slice(-5).map(chest => (
                     <li key={chest.id}>
                       Andar {chest.floor}: {chest.type}
@@ -359,8 +359,8 @@ export function TowerScreen() {
             </div>
             <div>
               <h3 style={{ marginTop: 0 }}>⚙️ Ajustes de batalha</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                   <span style={{ fontSize: 12, color: "#555" }}>
                     Tempo de resposta do bot
                   </span>
@@ -374,7 +374,7 @@ export function TowerScreen() {
                     <option value={3000}>Cinemático (3s)</option>
                   </select>
                 </label>
-                <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                   <span style={{ fontSize: 12, color: "#555" }}>
                     Ritmo das animações
                   </span>
@@ -433,9 +433,9 @@ export function TowerScreen() {
             style={{
               background: "#ffffff",
               border: "1px solid #e0e0e0",
-              borderRadius: 12,
-              padding: 24,
-              minWidth: 280,
+              borderRadius: 16,
+              padding: "var(--space-3)",
+              minWidth: 288,
               textAlign: "center",
               boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
             }}
@@ -443,7 +443,7 @@ export function TowerScreen() {
             {state.winnerId === "Player" ? (
               <>
                 <h2>✅ Vitória!</h2>
-                <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                <div style={{ display: "flex", gap: "var(--space-2)", justifyContent: "center" }}>
                   <button
                     type="button"
                     onClick={() => {

@@ -82,9 +82,10 @@ export function CardsScreen() {
         ) : (
           <div
             style={{
-              height: 200,
-              width: 140,
-              margin: 6,
+              height: "auto",
+              width: "var(--card-ui-width)",
+              aspectRatio: "var(--card-ui-aspect)",
+              margin: "var(--space-1)",
               borderRadius: 8,
               border: "1px dashed #999",
               background: "#f2f2f2",
@@ -113,7 +114,14 @@ export function CardsScreen() {
   }, [deck, profile.collection.inventory]);
 
   return (
-    <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 24 }}>
+    <div
+      style={{
+        padding: "var(--screen-padding)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-3)",
+      }}
+    >
       <section>
         <h1>🃏 Meu Deck</h1>
         <p>
@@ -132,7 +140,7 @@ export function CardsScreen() {
             flexWrap: "wrap",
             maxHeight: "60vh",
             overflowY: "auto",
-            paddingRight: 6,
+            paddingRight: "var(--space-1)",
           }}
         >
           {availableCards.map(card => (

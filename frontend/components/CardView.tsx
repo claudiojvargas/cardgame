@@ -73,10 +73,11 @@ export function CardView({ card, onClick, selectable, style }: Props) {
       style={{
         position: "relative",
         border: "1px solid rgba(0,0,0,0.45)",
-        padding: 12,
-        margin: 6,
-        width: 140,
-        height: 200,
+        padding: "var(--space-2)",
+        margin: "var(--space-1)",
+        width: "var(--card-ui-width)",
+        height: "auto",
+        aspectRatio: "var(--card-ui-aspect)",
         cursor: selectable ? "pointer" : "default",
         background: getCardBackground(card),
         color: "#111",
@@ -88,8 +89,8 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         <div
           style={{
             display: "flex",
-            gap: 4,
-            marginBottom: 6,
+            gap: "var(--space-1)",
+            marginBottom: "var(--space-1)",
           }}
         >
           {badges.map(badge => (
@@ -98,9 +99,9 @@ export function CardView({ card, onClick, selectable, style }: Props) {
               title={badge.label}
               style={{
                 background: "rgba(255,255,255,0.85)",
-                borderRadius: 6,
-                padding: "2px 4px",
-                fontSize: 12,
+                borderRadius: 8,
+                padding: "var(--space-1)",
+                fontSize: 14,
               }}
             >
               {badge.emoji}
@@ -111,16 +112,16 @@ export function CardView({ card, onClick, selectable, style }: Props) {
       <div
         style={{
           position: "absolute",
-          top: 6,
-          right: 6,
-          width: 22,
-          height: 22,
+          top: "var(--space-1)",
+          right: "var(--space-1)",
+          width: 24,
+          height: 24,
           borderRadius: "50%",
           background: "rgba(255,255,255,0.85)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 14,
+          fontSize: 16,
         }}
         title={`Classe: ${card.cardClass}`}
       >
@@ -129,9 +130,9 @@ export function CardView({ card, onClick, selectable, style }: Props) {
       <strong>{card.name}</strong>
       <div
         style={{
-          marginTop: 6,
-          marginBottom: 8,
-          height: 90,
+          marginTop: "var(--space-1)",
+          marginBottom: "var(--space-1)",
+          height: 96,
           borderRadius: 8,
           backgroundColor: "rgba(255,255,255,0.7)",
           backgroundImage: `url(${cardImageUrl})`,

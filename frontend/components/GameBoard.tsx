@@ -293,9 +293,9 @@ export function GameBoard({
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 16,
-        padding: 16,
-        borderRadius: 12,
+        gap: "var(--space-2)",
+        padding: "var(--space-2)",
+        borderRadius: 16,
         background: "#f7f7f7",
         border: "1px solid #e0e0e0",
         height: "100%",
@@ -433,8 +433,8 @@ export function GameBoard({
       </p>
       <div
         style={{
-          padding: 12,
-          borderRadius: 12,
+          padding: "var(--space-2)",
+          borderRadius: 16,
           background: "#ffffff",
           border: "1px solid #e0e0e0",
           flex: 1,
@@ -445,16 +445,16 @@ export function GameBoard({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            gap: 12,
+            gap: "var(--space-2)",
           }}
         >
           <h2>🤖 Cartas do Inimigo</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
             <span
               style={{
                 background: "#101828",
                 color: "#fff",
-                padding: "4px 10px",
+                padding: "var(--space-1) var(--space-2)",
                 borderRadius: 999,
                 fontSize: 12,
                 alignSelf: "flex-end",
@@ -479,10 +479,10 @@ export function GameBoard({
           </div>
           <div
             style={{
-              width: 70,
-              height: 100,
+              width: 72,
+              height: 104,
               border: "1px solid #bbb",
-              borderRadius: 6,
+              borderRadius: 8,
               background: "#e9e9e9",
               alignSelf: "flex-start",
             }}
@@ -495,7 +495,7 @@ export function GameBoard({
               style={{
                 position: "absolute",
                 top: -8,
-                right: 12,
+                right: "var(--space-2)",
                 background: "rgba(0,0,0,0.75)",
                 color: "#fff",
                 padding: "4px 10px",
@@ -600,8 +600,8 @@ export function GameBoard({
 
       <div
         style={{
-          padding: 12,
-          borderRadius: 12,
+          padding: "var(--space-2)",
+          borderRadius: 16,
           background: "#ffffff",
           border: "1px solid #e0e0e0",
           flex: 1,
@@ -611,10 +611,10 @@ export function GameBoard({
           <h2>🧑‍🎮 Suas Cartas</h2>
           <div
             style={{
-              width: 70,
-              height: 100,
+              width: 72,
+              height: 104,
               border: "1px solid #bbb",
-              borderRadius: 6,
+              borderRadius: 8,
               background: "#e9e9e9",
               alignSelf: "flex-start",
             }}
@@ -627,10 +627,10 @@ export function GameBoard({
               style={{
                 position: "absolute",
                 top: -8,
-                right: 12,
+                right: "var(--space-2)",
                 background: "rgba(0,0,0,0.75)",
                 color: "#fff",
-                padding: "4px 10px",
+                padding: "var(--space-1) var(--space-2)",
                 borderRadius: 999,
                 fontSize: 12,
                 zIndex: 5,
