@@ -74,105 +74,130 @@ function App() {
         style={{
           minHeight: "100vh",
           display: "flex",
-          flexDirection: "column",
-          padding: "var(--safe-top) var(--safe-side) var(--safe-bottom)",
-          boxSizing: "border-box",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "var(--space-2)",
+          background: "#0b0b0b",
         }}
       >
-        <div style={{ flex: 1 }}>{content}</div>
-        <nav
+        <div
           style={{
-            borderTop: "1px solid #333",
-            padding: "var(--space-2) var(--screen-padding)",
-            display: "flex",
-            gap: "var(--space-2)",
-            justifyContent: "center",
+            width: "min(100vw, calc(100vh * 9 / 20))",
+            aspectRatio: "9 / 20",
             background: "#111",
-            flexWrap: "wrap",
+            borderRadius: 24,
+            boxShadow: "0 24px 80px rgba(0,0,0,0.45)",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <button
-            onClick={() => setScreen("TOWER")}
+          <div
             style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "TOWER" ? "bold" : "normal",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              padding: "var(--safe-top) var(--safe-side) var(--safe-bottom)",
+              boxSizing: "border-box",
+              overflow: "hidden",
             }}
           >
-            🏰 Torre
-          </button>
-          <button
-            onClick={() => setScreen("CAMPAIGN_TOWER")}
+            <div style={{ flex: 1, overflowY: "auto" }}>{content}</div>
+          </div>
+          <nav
             style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "CAMPAIGN_TOWER" ? "bold" : "normal",
+              borderTop: "1px solid #333",
+              padding: "var(--space-2) var(--screen-padding)",
+              display: "flex",
+              gap: "var(--space-2)",
+              justifyContent: "center",
+              background: "#111",
+              flexWrap: "wrap",
             }}
           >
-            🧭 Torre Campanha
-          </button>
-          <button
-            onClick={() => setScreen("CARDS")}
-            style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "CARDS" ? "bold" : "normal",
-            }}
-          >
-            📚 Ver Cartas
-          </button>
-          <button
-            onClick={() => setScreen("COLLECTION")}
-            style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "COLLECTION" ? "bold" : "normal",
-            }}
-          >
-            🗂️ Coleção
-          </button>
-          <button
-            onClick={() => setScreen("CHESTS")}
-            style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "CHESTS" ? "bold" : "normal",
-            }}
-          >
-            🎁 Baús
-          </button>
-          <button
-            onClick={() => setScreen("AWAKENING")}
-            style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "AWAKENING" ? "bold" : "normal",
-            }}
-          >
-            ✨ Despertar
-          </button>
-          <button
-            onClick={() => setScreen("COMBINING")}
-            style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "COMBINING" ? "bold" : "normal",
-            }}
-          >
-            🔮 Combinar
-          </button>
-          <button
-            onClick={() => setScreen("PROFILE")}
-            style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "PROFILE" ? "bold" : "normal",
-            }}
-          >
-            🙍 Perfil
-          </button>
-          <button
-            onClick={() => setScreen("PVP")}
-            style={{
-              padding: "var(--space-1) var(--space-2)",
-              fontWeight: screen === "PVP" ? "bold" : "normal",
-            }}
-          >
-            ⚔️ PvP
-          </button>
-        </nav>
+            <button
+              onClick={() => setScreen("TOWER")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "TOWER" ? "bold" : "normal",
+              }}
+            >
+              🏰 Torre
+            </button>
+            <button
+              onClick={() => setScreen("CAMPAIGN_TOWER")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "CAMPAIGN_TOWER" ? "bold" : "normal",
+              }}
+            >
+              🧭 Torre Campanha
+            </button>
+            <button
+              onClick={() => setScreen("CARDS")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "CARDS" ? "bold" : "normal",
+              }}
+            >
+              📚 Ver Cartas
+            </button>
+            <button
+              onClick={() => setScreen("COLLECTION")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "COLLECTION" ? "bold" : "normal",
+              }}
+            >
+              🗂️ Coleção
+            </button>
+            <button
+              onClick={() => setScreen("CHESTS")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "CHESTS" ? "bold" : "normal",
+              }}
+            >
+              🎁 Baús
+            </button>
+            <button
+              onClick={() => setScreen("AWAKENING")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "AWAKENING" ? "bold" : "normal",
+              }}
+            >
+              ✨ Despertar
+            </button>
+            <button
+              onClick={() => setScreen("COMBINING")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "COMBINING" ? "bold" : "normal",
+              }}
+            >
+              🔮 Combinar
+            </button>
+            <button
+              onClick={() => setScreen("PROFILE")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "PROFILE" ? "bold" : "normal",
+              }}
+            >
+              🙍 Perfil
+            </button>
+            <button
+              onClick={() => setScreen("PVP")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "PVP" ? "bold" : "normal",
+              }}
+            >
+              ⚔️ PvP
+            </button>
+          </nav>
+        </div>
       </div>
     </GameProvider>
   );
