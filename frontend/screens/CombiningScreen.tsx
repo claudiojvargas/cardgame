@@ -218,9 +218,10 @@ export function CombiningScreen() {
   const incenseTarget = selectedRarity
     ? getIncenseThreshold(selectedRarity)
     : 0;
-  const upgradeChance = selectedRarity
-    ? Math.min(100, Math.round((incenseProgress / incenseTarget) * 100))
-    : 0;
+  const upgradeChance =
+    selectedRarity && incenseTarget > 0
+      ? Math.min(100, Math.round((incenseProgress / incenseTarget) * 100))
+      : 0;
 
   return (
     <div
@@ -239,11 +240,13 @@ export function CombiningScreen() {
           gap: "var(--space-2)",
         }}
       >
-        <button type="button" style={{ minWidth: 48 }}>
+        <button type="button" style={{ minWidth: 40 }}>
           ←
         </button>
-        <h1 style={{ margin: 0, textAlign: "center", flex: 1 }}>Fusão</h1>
-        <button type="button" style={{ minWidth: 48 }}>
+        <h1 style={{ margin: 0, textAlign: "center", flex: 1, fontSize: 24 }}>
+          Fusion screen
+        </h1>
+        <button type="button" style={{ minWidth: 40 }}>
           ⚙️
         </button>
       </header>
@@ -251,108 +254,183 @@ export function CombiningScreen() {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)",
+          gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1.1fr)",
           gap: "var(--space-3)",
           alignItems: "start",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-          <p style={{ margin: 0 }}>
-            Combine 4 cartas da mesma raridade para tentar evoluir.
-          </p>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-              gap: "var(--space-2)",
-            }}
-          >
-            {selectedSlots.map((slot, index) => (
-              <div key={index} style={{ justifySelf: "center" }}>
-                {slot ? (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: "var(--space-2)",
+            justifyItems: "center",
+          }}
+        >
+          {selectedSlots.map((slot, index) => (
+            <div key={index} style={{ width: "100%" }}>
+              {slot ? (
+                <div style={{ display: "flex", justifyContent: "center" }}>
                   <CardTile
                     card={cardMap[slot]}
                     obtained
                     onClick={() => handleRemoveSlot(index)}
                   />
-                ) : (
-                  <div
-                    style={{
-                      height: "auto",
-                      width: "var(--card-ui-width)",
-                      aspectRatio: "var(--card-ui-aspect)",
-                      borderRadius: 8,
-                      border: "1px dashed #bbb",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2)" }}>
-            <button type="button" onClick={handleAutoSelect}>
-              Selecionar automático
-            </button>
-            <button type="button" onClick={handleClearSlots}>
-              Limpar
-            </button>
-            <button type="button" onClick={handleCombine} disabled={!canCombine}>
-              Fundir
-            </button>
-          </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1 / 1",
+                    borderRadius: 8,
+                    border: "1px solid #bdbdbd",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                  }}
+                >
+                  {index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
         <aside
           style={{
-            border: "1px solid #e0e0e0",
-            borderRadius: 16,
+            border: "1px solid #bdbdbd",
+            borderRadius: 12,
             padding: "var(--space-2)",
             display: "flex",
             flexDirection: "column",
             gap: "var(--space-2)",
           }}
         >
-          <h2 style={{ margin: 0 }}>Regras da fusão</h2>
-          <p style={{ margin: 0 }}>
+          <h2 style={{ margin: 0, fontSize: 16 }}>Fusion rules</h2>
+          <p style={{ margin: 0, fontSize: 12 }}>
             Use quatro cartas da mesma raridade. A chance de upgrade aumenta
             conforme o incenso da raridade.
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-1)",
+              flexWrap: "wrap",
+              fontSize: 12,
+            }}
+          >
             {incenseList.map(item => (
-              <div key={item.rarity}>
+              <span key={item.rarity}>
                 {item.rarity}: {item.value}/{getIncenseThreshold(item.rarity)}
-              </div>
+              </span>
             ))}
           </div>
         </aside>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-        <h2 style={{ margin: 0 }}>Repetidas disponíveis</h2>
-        <p style={{ margin: 0 }}>
-          Clique em uma carta repetida para enviar para um slot.
-        </p>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <button type="button" onClick={handleCombine} disabled={!canCombine}>
+          FUSE
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--space-2)",
+          fontSize: 14,
+        }}
+      >
+        <span style={{ flex: 1, height: 1, background: "#bdbdbd" }} />
+        <strong>Result preview</strong>
+        <span style={{ flex: 1, height: 1, background: "#bdbdbd" }} />
+      </div>
+
+      <section
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "var(--space-2)",
+        }}
+      >
+        {lastResult?.card ? (
+          <CardTile card={lastResult.card} obtained />
+        ) : (
+          <div
+            style={{
+              width: "min(220px, 60vw)",
+              aspectRatio: "1 / 1",
+              borderRadius: 8,
+              border: "1px solid #bdbdbd",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+            }}
+          >
+            Resultado
+          </div>
+        )}
+
+        <div style={{ width: "min(320px, 100%)", fontSize: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Upgrade chance</span>
+            <strong>{selectedRarity ? `${upgradeChance}%` : "--"}</strong>
+          </div>
+          <div
+            style={{
+              marginTop: "var(--space-1)",
+              height: 6,
+              borderRadius: 999,
+              border: "1px solid #bdbdbd",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${upgradeChance}%`,
+                height: "100%",
+                background: "#bdbdbd",
+              }}
+            />
+          </div>
+        </div>
+
+        {lastResult && (
+          <p style={{ margin: 0, fontSize: 12 }}>
+            {lastResult.base} → {lastResult.result}
+          </p>
+        )}
+      </section>
+
+      <section
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-1)",
+        }}
+      >
+        <strong style={{ fontSize: 12 }}>Repetidas disponíveis</strong>
         <div
           style={{
             display: "flex",
-            flexWrap: "wrap",
+            flexWrap: "nowrap",
             gap: "var(--space-2)",
-            maxHeight: "32vh",
-            overflowY: "auto",
-            paddingRight: "var(--space-1)",
+            overflowX: "auto",
+            paddingBottom: "var(--space-1)",
           }}
         >
           {duplicateCards.length === 0 && (
             <div
               style={{
-                border: "1px dashed #bbb",
-                borderRadius: 16,
+                border: "1px dashed #bdbdbd",
+                borderRadius: 12,
                 padding: "var(--space-2)",
+                fontSize: 12,
               }}
             >
               Sem cartas repetidas.
@@ -371,65 +449,6 @@ export function CombiningScreen() {
               />
             </div>
           ))}
-        </div>
-      </section>
-
-      <section style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-        <h2 style={{ margin: 0 }}>Prévia do resultado</h2>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--space-2)",
-            alignItems: "center",
-          }}
-        >
-          {lastResult?.card ? (
-            <CardTile card={lastResult.card} obtained />
-          ) : (
-            <div
-              style={{
-                height: "auto",
-                width: "var(--card-ui-width)",
-                aspectRatio: "var(--card-ui-aspect)",
-                borderRadius: 8,
-                border: "1px dashed #bbb",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Resultado
-            </div>
-          )}
-          <div style={{ width: "min(320px, 100%)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Chance de upgrade</span>
-              <strong>{selectedRarity ? `${upgradeChance}%` : "--"}</strong>
-            </div>
-            <div
-              style={{
-                marginTop: "var(--space-1)",
-                height: 8,
-                borderRadius: 999,
-                border: "1px solid #bbb",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  width: `${upgradeChance}%`,
-                  height: "100%",
-                  background: "#bbb",
-                }}
-              />
-            </div>
-          </div>
-          {lastResult && (
-            <p style={{ margin: 0 }}>
-              {lastResult.base} → {lastResult.result}
-            </p>
-          )}
         </div>
       </section>
     </div>
