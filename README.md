@@ -26,7 +26,9 @@ Entregar uma versão mínima jogável com:
 O projeto é dividido em duas partes principais:
 
 ### `game/` (Core / Engine)
-Contém toda a lógica do jogo, independente de interface.
+Contém toda a lógica do jogo, independente de interface. A fonte de verdade das cartas
+fica em `game/data/cardDefinitions.ts`, e a camada runtime cria instâncias via
+`createCardFromDefinition` em `game/data/cardFactory.ts`.
 
 - Entidades (Player, Enemy, Card, etc.)
 - Estado do jogo (`GameState`)
@@ -43,6 +45,8 @@ Interface do usuário feita em React + Vite.
 - Renderização e interação no browser
 
 ✅ A UI consome o motor e **não contém regra de jogo**, apenas exibe e envia comandos.
+As definições de cartas são centralizadas em `CARD_DEFINITIONS` e qualquer criação
+de carta deve passar pela factory para manter defaults consistentes.
 
 ---
 
