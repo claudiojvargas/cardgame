@@ -2,7 +2,7 @@
 
 Um jogo de cartas por turnos feito em **TypeScript**, com arquitetura separando bem o **motor do jogo (game engine)** da **interface (frontend)**.
 
-Este projeto está sendo desenvolvido com foco em um **MVP jogável**, com combate 1x1, sistema de turnos e modo **Tower (andar/floor)**.
+Este projeto está sendo desenvolvido com foco em um **MVP jogável**, com combate por turnos, sistema de turnos e modo **Tower (andar/floor)**.
 
 ---
 
@@ -10,12 +10,14 @@ Este projeto está sendo desenvolvido com foco em um **MVP jogável**, com comba
 
 Entregar uma versão mínima jogável com:
 
-- Combate por turnos (Player vs Enemy)
+- Combate por turnos (Player vs Enemy) com até 3 cartas em campo por lado
 - Ações básicas (ataque)
-- Vida / dano
+- Vida / dano por carta
 - Progressão por andares (Tower Mode)
 - IA simples para o inimigo
 - Interface em React para jogar no navegador
+
+✅ **Status atual**: os itens acima já estão implementados e jogáveis no modo Torre.
 
 ---
 
@@ -61,7 +63,6 @@ Interface do usuário feita em React + Vite.
 │   ├── entities/          # Player, Card, etc
 │   ├── tower/             # Tower mode, dificuldade, factories
 │   ├── ai/                # IA do inimigo
-│   └── simulate.ts        # Simulação via terminal
 │
 ├── package.json
 ├── tsconfig.json
