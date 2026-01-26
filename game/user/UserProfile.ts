@@ -1,3 +1,4 @@
+import { STARTER_DECK_IDS } from "../data/starterDeck";
 import { Rarity } from "../types/enums";
 
 export type CurrencyType = "gold" | "diamonds";
@@ -24,6 +25,7 @@ export interface UserProfile {
     inventory: Record<string, number>;
     isNew: Record<string, boolean>;
     awakenings: Record<string, number>;
+    deckIds: string[];
   };
   stats: {
     chestsOpened: Record<string, number>;
@@ -39,7 +41,9 @@ export function createRarityRecord(defaultValue = 0): Record<Rarity, number> {
   }, {} as Record<Rarity, number>);
 }
 
-export function createDefaultProfile(starterCardIds: string[] = []): UserProfile {
+export function createDefaultProfile(
+  starterCardIds: string[] = [...STARTER_DECK_IDS]
+): UserProfile {
   const now = new Date().toISOString();
   const inventory: Record<string, number> = {};
   const isNew: Record<string, boolean> = {};
@@ -70,6 +74,7 @@ export function createDefaultProfile(starterCardIds: string[] = []): UserProfile
       inventory,
       isNew,
       awakenings: {},
+      deckIds: [...starterCardIds],
     },
     stats: {
       chestsOpened: {},

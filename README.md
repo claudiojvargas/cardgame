@@ -2,7 +2,7 @@
 
 Um jogo de cartas por turnos feito em **TypeScript**, com arquitetura separando bem o **motor do jogo (game engine)** da **interface (frontend)**.
 
-Este projeto está sendo desenvolvido com foco em um **MVP jogável**, com combate 1x1, sistema de turnos e modo **Tower (andar/floor)**.
+Este projeto está sendo desenvolvido com foco em um **MVP jogável**, com combate por turnos, sistema de turnos e modo **Tower (andar/floor)**.
 
 ---
 
@@ -10,12 +10,14 @@ Este projeto está sendo desenvolvido com foco em um **MVP jogável**, com comba
 
 Entregar uma versão mínima jogável com:
 
-- Combate por turnos (Player vs Enemy)
+- Combate por turnos (Player vs Enemy) com até 3 cartas em campo por lado
 - Ações básicas (ataque)
-- Vida / dano
+- Vida / dano por carta
 - Progressão por andares (Tower Mode)
 - IA simples para o inimigo
 - Interface em React para jogar no navegador
+
+✅ **Status atual**: os itens acima já estão implementados e jogáveis no modo Torre.
 
 ---
 
@@ -201,7 +203,9 @@ EPIC, LEGENDARY, MYTHIC, DIAMOND.
 O projeto é dividido em duas partes principais:
 
 ### `game/` (Core / Engine)
-Contém toda a lógica do jogo, independente de interface.
+Contém toda a lógica do jogo, independente de interface. A fonte de verdade das cartas
+fica em `game/data/cardDefinitions.ts`, e a camada runtime cria instâncias via
+`createCardFromDefinition` em `game/data/cardFactory.ts`.
 
 - Entidades (Player, Enemy, Card, etc.)
 - Estado do jogo (`GameState`)
@@ -218,6 +222,8 @@ Interface do usuário feita em React + Vite.
 - Renderização e interação no browser
 
 ✅ A UI consome o motor e **não contém regra de jogo**, apenas exibe e envia comandos.
+As definições de cartas são centralizadas em `CARD_DEFINITIONS` e qualquer criação
+de carta deve passar pela factory para manter defaults consistentes.
 
 ---
 
@@ -238,7 +244,6 @@ Interface do usuário feita em React + Vite.
 │   ├── entities/          # Player, Card, etc
 │   ├── tower/             # Tower mode, dificuldade, factories
 │   ├── ai/                # IA do inimigo
-│   └── simulate.ts        # Simulação via terminal
 │
 ├── package.json
 ├── tsconfig.json
