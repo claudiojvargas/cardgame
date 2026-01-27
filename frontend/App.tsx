@@ -102,7 +102,7 @@ function App() {
               overflow: "hidden",
             }}
           >
-            <div style={{ flex: 1, overflowY: "auto" }}>{content}</div>
+            <div style={{ flex: 1, overflow: "hidden" }}>{content}</div>
           </div>
           <nav
             style={{
