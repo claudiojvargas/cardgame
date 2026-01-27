@@ -79,7 +79,9 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         height: "auto",
         aspectRatio: "var(--card-ui-aspect)",
         cursor: selectable ? "pointer" : "default",
-        background: getCardBackground(card),
+        background: `linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.75)), url(${cardImageUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         color: "#111",
         boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
         ...style,
@@ -114,38 +116,40 @@ export function CardView({ card, onClick, selectable, style }: Props) {
           position: "absolute",
           top: "var(--space-1)",
           right: "var(--space-1)",
-          width: 24,
+          minWidth: 36,
           height: 24,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.85)",
+          borderRadius: 999,
+          background: "rgba(0,0,0,0.6)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 16,
+          fontSize: 12,
+          color: "#fff",
+          padding: "0 var(--space-1)",
+        }}
+        title={`Poder: ${formatPowerDisplay(card)}`}
+      >
+        {formatPowerDisplay(card)}
+      </div>
+      <span
+        style={{
+          position: "absolute",
+          bottom: "var(--space-1)",
+          left: "var(--space-1)",
+          width: 24,
+          height: 24,
+          borderRadius: "50%",
+          background: "rgba(0,0,0,0.6)",
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
         }}
         title={`Classe: ${card.cardClass}`}
       >
         {CLASS_ICONS[card.cardClass]}
-      </div>
-      <strong>{card.name}</strong>
-      <div
-        style={{
-          marginTop: "var(--space-1)",
-          marginBottom: "var(--space-1)",
-          height: 96,
-          borderRadius: 8,
-          backgroundColor: "rgba(255,255,255,0.7)",
-          backgroundImage: `url(${cardImageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.15)",
-        }}
-        title={`Imagem da carta ${card.name}`}
-      />
-      <div>Power: {formatPowerDisplay(card)}</div>
-      <div>{card.cardClass}</div>
-      <div>{card.rarity}</div>
-      <div>{card.regiao}</div>
+      </span>
     </div>
   );
 }

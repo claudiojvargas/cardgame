@@ -97,7 +97,11 @@ export function CardTile({
         borderRadius: 8,
         border: "1px solid #666",
         textAlign: "left",
-        background: obtained ? getCardBackground(card) : "#d9d9d9",
+        background: obtained
+          ? `linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.75)), url(${cardImageUrl})`
+          : "#d9d9d9",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         color: "#000",
         cursor,
         opacity: obtained ? 1 : 0.7,
@@ -134,18 +138,20 @@ export function CardTile({
           position: "absolute",
           top: "var(--space-1)",
           right: "var(--space-1)",
-          width: 24,
+          minWidth: 36,
           height: 24,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.85)",
+          borderRadius: 999,
+          background: "rgba(0,0,0,0.6)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 16,
+          fontSize: 12,
+          color: "#fff",
+          padding: "0 var(--space-1)",
         }}
-        title={`Classe: ${card.cardClass}`}
+        title={`Poder: ${formatPowerDisplay(card, awakeningDisplay)}`}
       >
-        {CLASS_ICONS[card.cardClass]}
+        {formatPowerDisplay(card, awakeningDisplay)}
         {isNew && (
           <span
             style={{
@@ -164,13 +170,13 @@ export function CardTile({
         <span
           style={{
             position: "absolute",
-            bottom: "var(--space-1)",
+            top: "var(--space-1)",
             left: "var(--space-1)",
-            padding: "var(--space-1)",
-            borderRadius: 10,
-            background: "#111",
+            padding: "2px 6px",
+            borderRadius: 999,
+            background: "rgba(0,0,0,0.6)",
             color: "#fff",
-            fontSize: 14,
+            fontSize: 11,
           }}
         >
           x{duplicateCount}
@@ -181,36 +187,34 @@ export function CardTile({
           position: "absolute",
           bottom: "var(--space-1)",
           right: "var(--space-1)",
-          padding: "var(--space-1)",
-          borderRadius: 10,
-          background: "#e0e0e0",
-          color: "#000",
-          fontSize: 14,
+          padding: "2px 6px",
+          borderRadius: 999,
+          background: "rgba(0,0,0,0.6)",
+          color: "#fff",
+          fontSize: 12,
         }}
       >
-        Desp {awakeningDisplay}
+        {awakeningDisplay}
       </span>
-      <strong style={{ display: "block", marginBottom: "var(--space-1)" }}>
-        {card.name}
-      </strong>
-      <div
+      <span
         style={{
-          marginBottom: "var(--space-1)",
-          height: 96,
-          borderRadius: 8,
-          backgroundColor: "rgba(255,255,255,0.7)",
-          backgroundImage: obtained ? `url(${cardImageUrl})` : "none",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.15)",
-          filter: obtained ? "none" : "grayscale(100%)",
+          position: "absolute",
+          bottom: "var(--space-1)",
+          left: "var(--space-1)",
+          width: 24,
+          height: 24,
+          borderRadius: "50%",
+          background: "rgba(0,0,0,0.6)",
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
         }}
-        title={obtained ? `Imagem da carta ${card.name}` : undefined}
-      />
-      <div>Poder: {formatPowerDisplay(card, awakeningDisplay)}</div>
-      <div>Raridade: {card.rarity}</div>
-      <div>Classe: {card.cardClass}</div>
-      <div>Região: {card.regiao}</div>
+        title={`Classe: ${card.cardClass}`}
+      >
+        {CLASS_ICONS[card.cardClass]}
+      </span>
     </button>
   );
 }
