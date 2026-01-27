@@ -114,6 +114,9 @@ function App() {
               justifyContent: "center",
               background: "#111",
               flexWrap: "wrap",
+              position: "sticky",
+              bottom: 0,
+              zIndex: 10,
             }}
           >
             <button
@@ -122,8 +125,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "TOWER" ? "bold" : "normal",
               }}
+              aria-label="Torre"
             >
-              🏰 Torre
+              🏰
             </button>
             <button
               onClick={() => setScreen("CAMPAIGN_TOWER")}
@@ -131,8 +135,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "CAMPAIGN_TOWER" ? "bold" : "normal",
               }}
+              aria-label="Torre Campanha"
             >
-              🧭 Torre Campanha
+              🧭
             </button>
             <button
               onClick={() => setScreen("CARDS")}
@@ -140,8 +145,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "CARDS" ? "bold" : "normal",
               }}
+              aria-label="Ver Cartas"
             >
-              📚 Ver Cartas
+              📚
             </button>
             <button
               onClick={() => setScreen("COLLECTION")}
@@ -149,8 +155,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "COLLECTION" ? "bold" : "normal",
               }}
+              aria-label="Coleção"
             >
-              🗂️ Coleção
+              🗂️
             </button>
             <button
               onClick={() => setScreen("CHESTS")}
@@ -158,8 +165,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "CHESTS" ? "bold" : "normal",
               }}
+              aria-label="Baús"
             >
-              🎁 Baús
+              🎁
             </button>
             <button
               onClick={() => setScreen("AWAKENING")}
@@ -167,8 +175,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "AWAKENING" ? "bold" : "normal",
               }}
+              aria-label="Despertar"
             >
-              ✨ Despertar
+              ✨
             </button>
             <button
               onClick={() => setScreen("COMBINING")}
@@ -176,8 +185,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "COMBINING" ? "bold" : "normal",
               }}
+              aria-label="Combinar"
             >
-              🔮 Combinar
+              🔮
             </button>
             <button
               onClick={() => setScreen("PROFILE")}
@@ -185,8 +195,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "PROFILE" ? "bold" : "normal",
               }}
+              aria-label="Perfil"
             >
-              🙍 Perfil
+              🙍
             </button>
             <button
               onClick={() => setScreen("PVP")}
@@ -194,8 +205,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "PVP" ? "bold" : "normal",
               }}
+              aria-label="PvP"
             >
-              ⚔️ PvP
+              ⚔️
             </button>
           </nav>
         </div>
