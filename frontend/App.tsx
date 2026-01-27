@@ -98,7 +98,7 @@ function App() {
               flex: 1,
               display: "flex",
               flexDirection: "column",
-              padding: "var(--safe-top) var(--safe-side) var(--safe-bottom)",
+              padding: "var(--screen-padding)",
               boxSizing: "border-box",
               overflow: "hidden",
             }}
