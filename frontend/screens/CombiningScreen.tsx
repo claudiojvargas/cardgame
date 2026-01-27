@@ -222,6 +222,12 @@ export function CombiningScreen() {
     selectedRarity && incenseTarget > 0
       ? Math.min(100, Math.round((incenseProgress / incenseTarget) * 100))
       : 0;
+  const slotPositions = [
+    { label: "Slot A", index: 0, gridColumn: "1 / 2", gridRow: "1" },
+    { label: "Slot B", index: 1, gridColumn: "2 / 3", gridRow: "1" },
+    { label: "Slot C", index: 2, gridColumn: "1 / 2", gridRow: "2" },
+    { label: "Slot D", index: 3, gridColumn: "2 / 3", gridRow: "2" },
+  ];
 
   return (
     <div
@@ -230,7 +236,7 @@ export function CombiningScreen() {
         display: "flex",
         flexDirection: "column",
         gap: "var(--space-3)",
-        background: "radial-gradient(circle at top, #2a211a 0%, #120c08 70%)",
+        background: "linear-gradient(180deg, #0f0f13 0%, #121216 100%)",
         borderRadius: 20,
         height: "100%",
         minHeight: 0,
@@ -244,21 +250,22 @@ export function CombiningScreen() {
           justifyContent: "space-between",
           gap: "var(--space-2)",
           paddingBottom: "var(--space-1)",
-          borderBottom: "1px solid rgba(210, 176, 120, 0.4)",
+          borderBottom: "1px solid rgba(148, 156, 178, 0.35)",
         }}
       >
         <button
           type="button"
           style={{
-            minWidth: 40,
+            minWidth: 56,
             borderRadius: 999,
-            border: "1px solid rgba(210, 176, 120, 0.6)",
-            background: "linear-gradient(180deg, #2f261d 0%, #1b1410 100%)",
-            color: "#f4e2c2",
-            padding: "6px 10px",
+            border: "1px solid rgba(148, 156, 178, 0.6)",
+            background: "#14141a",
+            color: "#d5d9e6",
+            padding: "6px 12px",
+            fontSize: 12,
           }}
         >
-          ←
+          Back
         </button>
         <h1
           style={{
@@ -266,109 +273,164 @@ export function CombiningScreen() {
             textAlign: "center",
             flex: 1,
             fontSize: 24,
-            color: "#f4e2c2",
+            color: "#e3e6f5",
             letterSpacing: "0.08em",
             textTransform: "uppercase",
           }}
         >
-          Fusion screen
+          Fusão
         </h1>
         <button
           type="button"
           style={{
-            minWidth: 40,
+            minWidth: 56,
             borderRadius: 999,
-            border: "1px solid rgba(210, 176, 120, 0.6)",
-            background: "linear-gradient(180deg, #2f261d 0%, #1b1410 100%)",
-            color: "#f4e2c2",
-            padding: "6px 10px",
+            border: "1px solid rgba(148, 156, 178, 0.6)",
+            background: "#14141a",
+            color: "#d5d9e6",
+            padding: "6px 12px",
+            fontSize: 12,
           }}
         >
-          ⚙️
+          Gear
         </button>
       </header>
 
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1.1fr)",
-          gap: "var(--space-3)",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: "var(--space-2)",
           alignItems: "start",
         }}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: "var(--space-2)",
-            justifyItems: "center",
-          }}
-        >
-          {selectedSlots.map((slot, index) => (
-            <div key={index} style={{ width: "100%" }}>
+        {slotPositions.map(slotInfo => {
+          const slot = selectedSlots[slotInfo.index];
+          return (
+            <div
+              key={slotInfo.label}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gridColumn: slotInfo.gridColumn,
+                gridRow: slotInfo.gridRow,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#d5d9e6",
+                  marginBottom: "var(--space-1)",
+                }}
+              >
+                {slotInfo.label}
+              </div>
               {slot ? (
                 <div style={{ display: "flex", justifyContent: "center" }}>
                   <CardTile
                     card={cardMap[slot]}
                     obtained
-                    onClick={() => handleRemoveSlot(index)}
+                    onClick={() => handleRemoveSlot(slotInfo.index)}
                   />
                 </div>
               ) : (
                 <div
                   style={{
                     width: "100%",
-                    aspectRatio: "1 / 1",
-                    borderRadius: 8,
-                    border: "1px solid rgba(210, 176, 120, 0.6)",
-                    background: "rgba(27, 20, 16, 0.7)",
-                    boxShadow: "inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
+                    aspectRatio: "2 / 3",
+                    borderRadius: 12,
+                    border: "1px solid rgba(222, 228, 245, 0.6)",
+                    background: "#121219",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 12,
-                    color: "#cbb38a",
+                    color: "#9aa3bd",
                   }}
                 >
-                  {index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
+                  {slotInfo.index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          );
+        })}
 
         <aside
           style={{
-            border: "1px solid rgba(210, 176, 120, 0.6)",
+            gridColumn: "3 / 4",
+            gridRow: "1 / span 2",
+            border: "1px solid rgba(222, 228, 245, 0.6)",
             borderRadius: 12,
-            background: "rgba(18, 14, 12, 0.9)",
+            background: "#121219",
             padding: "var(--space-2)",
             display: "flex",
             flexDirection: "column",
             gap: "var(--space-2)",
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 16, color: "#f4e2c2" }}>
+          <h2 style={{ margin: 0, fontSize: 14, color: "#e3e6f5" }}>
             Fusion rules
           </h2>
-          <p style={{ margin: 0, fontSize: 12, color: "#d6c4a3" }}>
+          <div
+            style={{
+              borderTop: "1px solid rgba(222, 228, 245, 0.2)",
+              paddingTop: "var(--space-1)",
+              fontSize: 12,
+              color: "#c4cada",
+              lineHeight: 1.4,
+            }}
+          >
             Use quatro cartas da mesma raridade. A chance de upgrade aumenta
             conforme o incenso da raridade.
-          </p>
+          </div>
           <div
             style={{
               display: "flex",
-              alignItems: "center",
+              flexDirection: "column",
               gap: "var(--space-1)",
-              flexWrap: "wrap",
               fontSize: 12,
-              color: "#bfa57b",
+              color: "#b8bfd2",
             }}
           >
             {incenseList.map(item => (
-              <span key={item.rarity}>
+              <div key={item.rarity}>
                 {item.rarity}: {item.value}/{getIncenseThreshold(item.rarity)}
-              </span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: "#d5d9e6" }}>
+            Repetidas
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "var(--space-1)",
+              maxHeight: 120,
+              overflowY: "auto",
+            }}
+          >
+            {duplicateCards.length === 0 && (
+              <div style={{ fontSize: 12, color: "#9aa3bd" }}>
+                Sem repetidas
+              </div>
+            )}
+            {duplicateCards.map(card => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => handleSelectCard(card)}
+                style={{
+                  borderRadius: 8,
+                  border: "1px solid rgba(148, 156, 178, 0.5)",
+                  background: "#161620",
+                  color: "#d5d9e6",
+                  padding: "4px 6px",
+                  fontSize: 11,
+                }}
+              >
+                {card.name}
+              </button>
             ))}
           </div>
         </aside>
@@ -380,16 +442,15 @@ export function CombiningScreen() {
           onClick={handleCombine}
           disabled={!canCombine}
           style={{
-            padding: "10px 28px",
+            padding: "12px 48px",
             fontSize: 16,
             letterSpacing: "0.12em",
-            borderRadius: 12,
-            border: "1px solid rgba(210, 176, 120, 0.8)",
+            borderRadius: 14,
+            border: "1px solid rgba(231, 201, 132, 0.9)",
             background: canCombine
-              ? "linear-gradient(180deg, #5b3a16 0%, #2d1a09 100%)"
-              : "linear-gradient(180deg, #3a2a20 0%, #221812 100%)",
-            color: canCombine ? "#f8e6c7" : "#9c8a6f",
-            boxShadow: canCombine ? "0 12px 24px rgba(0,0,0,0.35)" : "none",
+              ? "linear-gradient(180deg, #3d2f0f 0%, #1f1708 100%)"
+              : "linear-gradient(180deg, #2a2520 0%, #19161a 100%)",
+            color: canCombine ? "#f0d9a0" : "#8f8793",
           }}
         >
           FUSE
@@ -402,14 +463,14 @@ export function CombiningScreen() {
           alignItems: "center",
           gap: "var(--space-2)",
           fontSize: 14,
-          color: "#e7d6b4",
+          color: "#c4cada",
         }}
       >
         <span
           style={{
             flex: 1,
             height: 1,
-            background: "linear-gradient(90deg, transparent, #cbb38a, transparent)",
+            background: "linear-gradient(90deg, transparent, #8088a3, transparent)",
           }}
         />
         <strong>Result preview</strong>
@@ -417,7 +478,7 @@ export function CombiningScreen() {
           style={{
             flex: 1,
             height: 1,
-            background: "linear-gradient(90deg, transparent, #cbb38a, transparent)",
+            background: "linear-gradient(90deg, transparent, #8088a3, transparent)",
           }}
         />
       </div>
@@ -435,24 +496,23 @@ export function CombiningScreen() {
         ) : (
           <div
             style={{
-              width: "min(220px, 60vw)",
-              aspectRatio: "1 / 1",
-              borderRadius: 8,
-              border: "1px solid rgba(210, 176, 120, 0.7)",
-              background: "rgba(24, 18, 15, 0.7)",
-              boxShadow: "0 0 24px rgba(118, 86, 52, 0.25)",
+              width: "min(240px, 70vw)",
+              aspectRatio: "2 / 3",
+              borderRadius: 12,
+              border: "2px solid rgba(196, 160, 255, 0.8)",
+              background: "#121219",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "#cbb38a",
+              color: "#cbb7f0",
             }}
           >
             Resultado
           </div>
         )}
 
-        <div style={{ width: "min(320px, 100%)", fontSize: 12, color: "#d6c4a3" }}>
+        <div style={{ width: "min(320px, 100%)", fontSize: 12, color: "#c4cada" }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span>Upgrade chance</span>
             <strong>{selectedRarity ? `${upgradeChance}%` : "--"}</strong>
@@ -460,10 +520,10 @@ export function CombiningScreen() {
           <div
             style={{
               marginTop: "var(--space-1)",
-              height: 6,
+              height: 8,
               borderRadius: 999,
-              border: "1px solid rgba(210, 176, 120, 0.6)",
-              background: "rgba(14, 10, 8, 0.8)",
+              border: "1px solid rgba(196, 160, 255, 0.6)",
+              background: "#1b1b24",
               overflow: "hidden",
             }}
           >
@@ -471,66 +531,19 @@ export function CombiningScreen() {
               style={{
                 width: `${upgradeChance}%`,
                 height: "100%",
-                background: "linear-gradient(90deg, #8a5a1f, #e0c08a)",
+                background: "linear-gradient(90deg, #b487ff, #e2c2ff)",
               }}
             />
           </div>
         </div>
 
         {lastResult && (
-          <p style={{ margin: 0, fontSize: 12, color: "#d6c4a3" }}>
+          <p style={{ margin: 0, fontSize: 12, color: "#c4cada" }}>
             {lastResult.base} → {lastResult.result}
           </p>
         )}
       </section>
 
-      <section
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-1)",
-        }}
-      >
-        <strong style={{ fontSize: 12, color: "#f4e2c2" }}>
-          Repetidas disponíveis
-        </strong>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "nowrap",
-            gap: "var(--space-2)",
-            overflowX: "auto",
-            paddingBottom: "var(--space-1)",
-          }}
-        >
-          {duplicateCards.length === 0 && (
-            <div
-              style={{
-                border: "1px dashed rgba(210, 176, 120, 0.6)",
-                borderRadius: 12,
-                padding: "var(--space-2)",
-                fontSize: 12,
-                color: "#cbb38a",
-              }}
-            >
-              Sem cartas repetidas.
-            </div>
-          )}
-          {duplicateCards.map(card => (
-            <div key={card.id}>
-              <CardTile
-                card={card}
-                obtained
-                duplicateCount={Math.max(
-                  0,
-                  (profile.collection.inventory[card.id] ?? 0) - 1
-                )}
-                onClick={() => handleSelectCard(card)}
-              />
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
