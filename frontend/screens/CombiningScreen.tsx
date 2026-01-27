@@ -230,6 +230,8 @@ export function CombiningScreen() {
         display: "flex",
         flexDirection: "column",
         gap: "var(--space-3)",
+        background: "radial-gradient(circle at top, #2a211a 0%, #120c08 70%)",
+        borderRadius: 20,
       }}
     >
       <header
@@ -238,15 +240,47 @@ export function CombiningScreen() {
           alignItems: "center",
           justifyContent: "space-between",
           gap: "var(--space-2)",
+          paddingBottom: "var(--space-1)",
+          borderBottom: "1px solid rgba(210, 176, 120, 0.4)",
         }}
       >
-        <button type="button" style={{ minWidth: 40 }}>
+        <button
+          type="button"
+          style={{
+            minWidth: 40,
+            borderRadius: 999,
+            border: "1px solid rgba(210, 176, 120, 0.6)",
+            background: "linear-gradient(180deg, #2f261d 0%, #1b1410 100%)",
+            color: "#f4e2c2",
+            padding: "6px 10px",
+          }}
+        >
           ←
         </button>
-        <h1 style={{ margin: 0, textAlign: "center", flex: 1, fontSize: 24 }}>
+        <h1
+          style={{
+            margin: 0,
+            textAlign: "center",
+            flex: 1,
+            fontSize: 24,
+            color: "#f4e2c2",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
           Fusion screen
         </h1>
-        <button type="button" style={{ minWidth: 40 }}>
+        <button
+          type="button"
+          style={{
+            minWidth: 40,
+            borderRadius: 999,
+            border: "1px solid rgba(210, 176, 120, 0.6)",
+            background: "linear-gradient(180deg, #2f261d 0%, #1b1410 100%)",
+            color: "#f4e2c2",
+            padding: "6px 10px",
+          }}
+        >
           ⚙️
         </button>
       </header>
@@ -283,11 +317,14 @@ export function CombiningScreen() {
                     width: "100%",
                     aspectRatio: "1 / 1",
                     borderRadius: 8,
-                    border: "1px solid #bdbdbd",
+                    border: "1px solid rgba(210, 176, 120, 0.6)",
+                    background: "rgba(27, 20, 16, 0.7)",
+                    boxShadow: "inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 12,
+                    color: "#cbb38a",
                   }}
                 >
                   {index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
@@ -299,16 +336,19 @@ export function CombiningScreen() {
 
         <aside
           style={{
-            border: "1px solid #bdbdbd",
+            border: "1px solid rgba(210, 176, 120, 0.6)",
             borderRadius: 12,
+            background: "rgba(18, 14, 12, 0.9)",
             padding: "var(--space-2)",
             display: "flex",
             flexDirection: "column",
             gap: "var(--space-2)",
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 16 }}>Fusion rules</h2>
-          <p style={{ margin: 0, fontSize: 12 }}>
+          <h2 style={{ margin: 0, fontSize: 16, color: "#f4e2c2" }}>
+            Fusion rules
+          </h2>
+          <p style={{ margin: 0, fontSize: 12, color: "#d6c4a3" }}>
             Use quatro cartas da mesma raridade. A chance de upgrade aumenta
             conforme o incenso da raridade.
           </p>
@@ -319,6 +359,7 @@ export function CombiningScreen() {
               gap: "var(--space-1)",
               flexWrap: "wrap",
               fontSize: 12,
+              color: "#bfa57b",
             }}
           >
             {incenseList.map(item => (
@@ -331,7 +372,23 @@ export function CombiningScreen() {
       </section>
 
       <div style={{ display: "flex", justifyContent: "center" }}>
-        <button type="button" onClick={handleCombine} disabled={!canCombine}>
+        <button
+          type="button"
+          onClick={handleCombine}
+          disabled={!canCombine}
+          style={{
+            padding: "10px 28px",
+            fontSize: 16,
+            letterSpacing: "0.12em",
+            borderRadius: 12,
+            border: "1px solid rgba(210, 176, 120, 0.8)",
+            background: canCombine
+              ? "linear-gradient(180deg, #5b3a16 0%, #2d1a09 100%)"
+              : "linear-gradient(180deg, #3a2a20 0%, #221812 100%)",
+            color: canCombine ? "#f8e6c7" : "#9c8a6f",
+            boxShadow: canCombine ? "0 12px 24px rgba(0,0,0,0.35)" : "none",
+          }}
+        >
           FUSE
         </button>
       </div>
@@ -342,11 +399,24 @@ export function CombiningScreen() {
           alignItems: "center",
           gap: "var(--space-2)",
           fontSize: 14,
+          color: "#e7d6b4",
         }}
       >
-        <span style={{ flex: 1, height: 1, background: "#bdbdbd" }} />
+        <span
+          style={{
+            flex: 1,
+            height: 1,
+            background: "linear-gradient(90deg, transparent, #cbb38a, transparent)",
+          }}
+        />
         <strong>Result preview</strong>
-        <span style={{ flex: 1, height: 1, background: "#bdbdbd" }} />
+        <span
+          style={{
+            flex: 1,
+            height: 1,
+            background: "linear-gradient(90deg, transparent, #cbb38a, transparent)",
+          }}
+        />
       </div>
 
       <section
@@ -365,18 +435,21 @@ export function CombiningScreen() {
               width: "min(220px, 60vw)",
               aspectRatio: "1 / 1",
               borderRadius: 8,
-              border: "1px solid #bdbdbd",
+              border: "1px solid rgba(210, 176, 120, 0.7)",
+              background: "rgba(24, 18, 15, 0.7)",
+              boxShadow: "0 0 24px rgba(118, 86, 52, 0.25)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
+              color: "#cbb38a",
             }}
           >
             Resultado
           </div>
         )}
 
-        <div style={{ width: "min(320px, 100%)", fontSize: 12 }}>
+        <div style={{ width: "min(320px, 100%)", fontSize: 12, color: "#d6c4a3" }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span>Upgrade chance</span>
             <strong>{selectedRarity ? `${upgradeChance}%` : "--"}</strong>
@@ -386,7 +459,8 @@ export function CombiningScreen() {
               marginTop: "var(--space-1)",
               height: 6,
               borderRadius: 999,
-              border: "1px solid #bdbdbd",
+              border: "1px solid rgba(210, 176, 120, 0.6)",
+              background: "rgba(14, 10, 8, 0.8)",
               overflow: "hidden",
             }}
           >
@@ -394,14 +468,14 @@ export function CombiningScreen() {
               style={{
                 width: `${upgradeChance}%`,
                 height: "100%",
-                background: "#bdbdbd",
+                background: "linear-gradient(90deg, #8a5a1f, #e0c08a)",
               }}
             />
           </div>
         </div>
 
         {lastResult && (
-          <p style={{ margin: 0, fontSize: 12 }}>
+          <p style={{ margin: 0, fontSize: 12, color: "#d6c4a3" }}>
             {lastResult.base} → {lastResult.result}
           </p>
         )}
@@ -414,7 +488,9 @@ export function CombiningScreen() {
           gap: "var(--space-1)",
         }}
       >
-        <strong style={{ fontSize: 12 }}>Repetidas disponíveis</strong>
+        <strong style={{ fontSize: 12, color: "#f4e2c2" }}>
+          Repetidas disponíveis
+        </strong>
         <div
           style={{
             display: "flex",
@@ -427,10 +503,11 @@ export function CombiningScreen() {
           {duplicateCards.length === 0 && (
             <div
               style={{
-                border: "1px dashed #bdbdbd",
+                border: "1px dashed rgba(210, 176, 120, 0.6)",
                 borderRadius: 12,
                 padding: "var(--space-2)",
                 fontSize: 12,
+                color: "#cbb38a",
               }}
             >
               Sem cartas repetidas.
