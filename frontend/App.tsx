@@ -82,7 +82,8 @@ function App() {
       >
         <div
           style={{
-            width: "min(100vw, calc(100vh * 9 / 20))",
+            width: "min(var(--ui-artboard-width), 100vw, calc(100vh * 9 / 20))",
+            maxHeight: "min(var(--ui-artboard-height), 100vh)",
             aspectRatio: "9 / 20",
             background: "#111",
             borderRadius: 24,
