@@ -232,6 +232,9 @@ export function CombiningScreen() {
         gap: "var(--space-3)",
         background: "radial-gradient(circle at top, #2a211a 0%, #120c08 70%)",
         borderRadius: 20,
+        height: "100%",
+        minHeight: 0,
+        justifyContent: "space-between",
       }}
     >
       <header
