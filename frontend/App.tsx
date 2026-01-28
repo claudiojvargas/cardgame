@@ -88,7 +88,7 @@ function App() {
             background: "#111",
             borderRadius: 24,
             boxShadow: "0 24px 80px rgba(0,0,0,0.45)",
-            overflow: "hidden",
+            overflow: "auto",
             display: "flex",
             flexDirection: "column",
           }}
@@ -100,10 +100,10 @@ function App() {
               flexDirection: "column",
               padding: 0,
               boxSizing: "border-box",
-              overflow: "hidden",
+              overflow: "auto",
             }}
           >
-            <div style={{ flex: 1, overflow: "hidden" }}>{content}</div>
+            <div style={{ flex: 1 }}>{content}</div>
           </div>
           <nav
             style={{
