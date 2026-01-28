@@ -88,7 +88,8 @@ function App() {
             background: "#111",
             borderRadius: 24,
             boxShadow: "0 24px 80px rgba(0,0,0,0.45)",
-            overflow: "auto",
+            overflowX: "hidden",
+            overflowY: "auto",
             display: "flex",
             flexDirection: "column",
           }}
@@ -100,7 +101,8 @@ function App() {
               flexDirection: "column",
               padding: 0,
               boxSizing: "border-box",
-              overflow: "auto",
+              overflowX: "hidden",
+              overflowY: "auto",
             }}
           >
             <div style={{ flex: 1 }}>{content}</div>

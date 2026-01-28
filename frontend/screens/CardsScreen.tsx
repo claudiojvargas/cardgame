@@ -153,6 +153,7 @@ export function CardsScreen() {
               gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
               gap: "var(--space-2)",
               maxHeight: "60vh",
+              overflowX: "hidden",
               overflowY: "auto",
               paddingRight: "var(--space-1)",
               "--card-ui-width": "100%",
