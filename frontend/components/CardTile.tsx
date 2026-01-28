@@ -93,7 +93,7 @@ export function CardTile({
         width: "var(--card-ui-width)",
         aspectRatio: "var(--card-ui-aspect)",
         padding: "var(--space-2)",
-        margin: "var(--space-1)",
+        margin: "var(--card-ui-margin, var(--space-1))",
         borderRadius: 8,
         border: "1px solid #666",
         textAlign: "left",
