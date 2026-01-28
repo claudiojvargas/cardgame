@@ -209,13 +209,13 @@ function AppShell() {
           </div>
         </header>
         <div
+          className="hide-scrollbar"
           style={{
             flex: 1,
             display: "flex",
             flexDirection: "column",
             padding: 0,
             boxSizing: "border-box",
-            overflowX: "hidden",
             overflowY: "auto",
           }}
         >

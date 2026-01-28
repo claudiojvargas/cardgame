@@ -402,12 +402,12 @@ export function CombiningScreen() {
             Repetidas
           </div>
           <div
+            className="hide-scrollbar"
             style={{
               display: "flex",
               flexWrap: "wrap",
               gap: "var(--space-1)",
               maxHeight: 120,
-              overflowY: "auto",
             }}
           >
             {duplicateCards.length === 0 && (

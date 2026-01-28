@@ -147,14 +147,14 @@ export function CardsScreen() {
       <section>
         <h2>📚 Todas as cartas</h2>
         <div
+          className="hide-scrollbar"
           style={
             {
               display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
               gap: "var(--space-2)",
               maxHeight: "60vh",
               overflowX: "hidden",
-              overflowY: "auto",
               paddingRight: "var(--space-1)",
               "--card-ui-width": "100%",
               "--card-ui-margin": "0px",

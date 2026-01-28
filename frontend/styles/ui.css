@@ -39,3 +39,12 @@ body {
 #root {
   min-height: 100vh;
 }
+
+.hide-scrollbar {
+  overflow-y: auto;      /* mantém a rolagem */
+  -ms-overflow-style: none;  /* IE e Edge antigos */
+  scrollbar-width: none;     /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
