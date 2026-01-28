@@ -71,8 +71,8 @@ export function ChestsScreen() {
 
   return (
     <div style={{ padding: "var(--screen-padding)" }}>
-      <h1>🎁 Baús</h1>
-      <p>Abra baús para obter cartas e ouro.</p>
+      <h1>🛍️ Loja</h1>
+      <p>Compre baús para obter cartas e ouro.</p>
 
       <div
         style={{

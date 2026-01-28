@@ -5,7 +5,6 @@ import { CardsScreen } from "./screens/CardsScreen";
 import { ChestsScreen } from "./screens/ChestsScreen";
 import { AwakeningScreen } from "./screens/AwakeningScreen";
 import { CombiningScreen } from "./screens/CombiningScreen";
-import { ProfileScreen } from "./screens/ProfileScreen";
 import { CollectionScreen } from "./screens/CollectionScreen";
 import { PvpScreen } from "./screens/PvpScreen";
 import { GameProvider } from "./hooks/useGame";
@@ -18,9 +17,9 @@ type Screen =
   | "CHESTS"
   | "AWAKENING"
   | "COMBINING"
-  | "PROFILE"
   | "COLLECTION"
-  | "PVP";
+  | "PVP"
+  | "EVOLUTION";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("MENU");
@@ -29,6 +28,18 @@ function App() {
     <div style={{ padding: "var(--screen-padding)" }}>
       <h1>🃏 Card Battle</h1>
       <p>Escolha um modo para começar.</p>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-2)",
+          marginTop: "var(--space-2)",
+        }}
+      >
+        <button onClick={() => setScreen("CAMPAIGN_TOWER")}>🧭 Campanha</button>
+        <button onClick={() => setScreen("TOWER")}>🏰 Torre</button>
+        <button onClick={() => setScreen("PVP")}>⚔️ PvP</button>
+      </div>
     </div>
   );
 
@@ -56,16 +67,32 @@ function App() {
     content = <CombiningScreen />;
   }
 
-  if (screen === "PROFILE") {
-    content = <ProfileScreen />;
-  }
-
   if (screen === "COLLECTION") {
     content = <CollectionScreen />;
   }
 
   if (screen === "PVP") {
     content = <PvpScreen />;
+  }
+
+  if (screen === "EVOLUTION") {
+    content = (
+      <div style={{ padding: "var(--screen-padding)" }}>
+        <h1>✨ Evolução</h1>
+        <p>Escolha uma opção para evoluir suas cartas.</p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-2)",
+            marginTop: "var(--space-2)",
+          }}
+        >
+          <button onClick={() => setScreen("AWAKENING")}>✨ Despertar</button>
+          <button onClick={() => setScreen("COMBINING")}>🔮 Combinação</button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -122,24 +149,14 @@ function App() {
             }}
           >
             <button
-              onClick={() => setScreen("TOWER")}
+              onClick={() => setScreen("MENU")}
               style={{
                 padding: "var(--space-1) var(--space-2)",
-                fontWeight: screen === "TOWER" ? "bold" : "normal",
+                fontWeight: screen === "MENU" ? "bold" : "normal",
               }}
-              aria-label="Torre"
+              aria-label="Início"
             >
-              🏰
-            </button>
-            <button
-              onClick={() => setScreen("CAMPAIGN_TOWER")}
-              style={{
-                padding: "var(--space-1) var(--space-2)",
-                fontWeight: screen === "CAMPAIGN_TOWER" ? "bold" : "normal",
-              }}
-              aria-label="Torre Campanha"
-            >
-              🧭
+              🏠
             </button>
             <button
               onClick={() => setScreen("CARDS")}
@@ -147,9 +164,19 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "CARDS" ? "bold" : "normal",
               }}
-              aria-label="Ver Cartas"
+              aria-label="Deck"
             >
-              📚
+              🃏
+            </button>
+            <button
+              onClick={() => setScreen("EVOLUTION")}
+              style={{
+                padding: "var(--space-1) var(--space-2)",
+                fontWeight: screen === "EVOLUTION" ? "bold" : "normal",
+              }}
+              aria-label="Evolução"
+            >
+              ✨
             </button>
             <button
               onClick={() => setScreen("COLLECTION")}
@@ -167,49 +194,9 @@ function App() {
                 padding: "var(--space-1) var(--space-2)",
                 fontWeight: screen === "CHESTS" ? "bold" : "normal",
               }}
-              aria-label="Baús"
+              aria-label="Loja"
             >
-              🎁
-            </button>
-            <button
-              onClick={() => setScreen("AWAKENING")}
-              style={{
-                padding: "var(--space-1) var(--space-2)",
-                fontWeight: screen === "AWAKENING" ? "bold" : "normal",
-              }}
-              aria-label="Despertar"
-            >
-              ✨
-            </button>
-            <button
-              onClick={() => setScreen("COMBINING")}
-              style={{
-                padding: "var(--space-1) var(--space-2)",
-                fontWeight: screen === "COMBINING" ? "bold" : "normal",
-              }}
-              aria-label="Combinar"
-            >
-              🔮
-            </button>
-            <button
-              onClick={() => setScreen("PROFILE")}
-              style={{
-                padding: "var(--space-1) var(--space-2)",
-                fontWeight: screen === "PROFILE" ? "bold" : "normal",
-              }}
-              aria-label="Perfil"
-            >
-              🙍
-            </button>
-            <button
-              onClick={() => setScreen("PVP")}
-              style={{
-                padding: "var(--space-1) var(--space-2)",
-                fontWeight: screen === "PVP" ? "bold" : "normal",
-              }}
-              aria-label="PvP"
-            >
-              ⚔️
+              🏪
             </button>
           </nav>
         </div>
