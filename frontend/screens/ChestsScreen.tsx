@@ -1,183 +1,148 @@
-import { useState } from "react";
-import { CARDS } from "../../game/data/cards.catalog";
 import { CHESTS } from "../../game/data/chests.catalog";
-import { Card } from "../../game/entities/Card";
 import { useGame } from "../hooks/useGame";
 
 export function ChestsScreen() {
-  const { profile, actions } = useGame();
-  const [lastReward, setLastReward] = useState<{
-    chestName: string;
-    gold: number;
-    cards: Card[];
-  } | null>(null);
-
-  function randomBetween(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  function rollRarity(chestType: (typeof CHESTS)[number]) {
-    const totalWeight = chestType.rarityRates.reduce(
-      (sum, entry) => sum + entry.weight,
-      0
-    );
-    if (totalWeight <= 0) {
-      return chestType.cardRarities[0];
-    }
-    let roll = Math.random() * totalWeight;
-    for (const entry of chestType.rarityRates) {
-      roll -= entry.weight;
-      if (roll <= 0) {
-        return entry.rarity;
-      }
-    }
-    return chestType.rarityRates[chestType.rarityRates.length - 1].rarity;
-  }
-
-  function drawCards(chestType: (typeof CHESTS)[number], amount: number): Card[] {
-    return Array.from({ length: amount }, () => {
-      const rarity = rollRarity(chestType);
-      const pool = CARDS.filter(card => card.rarity === rarity);
-      if (pool.length === 0) return null;
-      const card = pool[Math.floor(Math.random() * pool.length)];
-      return card.clone();
-    }).filter((card): card is Card => Boolean(card));
-  }
-
-  function handleOpenChest(chestType: (typeof CHESTS)[number]) {
-    if (profile.currencies.gold < chestType.priceGold) return;
-    const goldReward = randomBetween(chestType.goldRange[0], chestType.goldRange[1]);
-    const cards = drawCards(chestType, 4);
-
-    actions.spendCurrency("gold", chestType.priceGold);
-    if (goldReward > 0) {
-      actions.addCurrency("gold", goldReward);
-    }
-    actions.recordChestOpened(chestType.type);
-    cards.forEach(card => {
-      actions.addCard(card.id, 1);
-      const currentQty = profile.collection.inventory[card.id] ?? 0;
-      if (currentQty === 0) {
-        actions.markCardNew(card.id);
-      }
-    });
-
-    setLastReward({
-      chestName: chestType.name,
-      gold: goldReward,
-      cards,
-    });
-  }
+  const { profile } = useGame();
+  const shopItems = CHESTS.slice(0, 6).map((chest, index) => ({
+    id: chest.type,
+    name: chest.name,
+    priceGold: chest.priceGold,
+    frameSrc: `/assets/shop/frames/book-frame-${index + 1}.png`,
+    coverSrc: `/assets/shop/books/book-${index + 1}.png`,
+  }));
+  const featuredItem = {
+    id: "featured",
+    name: "Tomo Mítico",
+    priceDiamonds: 500,
+    frameSrc: "/assets/shop/frames/featured-frame.png",
+    coverSrc: "/assets/shop/books/featured-book.png",
+  };
+  const shopAssets = {
+    background: "/assets/shop/backgrounds/store-bg.png",
+    topBar: "/assets/shop/ui/top-bar.png",
+    backIcon: "/assets/shop/icons/back-arrow.png",
+    coinIcon: "/assets/shop/icons/coin.png",
+    gemIcon: "/assets/shop/icons/gem.png",
+    sectionDivider: "/assets/shop/ui/section-divider.png",
+    tabFrame: "/assets/shop/ui/tab-frame.png",
+    openButton: "/assets/shop/ui/open-button.png",
+    cardPlate: "/assets/shop/ui/card-plate.png",
+  };
+  const tabs = ["All", "Region", "Rarity"];
 
   return (
-    <div style={{ padding: "var(--screen-padding)" }}>
-      <h1>🛍️ Loja</h1>
-      <p>Compre baús para obter cartas e ouro.</p>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "var(--space-2)",
-          marginBottom: "var(--space-2)",
-        }}
-      >
-        <div
-          style={{
-            background: "#ffffff",
-            border: "1px solid #e0e0e0",
-            borderRadius: 16,
-            padding: "var(--space-2)",
-            minWidth: 144,
-          }}
-        >
-          <strong>Ouro</strong>
-          <div>{profile.currencies.gold}</div>
-        </div>
-        <div
-          style={{
-            background: "#ffffff",
-            border: "1px solid #e0e0e0",
-            borderRadius: 16,
-            padding: "var(--space-2)",
-            minWidth: 144,
-          }}
-        >
-          <strong>Diamantes</strong>
-          <div>{profile.currencies.diamonds}</div>
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(224px, 1fr))",
-          gap: "var(--space-2)",
-        }}
-      >
-        {CHESTS.map(chest => (
-          <div
-            key={chest.type}
-            style={{
-              background: "#ffffff",
-              border: "1px solid #e0e0e0",
-              borderRadius: 16,
-              padding: "var(--space-2)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "var(--space-1)",
-            }}
-          >
-            <h3 style={{ margin: 0 }}>{chest.name}</h3>
-            <div>
-              <strong>Preço:</strong> {chest.priceGold} ouro
-            </div>
-            <div>
-              <strong>Ouro:</strong> {chest.goldRange[0]} -{" "}
-              {chest.goldRange[1]}
-            </div>
-            <div>
-              <strong>Raridades:</strong> {chest.cardRarities.join(", ")}
-            </div>
-            <button
-              type="button"
-              style={{ marginTop: "var(--space-1)" }}
-              onClick={() => handleOpenChest(chest)}
-            >
-              Abrir
-            </button>
+    <div
+      className="shop-screen"
+      style={{
+        backgroundImage: `url('${shopAssets.background}')`,
+      }}
+    >
+      <div className="shop-top-bar" style={{ backgroundImage: `url('${shopAssets.topBar}')` }}>
+        <button className="shop-back" type="button">
+          <span
+            className="shop-icon"
+            style={{ backgroundImage: `url('${shopAssets.backIcon}')` }}
+            aria-hidden
+          />
+          <span className="shop-back-label">Voltar</span>
+        </button>
+        <h1 className="shop-title">Tomo Mítico</h1>
+        <div className="shop-currency">
+          <div className="shop-currency-item">
+            <span
+              className="shop-icon"
+              style={{ backgroundImage: `url('${shopAssets.coinIcon}')` }}
+              aria-hidden
+            />
+            <span>{profile.currencies.gold}</span>
           </div>
-        ))}
+          <div className="shop-currency-item">
+            <span
+              className="shop-icon"
+              style={{ backgroundImage: `url('${shopAssets.gemIcon}')` }}
+              aria-hidden
+            />
+            <span>{profile.currencies.diamonds}</span>
+          </div>
+        </div>
       </div>
 
-      {lastReward && (
-        <div style={{ marginTop: "var(--space-3)" }}>
-          <h3>Última abertura: {lastReward.chestName}</h3>
-          <p>Ouro recebido: {lastReward.gold}</p>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "var(--space-2)",
-            }}
-          >
-            {lastReward.cards.map((card, index) => (
-              <div
-                key={`${card.id}-${index}`}
-                style={{
-                  border: "1px solid #e0e0e0",
-                  borderRadius: 8,
-                  padding: "var(--space-1)",
-                  background: "#ffffff",
-                  minWidth: 160,
-                }}
-              >
-                <strong>{card.name}</strong>
-                <div>Raridade: {card.rarity}</div>
+      <section className="shop-section">
+        <div
+          className="shop-section-header"
+          style={{ backgroundImage: `url('${shopAssets.sectionDivider}')` }}
+        >
+          <h2>Grimórios</h2>
+        </div>
+        <div className="shop-tabs">
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              type="button"
+              className="shop-tab"
+              style={{ backgroundImage: `url('${shopAssets.tabFrame}')` }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        <div className="shop-content">
+          <div className="shop-grid">
+            {shopItems.map(item => (
+              <div key={item.id} className="shop-card">
+                <div
+                  className="shop-card-frame"
+                  style={{ backgroundImage: `url('${item.frameSrc}')` }}
+                >
+                  <div
+                    className="shop-card-cover"
+                    style={{ backgroundImage: `url('${item.coverSrc}')` }}
+                  />
+                </div>
+                <div
+                  className="shop-card-footer"
+                  style={{ backgroundImage: `url('${shopAssets.cardPlate}')` }}
+                >
+                  <span
+                    className="shop-icon"
+                    style={{ backgroundImage: `url('${shopAssets.coinIcon}')` }}
+                    aria-hidden
+                  />
+                  <span>{item.priceGold}</span>
+                </div>
               </div>
             ))}
           </div>
+          <div className="shop-feature">
+            <div
+              className="shop-feature-frame"
+              style={{ backgroundImage: `url('${featuredItem.frameSrc}')` }}
+            >
+              <div
+                className="shop-feature-cover"
+                style={{ backgroundImage: `url('${featuredItem.coverSrc}')` }}
+              />
+            </div>
+            <div className="shop-open-panel">
+              <button
+                type="button"
+                className="shop-open-button"
+                style={{ backgroundImage: `url('${shopAssets.openButton}')` }}
+              >
+                Abrir
+              </button>
+              <div className="shop-open-price">
+                <span
+                  className="shop-icon"
+                  style={{ backgroundImage: `url('${shopAssets.gemIcon}')` }}
+                  aria-hidden
+                />
+                <span>{featuredItem.priceDiamonds}</span>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
+      </section>
     </div>
   );
 }
