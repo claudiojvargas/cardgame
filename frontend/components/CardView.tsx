@@ -73,12 +73,15 @@ export function CardView({ card, onClick, selectable, style }: Props) {
       style={{
         position: "relative",
         border: "1px solid rgba(0,0,0,0.45)",
-        padding: 12,
-        margin: 6,
-        width: 140,
-        height: 200,
+        padding: "var(--space-2)",
+        margin: "var(--space-1)",
+        width: "var(--card-ui-width)",
+        height: "auto",
+        aspectRatio: "var(--card-ui-aspect)",
         cursor: selectable ? "pointer" : "default",
-        background: getCardBackground(card),
+        background: `linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.75)), url(${cardImageUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         color: "#111",
         boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
         ...style,
@@ -88,8 +91,8 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         <div
           style={{
             display: "flex",
-            gap: 4,
-            marginBottom: 6,
+            gap: "var(--space-1)",
+            marginBottom: "var(--space-1)",
           }}
         >
           {badges.map(badge => (
@@ -98,9 +101,9 @@ export function CardView({ card, onClick, selectable, style }: Props) {
               title={badge.label}
               style={{
                 background: "rgba(255,255,255,0.85)",
-                borderRadius: 6,
-                padding: "2px 4px",
-                fontSize: 12,
+                borderRadius: 8,
+                padding: "var(--space-1)",
+                fontSize: 14,
               }}
             >
               {badge.emoji}
@@ -111,12 +114,33 @@ export function CardView({ card, onClick, selectable, style }: Props) {
       <div
         style={{
           position: "absolute",
-          top: 6,
-          right: 6,
-          width: 22,
-          height: 22,
+          top: "var(--space-1)",
+          right: "var(--space-1)",
+          minWidth: 36,
+          height: 24,
+          borderRadius: 999,
+          background: "rgba(0,0,0,0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 12,
+          color: "#fff",
+          padding: "0 var(--space-1)",
+        }}
+        title={`Poder: ${formatPowerDisplay(card)}`}
+      >
+        {formatPowerDisplay(card)}
+      </div>
+      <span
+        style={{
+          position: "absolute",
+          bottom: "var(--space-1)",
+          left: "var(--space-1)",
+          width: 24,
+          height: 24,
           borderRadius: "50%",
-          background: "rgba(255,255,255,0.85)",
+          background: "rgba(0,0,0,0.6)",
+          color: "#fff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -125,26 +149,7 @@ export function CardView({ card, onClick, selectable, style }: Props) {
         title={`Classe: ${card.cardClass}`}
       >
         {CLASS_ICONS[card.cardClass]}
-      </div>
-      <strong>{card.name}</strong>
-      <div
-        style={{
-          marginTop: 6,
-          marginBottom: 8,
-          height: 90,
-          borderRadius: 8,
-          backgroundColor: "rgba(255,255,255,0.7)",
-          backgroundImage: `url(${cardImageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.15)",
-        }}
-        title={`Imagem da carta ${card.name}`}
-      />
-      <div>Power: {formatPowerDisplay(card)}</div>
-      <div>{card.cardClass}</div>
-      <div>{card.rarity}</div>
-      <div>{card.regiao}</div>
+      </span>
     </div>
   );
 }

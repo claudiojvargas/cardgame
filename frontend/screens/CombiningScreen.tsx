@@ -211,131 +211,339 @@ export function CombiningScreen() {
       );
     })();
 
+  const selectedRarity = selectedSlots[0] ? rarityMap[selectedSlots[0]] : null;
+  const incenseProgress = selectedRarity
+    ? profile.stats.incense[selectedRarity] ?? 0
+    : 0;
+  const incenseTarget = selectedRarity
+    ? getIncenseThreshold(selectedRarity)
+    : 0;
+  const upgradeChance =
+    selectedRarity && incenseTarget > 0
+      ? Math.min(100, Math.round((incenseProgress / incenseTarget) * 100))
+      : 0;
+  const slotPositions = [
+    { label: "Slot A", index: 0, gridColumn: "1 / 2", gridRow: "1" },
+    { label: "Slot B", index: 1, gridColumn: "2 / 3", gridRow: "1" },
+    { label: "Slot C", index: 2, gridColumn: "1 / 2", gridRow: "2" },
+    { label: "Slot D", index: 3, gridColumn: "2 / 3", gridRow: "2" },
+  ];
+
   return (
-    <div style={{ padding: 20, display: "flex", gap: 16, position: "relative" }}>
-      <aside style={{ width: "25%", minWidth: 220 }}>
-        <h2>📦 Repetidas</h2>
-        <p style={{ color: "#666" }}>
-          Clique para enviar para um slot.
-        </p>
-        <div
+    <div
+      style={{
+        padding: "var(--screen-padding)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-3)",
+        background: "linear-gradient(180deg, #0f0f13 0%, #121216 100%)",
+        borderRadius: 20,
+        height: "100%",
+        minHeight: 0,
+        justifyContent: "space-between",
+      }}
+    >
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "var(--space-2)",
+          paddingBottom: "var(--space-1)",
+          borderBottom: "1px solid rgba(148, 156, 178, 0.35)",
+        }}
+      >
+        <button
+          type="button"
           style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            maxHeight: "70vh",
-            overflowY: "auto",
-            paddingRight: 4,
+            minWidth: 56,
+            borderRadius: 999,
+            border: "1px solid rgba(148, 156, 178, 0.6)",
+            background: "#14141a",
+            color: "#d5d9e6",
+            padding: "6px 12px",
+            fontSize: 12,
           }}
         >
-          {duplicateCards.length === 0 && (
+          Back
+        </button>
+        <h1
+          style={{
+            margin: 0,
+            textAlign: "center",
+            flex: 1,
+            fontSize: 24,
+            color: "#e3e6f5",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
+          Fusão
+        </h1>
+        <button
+          type="button"
+          style={{
+            minWidth: 56,
+            borderRadius: 999,
+            border: "1px solid rgba(148, 156, 178, 0.6)",
+            background: "#14141a",
+            color: "#d5d9e6",
+            padding: "6px 12px",
+            fontSize: 12,
+          }}
+        >
+          Gear
+        </button>
+      </header>
+
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: "var(--space-2)",
+          alignItems: "start",
+        }}
+      >
+        {slotPositions.map(slotInfo => {
+          const slot = selectedSlots[slotInfo.index];
+          return (
             <div
+              key={slotInfo.label}
               style={{
-                border: "1px dashed #bbb",
-                borderRadius: 12,
-                padding: 12,
-                background: "#f7f7f7",
-                color: "#777",
+                display: "flex",
+                flexDirection: "column",
+                gridColumn: slotInfo.gridColumn,
+                gridRow: slotInfo.gridRow,
               }}
             >
-              Sem cartas repetidas.
-            </div>
-          )}
-          {duplicateCards.map(card => (
-            <div key={card.id}>
-              <CardTile
-                card={card}
-                obtained
-                duplicateCount={Math.max(
-                  0,
-                  (profile.collection.inventory[card.id] ?? 0) - 1
-                )}
-                onClick={() => handleSelectCard(card)}
-              />
-            </div>
-          ))}
-        </div>
-      </aside>
-
-      <div style={{ flex: 1 }}>
-        <h1>🔮 Combinação</h1>
-        <p>Combine 4 cartas da mesma raridade para tentar evoluir.</p>
-        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-          <button type="button" onClick={handleAutoSelect}>
-            Selecionar automático
-          </button>
-          <button type="button" onClick={handleClearSlots}>
-            Limpar
-          </button>
-          <button type="button" onClick={handleCombine} disabled={!canCombine}>
-            Combinar
-          </button>
-        </div>
-
-        <div style={{ display: "flex", gap: 12 }}>
-          {selectedSlots.map((slot, index) => (
-            <div key={index}>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#d5d9e6",
+                  marginBottom: "var(--space-1)",
+                }}
+              >
+                {slotInfo.label}
+              </div>
               {slot ? (
-                <CardTile
-                  card={cardMap[slot]}
-                  obtained
-                  onClick={() => handleRemoveSlot(index)}
-                />
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <CardTile
+                    card={cardMap[slot]}
+                    obtained
+                    onClick={() => handleRemoveSlot(slotInfo.index)}
+                  />
+                </div>
               ) : (
                 <div
                   style={{
-                    height: 200,
-                    width: 140,
-                    borderRadius: 8,
-                    border: "1px dashed #bbb",
-                    background: "#f7f7f7",
+                    width: "100%",
+                    aspectRatio: "2 / 3",
+                    borderRadius: 12,
+                    border: "1px solid rgba(222, 228, 245, 0.6)",
+                    background: "#121219",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#777",
+                    fontSize: 12,
+                    color: "#9aa3bd",
                   }}
                 >
-                  {index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
+                  {slotInfo.index === 0 || targetRarity ? "Slot vazio" : "Slot inicial"}
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          );
+        })}
 
-        {lastResult && (
-          <div style={{ marginTop: 20 }}>
-            <h3>Resultado</h3>
-            <p>
-              {lastResult.base} → {lastResult.result}
-            </p>
-            {lastResult.card && (
-              <CardTile card={lastResult.card} obtained />
-            )}
+        <aside
+          style={{
+            gridColumn: "3 / 4",
+            gridRow: "1 / span 2",
+            border: "1px solid rgba(222, 228, 245, 0.6)",
+            borderRadius: 12,
+            background: "#121219",
+            padding: "var(--space-2)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-2)",
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 14, color: "#e3e6f5" }}>
+            Fusion rules
+          </h2>
+          <div
+            style={{
+              borderTop: "1px solid rgba(222, 228, 245, 0.2)",
+              paddingTop: "var(--space-1)",
+              fontSize: 12,
+              color: "#c4cada",
+              lineHeight: 1.4,
+            }}
+          >
+            Use quatro cartas da mesma raridade. A chance de upgrade aumenta
+            conforme o incenso da raridade.
           </div>
-        )}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-1)",
+              fontSize: 12,
+              color: "#b8bfd2",
+            }}
+          >
+            {incenseList.map(item => (
+              <div key={item.rarity}>
+                {item.rarity}: {item.value}/{getIncenseThreshold(item.rarity)}
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: "#d5d9e6" }}>
+            Repetidas
+          </div>
+          <div
+            className="hide-scrollbar"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "var(--space-1)",
+              maxHeight: 120,
+            }}
+          >
+            {duplicateCards.length === 0 && (
+              <div style={{ fontSize: 12, color: "#9aa3bd" }}>
+                Sem repetidas
+              </div>
+            )}
+            {duplicateCards.map(card => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => handleSelectCard(card)}
+                style={{
+                  borderRadius: 8,
+                  border: "1px solid rgba(148, 156, 178, 0.5)",
+                  background: "#161620",
+                  color: "#d5d9e6",
+                  padding: "4px 6px",
+                  fontSize: 11,
+                }}
+              >
+                {card.name}
+              </button>
+            ))}
+          </div>
+        </aside>
+      </section>
+
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <button
+          type="button"
+          onClick={handleCombine}
+          disabled={!canCombine}
+          style={{
+            padding: "12px 48px",
+            fontSize: 16,
+            letterSpacing: "0.12em",
+            borderRadius: 14,
+            border: "1px solid rgba(231, 201, 132, 0.9)",
+            background: canCombine
+              ? "linear-gradient(180deg, #3d2f0f 0%, #1f1708 100%)"
+              : "linear-gradient(180deg, #2a2520 0%, #19161a 100%)",
+            color: canCombine ? "#f0d9a0" : "#8f8793",
+          }}
+        >
+          FUSE
+        </button>
       </div>
 
       <div
         style={{
-          position: "absolute",
-          right: 20,
-          bottom: 20,
-          background: "#ffffff",
-          border: "1px solid #e0e0e0",
-          borderRadius: 12,
-          padding: 12,
-          minWidth: 180,
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--space-2)",
+          fontSize: 14,
+          color: "#c4cada",
         }}
       >
-        <strong>🧪 Incenso</strong>
-        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-          {incenseList.map(item => (
-            <div key={item.rarity}>
-              {item.rarity}: {item.value}/{getIncenseThreshold(item.rarity)}
-            </div>
-          ))}
-        </div>
+        <span
+          style={{
+            flex: 1,
+            height: 1,
+            background: "linear-gradient(90deg, transparent, #8088a3, transparent)",
+          }}
+        />
+        <strong>Result preview</strong>
+        <span
+          style={{
+            flex: 1,
+            height: 1,
+            background: "linear-gradient(90deg, transparent, #8088a3, transparent)",
+          }}
+        />
       </div>
+
+      <section
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "var(--space-2)",
+        }}
+      >
+        {lastResult?.card ? (
+          <CardTile card={lastResult.card} obtained />
+        ) : (
+          <div
+            style={{
+              width: "min(240px, 70vw)",
+              aspectRatio: "2 / 3",
+              borderRadius: 12,
+              border: "2px solid rgba(196, 160, 255, 0.8)",
+              background: "#121219",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              color: "#cbb7f0",
+            }}
+          >
+            Resultado
+          </div>
+        )}
+
+        <div style={{ width: "min(320px, 100%)", fontSize: 12, color: "#c4cada" }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Upgrade chance</span>
+            <strong>{selectedRarity ? `${upgradeChance}%` : "--"}</strong>
+          </div>
+          <div
+            style={{
+              marginTop: "var(--space-1)",
+              height: 8,
+              borderRadius: 999,
+              border: "1px solid rgba(196, 160, 255, 0.6)",
+              background: "#1b1b24",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${upgradeChance}%`,
+                height: "100%",
+                background: "linear-gradient(90deg, #b487ff, #e2c2ff)",
+              }}
+            />
+          </div>
+        </div>
+
+        {lastResult && (
+          <p style={{ margin: 0, fontSize: 12, color: "#c4cada" }}>
+            {lastResult.base} → {lastResult.result}
+          </p>
+        )}
+      </section>
+
     </div>
   );
 }

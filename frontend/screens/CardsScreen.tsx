@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { Card } from "../../game/entities/Card";
 import { CARDS } from "../../game/data/cards.catalog";
 import { Rarity } from "../../game/types/enums";
@@ -82,9 +82,10 @@ export function CardsScreen() {
         ) : (
           <div
             style={{
-              height: 200,
-              width: 140,
-              margin: 6,
+              height: "auto",
+              width: "var(--card-ui-width)",
+              aspectRatio: "var(--card-ui-aspect)",
+              margin: "var(--card-ui-margin, var(--space-1))",
               borderRadius: 8,
               border: "1px dashed #999",
               background: "#f2f2f2",
@@ -113,7 +114,14 @@ export function CardsScreen() {
   }, [deck, profile.collection.inventory]);
 
   return (
-    <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 24 }}>
+    <div
+      style={{
+        padding: "var(--screen-padding)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-3)",
+      }}
+    >
       <section>
         <h1>🃏 Meu Deck</h1>
         <p>
@@ -121,19 +129,37 @@ export function CardsScreen() {
             ? "Deck cheio! Remova uma carta para adicionar outra."
             : "Clique em uma carta obtida para adicioná-la ao deck. Clique no deck para remover."}
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>{deckSlots}</div>
+        <div
+          style={
+            {
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: "var(--space-2)",
+              "--card-ui-width": "100%",
+              "--card-ui-margin": "0px",
+            } as CSSProperties
+          }
+        >
+          {deckSlots}
+        </div>
       </section>
 
       <section>
         <h2>📚 Todas as cartas</h2>
         <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            maxHeight: "60vh",
-            overflowY: "auto",
-            paddingRight: 6,
-          }}
+          className="hide-scrollbar"
+          style={
+            {
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: "var(--space-2)",
+              maxHeight: "60vh",
+              overflowX: "hidden",
+              paddingRight: "var(--space-1)",
+              "--card-ui-width": "100%",
+              "--card-ui-margin": "0px",
+            } as CSSProperties
+          }
         >
           {availableCards.map(card => (
             <CardTile

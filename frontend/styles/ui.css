@@ -1,0 +1,50 @@
+:root {
+  --ui-artboard-width: 1080px;
+  --ui-artboard-height: 2400px;
+  --ui-artboard-aspect: 20 / 9;
+
+  --safe-top: 140px;
+  --safe-bottom: 160px;
+  --safe-side: 36px;
+  --screen-padding: 36px;
+
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+
+  --card-ui-width: clamp(220px, 24vw, 288px);
+  --card-ui-aspect: 2 / 3;
+
+  --font-title-min: 32px;
+  --font-title-max: 36px;
+  --font-subtitle: 24px;
+  --font-text-min: 18px;
+  --font-text-max: 20px;
+  --font-micro-min: 14px;
+  --font-micro-max: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.hide-scrollbar {
+  overflow-y: auto;      /* mantém a rolagem */
+  -ms-overflow-style: none;  /* IE e Edge antigos */
+  scrollbar-width: none;     /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}

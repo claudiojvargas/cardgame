@@ -169,7 +169,14 @@ export function CollectionScreen() {
       selectedCard && (profile.collection.inventory[selectedCard.id] ?? 0) > 0;
 
     return (
-      <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+      <div
+        style={{
+          padding: "var(--screen-padding)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-2)",
+        }}
+      >
         <button
           type="button"
           onClick={() => setSelectedCollection(null)}
@@ -178,13 +185,13 @@ export function CollectionScreen() {
           ← Voltar ao hub
         </button>
 
-        <header style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <header style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
           <h1>
             📂 Coleção {selectedCollection.label} · {owned}/{total}
           </h1>
           <div
             style={{
-              height: 10,
+              height: 8,
               borderRadius: 999,
               background: "#262626",
               overflow: "hidden",
@@ -206,7 +213,7 @@ export function CollectionScreen() {
           </span>
         </header>
 
-        <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <section style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
           <span style={{ fontSize: 12, color: "#888" }}>
             Exibindo cartas obtidas primeiro (raridade alta → baixa).
           </span>
@@ -217,7 +224,7 @@ export function CollectionScreen() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-              gap: 16,
+              gap: "var(--space-2)",
             }}
           >
             {filteredCards.map(card => {
@@ -232,12 +239,12 @@ export function CollectionScreen() {
                   onClick={() => setSelectedCard(card)}
                   style={{
                     textAlign: "left",
-                    padding: 12,
-                    borderRadius: 12,
+                    padding: "var(--space-2)",
+                    borderRadius: 16,
                     border: "1px solid #333",
                     background: obtained ? "#1f1f1f" : "#121212",
                     color: "#f5f5f5",
-                    minHeight: 180,
+                    minHeight: 184,
                     position: "relative",
                   }}
                 >
@@ -245,12 +252,12 @@ export function CollectionScreen() {
                     <span
                       style={{
                         position: "absolute",
-                        top: 10,
-                        right: 10,
-                        padding: "2px 8px",
+                        top: "var(--space-1)",
+                        right: "var(--space-1)",
+                        padding: "var(--space-1)",
                         borderRadius: 999,
                         background: "#ff7043",
-                        fontSize: 10,
+                        fontSize: 14,
                         fontWeight: 700,
                       }}
                     >
@@ -260,14 +267,14 @@ export function CollectionScreen() {
                   <div
                     style={{
                       height: 80,
-                      borderRadius: 10,
+                      borderRadius: 8,
                       background: obtained ? "#2e2e2e" : "#000",
                       border: obtained ? "1px solid #444" : "1px dashed #333",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       color: obtained ? "#f5f5f5" : "#555",
-                      marginBottom: 10,
+                      marginBottom: "var(--space-1)",
                       fontSize: 12,
                       backgroundImage: obtained ? `url(${getCardImageUrl(card.id)})` : "none",
                       backgroundSize: "cover",
@@ -277,7 +284,7 @@ export function CollectionScreen() {
                   >
                     {obtained ? "" : "Silhueta"}
                   </div>
-                  <strong style={{ display: "block", marginBottom: 6 }}>
+                  <strong style={{ display: "block", marginBottom: "var(--space-1)" }}>
                     {obtained ? card.name : "???"}
                   </strong>
                   {obtained ? (
@@ -320,13 +327,13 @@ export function CollectionScreen() {
               style={{
                 background: "#111",
                 borderRadius: 16,
-                padding: 24,
+                padding: "var(--space-3)",
                 width: "min(480px, 90vw)",
                 color: "#f5f5f5",
                 border: "1px solid #333",
                 display: "flex",
                 flexDirection: "column",
-                gap: 12,
+                gap: "var(--space-2)",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -337,7 +344,7 @@ export function CollectionScreen() {
                   ✕
                 </button>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                 <span>
                   Classe: {selectedObtained ? CLASS_LABELS[selectedCard.cardClass] : "???"}
                 </span>
@@ -346,7 +353,7 @@ export function CollectionScreen() {
                 </span>
                 <span>Região: {selectedObtained ? selectedCard.regiao : "???"}</span>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                 <span>Base Power: {selectedObtained ? selectedCard.basePower : "???"}</span>
                 <span>
                   Despertar: {selectedObtained
@@ -363,8 +370,8 @@ export function CollectionScreen() {
                 <>
                   <div
                     style={{
-                      height: 180,
-                      borderRadius: 12,
+                      height: 184,
+                      borderRadius: 16,
                       border: "1px solid #333",
                       backgroundImage: `url(${getCardImageUrl(selectedCard.id)})`,
                       backgroundSize: "cover",
@@ -373,13 +380,13 @@ export function CollectionScreen() {
                     }}
                     aria-label={`Arte da carta ${selectedCard.name}`}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                     <strong>História</strong>
                     <p style={{ margin: 0, color: "#bbb" }}>{selectedCard.historia}</p>
                   </div>
                 </>
               )}
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                 <span>
                   Status: {selectedObtained ? "Obtida" : "Não obtida"}
                   {profile.collection.isNew[selectedCard.id] ? " · Nova" : ""}
@@ -398,20 +405,27 @@ export function CollectionScreen() {
   }
 
   return (
-    <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 24 }}>
+    <div
+      style={{
+        padding: "var(--screen-padding)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-3)",
+      }}
+    >
       <header>
         <h1>📂 Coleção</h1>
         <p>Explore as coleções por classe ou raridade.</p>
       </header>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
         {COLLECTION_GROUPS.map(group => (
           <button
             key={group.id}
             type="button"
             onClick={() => setActiveGroup(group.id)}
             style={{
-              padding: "8px 16px",
+              padding: "var(--space-1) var(--space-2)",
               borderRadius: 999,
               border: "1px solid #444",
               background: activeGroup === group.id ? "#f5f5f5" : "#1b1b1b",
@@ -424,13 +438,16 @@ export function CollectionScreen() {
       </div>
 
       {groupsToShow.map(group => (
-        <section key={group.id} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <section
+          key={group.id}
+          style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}
+        >
           <h2>{group.label}</h2>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-              gap: 16,
+              gridTemplateColumns: "repeat(auto-fill, minmax(224px, 1fr))",
+              gap: "var(--space-2)",
             }}
           >
             {group.entries.map(entry => {
@@ -456,27 +473,27 @@ export function CollectionScreen() {
                   onClick={() => handleOpenCollection(entry)}
                   style={{
                     textAlign: "left",
-                    padding: 16,
-                    borderRadius: 12,
+                    padding: "var(--space-2)",
+                    borderRadius: 16,
                     border: "1px solid #333",
                     background: "#141414",
                     color: "#f5f5f5",
                     position: "relative",
                     display: "flex",
                     flexDirection: "column",
-                    gap: 8,
+                    gap: "var(--space-1)",
                   }}
                 >
                   {hasNew && !isVisited && (
                     <span
                       style={{
                         position: "absolute",
-                        top: 12,
-                        right: 12,
-                        padding: "2px 8px",
+                        top: "var(--space-2)",
+                        right: "var(--space-2)",
+                        padding: "var(--space-1)",
                         borderRadius: 999,
                         background: "#ff7043",
-                        fontSize: 10,
+                        fontSize: 14,
                         fontWeight: 700,
                       }}
                     >

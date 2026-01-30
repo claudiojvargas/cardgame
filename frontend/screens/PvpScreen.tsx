@@ -340,18 +340,18 @@ export function PvpScreen() {
   return (
     <div
       style={{
-        padding: 24,
+        padding: "var(--screen-padding)",
         display: "flex",
         flexDirection: "column",
-        gap: 20,
+        gap: "var(--space-3)",
       }}
     >
       {battleActive ? (
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) 280px",
-            gap: 16,
+            gridTemplateColumns: "minmax(0, 1fr) 288px",
+            gap: "var(--space-2)",
             minHeight: 0,
           }}
         >
@@ -368,11 +368,11 @@ export function PvpScreen() {
             style={{
               background: "#ffffff",
               border: "1px solid #e0e0e0",
-              borderRadius: 12,
-              padding: 16,
+              borderRadius: 16,
+              padding: "var(--space-2)",
               display: "flex",
               flexDirection: "column",
-              gap: 16,
+              gap: "var(--space-2)",
             }}
           >
             <div>
@@ -397,7 +397,7 @@ export function PvpScreen() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
-              gap: 16,
+              gap: "var(--space-2)",
               flexWrap: "wrap",
             }}
           >
@@ -411,11 +411,11 @@ export function PvpScreen() {
               style={{
                 background: "#111",
                 color: "#fff",
-                padding: "10px 16px",
+                padding: "var(--space-1) var(--space-2)",
                 borderRadius: 999,
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: "var(--space-1)",
                 fontSize: 14,
               }}
             >
@@ -431,17 +431,17 @@ export function PvpScreen() {
                 background: "#fff7e6",
                 border: "1px solid #ffe0b2",
                 borderRadius: 16,
-                padding: 16,
+                padding: "var(--space-2)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: 12,
+                gap: "var(--space-2)",
                 flexWrap: "wrap",
               }}
             >
               <div>
                 <strong>Partidas de colocação</strong>
-                <p style={{ margin: "4px 0 0", color: "#8d6e63" }}>
+                <p style={{ margin: "var(--space-1) 0 0", color: "#8d6e63" }}>
                   Nas primeiras {playerSummary.placementMatchesRemaining} partidas,
                   você enfrenta bots para calibrar seu ranking.
                 </p>
@@ -459,19 +459,19 @@ export function PvpScreen() {
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)",
-              gap: 16,
+              gap: "var(--space-2)",
             }}
           >
             <div
               style={{
                 background: "#fff",
                 borderRadius: 16,
-                padding: 20,
+                padding: "var(--space-3)",
                 border: "1px solid #e0e0e0",
                 boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 16,
+                gap: "var(--space-2)",
               }}
             >
               <div
@@ -479,13 +479,13 @@ export function PvpScreen() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  gap: 12,
+                  gap: "var(--space-2)",
                   flexWrap: "wrap",
                 }}
               >
                 <div>
                   <h2 style={{ margin: 0 }}>Perfil competitivo</h2>
-                  <p style={{ margin: "4px 0 0", color: "#666" }}>
+                  <p style={{ margin: "var(--space-1) 0 0", color: "#666" }}>
                     Última atualização: agora mesmo
                   </p>
                 </div>
@@ -497,8 +497,8 @@ export function PvpScreen() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                  gap: 12,
+                  gridTemplateColumns: "repeat(auto-fit, minmax(144px, 1fr))",
+                  gap: "var(--space-2)",
                 }}
               >
                 <StatCard label="Jogador" value={playerSummary.name} />
@@ -513,25 +513,25 @@ export function PvpScreen() {
               style={{
                 background: "#fff",
                 borderRadius: 16,
-                padding: 20,
+                padding: "var(--space-3)",
                 border: "1px solid #e0e0e0",
                 display: "flex",
                 flexDirection: "column",
-                gap: 12,
+                gap: "var(--space-2)",
               }}
             >
               <h2 style={{ margin: 0 }}>Ranking Global</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                 {leaderboard.map((entry, index) => (
                   <div
                     key={entry.id}
                     style={{
                       display: "grid",
                       gridTemplateColumns: "24px 1fr auto",
-                      gap: 12,
+                      gap: "var(--space-2)",
                       alignItems: "center",
-                      padding: "8px 10px",
-                      borderRadius: 12,
+                      padding: "var(--space-1) var(--space-2)",
+                      borderRadius: 16,
                       background: index === 0 ? "#fef7e0" : "#f7f7f7",
                     }}
                   >
@@ -548,7 +548,7 @@ export function PvpScreen() {
                   </div>
                 ))}
               </div>
-              <button type="button" style={{ marginTop: 8 }}>
+              <button type="button" style={{ marginTop: "var(--space-1)" }}>
                 Ver ranking completo
               </button>
             </div>
@@ -558,11 +558,11 @@ export function PvpScreen() {
             style={{
               background: "#fff",
               borderRadius: 16,
-              padding: 20,
+              padding: "var(--space-3)",
               border: "1px solid #e0e0e0",
               display: "flex",
               flexDirection: "column",
-              gap: 12,
+              gap: "var(--space-2)",
             }}
           >
             <div
@@ -570,7 +570,7 @@ export function PvpScreen() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                gap: 12,
+                gap: "var(--space-2)",
                 flexWrap: "wrap",
               }}
             >
@@ -584,8 +584,8 @@ export function PvpScreen() {
             {loadError && (
               <div
                 style={{
-                  padding: "8px 12px",
-                  borderRadius: 10,
+                  padding: "var(--space-1) var(--space-2)",
+                  borderRadius: 8,
                   background: "#fff3e0",
                   color: "#8d6e63",
                   fontSize: 12,
@@ -594,18 +594,18 @@ export function PvpScreen() {
                 {loadError}
               </div>
             )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
               {history.map(match => (
                 <div
                   key={match.id}
                   style={{
-                    padding: "10px 12px",
-                    borderRadius: 12,
+                    padding: "var(--space-1) var(--space-2)",
+                    borderRadius: 16,
                     background: match.result === "win" ? "#e9f7ef" : "#fdecea",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    gap: 12,
+                    gap: "var(--space-2)",
                   }}
                 >
                   <div>
@@ -654,13 +654,13 @@ export function PvpScreen() {
               background: "#ffffff",
               border: "1px solid #e0e0e0",
               borderRadius: 16,
-              padding: 24,
-              minWidth: 280,
+              padding: "var(--space-3)",
+              minWidth: 288,
               textAlign: "center",
               boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
               display: "flex",
               flexDirection: "column",
-              gap: 12,
+              gap: "var(--space-2)",
             }}
           >
             {state.winnerId === "Player" ? (
@@ -688,11 +688,11 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
     <div
       style={{
         background: "#f7f7f7",
-        borderRadius: 12,
-        padding: "12px 14px",
+        borderRadius: 16,
+        padding: "var(--space-2)",
         display: "flex",
         flexDirection: "column",
-        gap: 4,
+        gap: "var(--space-1)",
       }}
     >
       <span style={{ fontSize: 12, color: "#777" }}>{label}</span>
